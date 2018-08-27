@@ -1,0 +1,39 @@
+{
+  "name": "iobroker.objects-redis",
+  "version": "0.1.0",
+  "engines": {
+    "node": ">=4.8.7"
+  },
+  "dependencies": {
+  },
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "del": "^3.0.0",
+    "gulp-javascript-obfuscator": "^1.1.4"
+  },
+  "keywords": [
+    "ioBroker",
+    "redis",
+    "redundancy"
+  ],
+  "licenses": [
+    {
+      "type": "SEE LICENSE IN",
+      "url": "https://github.com/ioBroker/ioBroker.objects-redis/blob/master/LICENSE"
+    }
+  ],
+  "author": "bluefox <dogafox@gmail.com>",
+  "contributors": [
+    "bluefox <dogafox@gmail.com>"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ioBroker/ioBroker.objects-redis"
+  },
+  "scripts": {
+    "prepublishOnly": "echo \"Error: publish from dist directory and write gulp before\" && exit 1",
+    "prepare": "gulp"
+  },
+  "main": "index.js",
+  "license": "SEE LICENSE IN"
+}
