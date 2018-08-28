@@ -14,7 +14,16 @@ gulp.task('01-pack', ['00-clean'], done => {
     let objectsInRedis = fs.readFileSync('./lib/objects/objectsInRedis.js').toString('utf8');
     let objectsUtils = fs.readFileSync('./lib/objects/objectsUtils.js').toString('utf8').replace('module.exports = {', 'const utils = {');
     let tools = fs.readFileSync('./lib/objects/tools.js').toString('utf8');
+
+    const scripts = fs.readdirSync(__dirname + '/lib/objects/lua')
+        .map(name => {
+            return {name: name.replace(/.lua$/, ''), text: fs.readFileSync(__dirname + '/lib/objects/lua/' + name).toString('utf8')};
+        })
+        .map(script => 'scriptFiles.' + script.name + ' = \'' + script.text.replace(/\r\n|\n/g, '\\n') + '\';')
+        .join('\n');
+
     const lines = objectsInRedis.split('\n');
+
     for (let l = lines.length - 1; l >= 0; l--) {
         if (lines[l].indexOf('/* @@tools.js@@ */') !== -1) {
             lines[l] = tools + '\n';
@@ -24,6 +33,8 @@ gulp.task('01-pack', ['00-clean'], done => {
             lines[l] = '';
         } else if (lines[l].indexOf("require('../tools')") !== -1) {
             lines[l] = '';
+        }  else if (lines[l].indexOf("@@lua@@") !== -1) {
+            lines[l] = scripts;
         }
     }
 
