@@ -13,7 +13,7 @@ for i,key in ipairs(keys) do
 	    obj = redis.call("get", key)
 	    decoded = cjson.decode(obj)
 		if (decoded.type == "state" and decoded.common ~= nil and decoded.common.custom ~= nil) then
-            rep[#rep+1] = obj.common.custom
+            rep[#rep+1] = obj
         end
 	end
 end
