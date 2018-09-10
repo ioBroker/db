@@ -75,6 +75,7 @@ gulp.task('03-package.json', ['00-clean'], done => {
     delete pack.devDependencies;
     delete pack.scripts;
     fs.writeFileSync('./dist/LICENSE', fs.readFileSync('./LICENSE'));
+    fs.writeFileSync('./dist/README.md', fs.readFileSync('./README.md'));
     fs.writeFileSync('./dist/package.json', JSON.stringify(pack, null, 2));
     done();
 });
