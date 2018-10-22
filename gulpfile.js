@@ -33,7 +33,7 @@ gulp.task('01-pack', ['00-clean'], done => {
             lines[l] = '';
         } else if (lines[l].indexOf("require('../tools')") !== -1) {
             lines[l] = '';
-        }  else if (lines[l].indexOf("@@lua@@") !== -1) {
+        }  else if (lines[l].indexOf('@@lua@@') !== -1) {
             lines[l] = scripts;
         }
     }
