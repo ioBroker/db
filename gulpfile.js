@@ -5,14 +5,14 @@ const obfuscate = require('gulp-javascript-obfuscator');
 const del       = require('del');
 const fs        = require('fs');
 
-gulp.task('00-clean', () => {
-    return del([
+gulp.task('00-clean', () =>
+    del([
         'dist/**/*'
-    ]);
-});
-gulp.task('01-pack', ['00-clean'], done => {
+    ])
+);
+
+gulp.task('01-pack', gulp.series('00-clean', done => {
     let objectsInRedis = fs.readFileSync('./lib/objects/objectsInRedis.js').toString('utf8');
-    let objectsUtils = fs.readFileSync('./lib/objects/objectsUtils.js').toString('utf8').replace('module.exports = {', 'const utils = {');
     let tools = fs.readFileSync('./lib/objects/tools.js').toString('utf8');
 
     const scripts = fs.readdirSync(__dirname + '/lib/objects/lua')
@@ -27,10 +27,6 @@ gulp.task('01-pack', ['00-clean'], done => {
     for (let l = lines.length - 1; l >= 0; l--) {
         if (lines[l].indexOf('/* @@tools.js@@ */') !== -1) {
             lines[l] = tools + '\n';
-        } else if (lines[l].indexOf('/* @@objectsUtils.js@@ */') !== -1) {
-            lines[l] = objectsUtils + '\n';
-        } else if (lines[l].indexOf("require('./objectsUtils');") !== -1) {
-            lines[l] = '';
         } else if (lines[l].indexOf("require('../tools')") !== -1) {
             lines[l] = '';
         }  else if (lines[l].indexOf('@@lua@@') !== -1) {
@@ -43,9 +39,9 @@ gulp.task('01-pack', ['00-clean'], done => {
     }
     fs.writeFileSync('./dist/index.js', lines.join('\n'));
     done();
-});
+}));
 
-gulp.task('02-obfuscate', ['01-pack'], () =>
+gulp.task('02-obfuscate', gulp.series('01-pack', () =>
     gulp.src('./dist/index.js')
         .pipe(obfuscate({
                 compact: true,
@@ -65,9 +61,9 @@ gulp.task('02-obfuscate', ['01-pack'], () =>
                 unicodeEscapeSequence: false
             }
         )).pipe(gulp.dest('./dist'))
-);
+));
 
-gulp.task('03-package.json', ['00-clean'], done => {
+gulp.task('03-package.json', gulp.series('00-clean', done => {
     if (!fs.existsSync('./dist')) {
         fs.mkdir('./dist');
     }
@@ -78,6 +74,6 @@ gulp.task('03-package.json', ['00-clean'], done => {
     fs.writeFileSync('./dist/README.md', fs.readFileSync('./README.md'));
     fs.writeFileSync('./dist/package.json', JSON.stringify(pack, null, 2));
     done();
-});
+}));
 
-gulp.task('default', ['02-obfuscate', '03-package.json']);
+gulp.task('default', gulp.series('02-obfuscate', '03-package.json'));

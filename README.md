@@ -2,6 +2,9 @@
 This is not an Adapter for ioBroker, but part of js-controller to enable the storage of objects in REDIS.
 
 ## Changelog
+### 0.3.2 (2019-05-05)
+* (bluefox) remove objectsUtils.js
+
 ### 0.3.1 (2019-05-05)
 * (Apollon77) fixes for Redis-In-Mem-Servers
 
