@@ -42,6 +42,7 @@ gulp.task('01-pack', ['00-clean'], done => {
         fs.mkdir('./dist');
     }
     fs.writeFileSync('./dist/index.js', lines.join('\n'));
+    fs.writeFileSync('./dist/objectsInMemClientSocketIo.js', fs.readFileSync('./lib/objects/objectsInMemClientSocketIo.js'));
     done();
 });
 
