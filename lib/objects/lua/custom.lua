@@ -1,3 +1,5 @@
+-- design: custom
+-- search: state
 local rep = {}
 local keys=redis.call("keys", KEYS[1].."*")
 local argStart=KEYS[1]..KEYS[2]
