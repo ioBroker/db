@@ -63,7 +63,7 @@ gulp.task('02-obfuscate', gulp.series('01-pack', () =>
         )).pipe(gulp.dest('./dist'))
 ));
 
-gulp.task('03-package.json', gulp.series('00-clean', done => {
+gulp.task('03-package.json', done => {
     if (!fs.existsSync('./dist')) {
         fs.mkdir('./dist');
     }
@@ -74,6 +74,6 @@ gulp.task('03-package.json', gulp.series('00-clean', done => {
     fs.writeFileSync('./dist/README.md', fs.readFileSync('./README.md'));
     fs.writeFileSync('./dist/package.json', JSON.stringify(pack, null, 2));
     done();
-}));
+});
 
 gulp.task('default', gulp.series('02-obfuscate', '03-package.json'));
