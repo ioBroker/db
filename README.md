@@ -2,7 +2,7 @@
 This is not an Adapter for ioBroker, but part of js-controller to enable the storage of objects in REDIS.
 
 ## Changelog
-### 0.4.0 (2019-05-07)
+### 0.4.0-2 (2019-05-07)
 * (Apollon77) switch to ioredis as library and add some debug
 
 ### 0.3.3-8 (2019-05-05)
