@@ -1,12 +1,12 @@
 {
   "name": "iobroker.objects-redis",
-  "version": "0.3.6",
+  "version": "0.4.0",
   "engines": {
     "node": ">=4.8.7"
   },
   "dependencies": {
     "node.extend": "^2.0.0",
-    "redis": "^2.8.0",
+    "ioredis": "^4.9.0",
     "vinyl-sourcemaps-apply": "^0.2.1"
   },
   "devDependencies": {
