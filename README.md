@@ -3,7 +3,7 @@ This is not an Adapter for ioBroker, but part of js-controller to enable the sto
 
 ## Changelog
 
-### 1.0.0 (2019-05-23)
+### 1.0.1 (2019-05-23)
 * (bluefox) catch parse errors
 
 ### 0.4.4 (2019-05-10)
