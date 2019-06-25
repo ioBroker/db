@@ -3,7 +3,7 @@ This is not an Adapter for ioBroker, but part of js-controller to enable the sto
 
 ## Changelog
 
-### 1.0.2 (2019-06-10)
+### 1.0.3 (2019-06-25)
 * (bluefox) Add aliases
 
 ### 1.0.1 (2019-05-23)
