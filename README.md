@@ -3,6 +3,9 @@ This is not an Adapter for ioBroker, but part of js-controller to enable the sto
 
 ## Changelog
 
+### 1.1.1 (2019-07-28)
+* (Apollon77) handle error case for not existing keys
+
 ### 1.1.0 (2019-07-19)
 * (Apollon77) Add Redis Sentinel Support
 
