@@ -3,6 +3,9 @@ This is not an Adapter for ioBroker, but part of js-controller to enable the sto
 
 ## Changelog
 
+### 1.1.2 (2019-08-06)
+* (Apollon77) optimize code
+
 ### 1.1.1 (2019-07-28)
 * (Apollon77) handle error case for not existing keys
 

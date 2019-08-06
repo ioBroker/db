@@ -1,16 +1,16 @@
 {
   "name": "iobroker.objects-redis",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "engines": {
     "node": ">=4.8.7"
   },
   "dependencies": {
-    "node.extend": "^2.0.0",
-    "ioredis": "^4.11.2",
+    "node.extend": "^2.0.2",
+    "ioredis": "^4.14.0",
     "vinyl-sourcemaps-apply": "^0.2.1"
   },
   "devDependencies": {
-    "gulp": "^4.0.1",
+    "gulp": "^4.0.2",
     "del": "^4.1.1",
     "gulp-javascript-obfuscator": "^1.1.6"
   },
