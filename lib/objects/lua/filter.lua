@@ -1,4 +1,4 @@
--- design: system
+-- func: function(doc) { if (doc.type === "%1") emit(doc.common.name, doc); }
 local rep = {}
 local keys=redis.call("keys", KEYS[1].."*")
 local argStart=KEYS[1]..KEYS[2]

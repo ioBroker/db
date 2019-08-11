@@ -3,6 +3,9 @@ This is not an Adapter for ioBroker, but part of js-controller to enable the sto
 
 ## Changelog
 
+### 1.1.4 (2019-08-11)
+* (Apollon77) enhance filter view queries to work more generic
+
 ### 1.1.3 (2019-08-07)
 * (Apollon77) fix redis initializations
 
