@@ -3,6 +3,9 @@ This is not an Adapter for ioBroker, but part of js-controller to enable the sto
 
 ## Changelog
 
+### 1.1.6 (2019-08-30)
+* (Apollon77) correct logging message
+
 ### 1.1.5 (2019-08-19)
 * (Apollon77) enhance logging to always contain the namespace
 
