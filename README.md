@@ -3,6 +3,9 @@ This is not an Adapter for ioBroker, but part of js-controller to enable the sto
 
 ## Changelog
 
+### 1.1.7 (2019-09-08)
+* (Apollon77) fix some special object views
+
 ### 1.1.6 (2019-08-30)
 * (Apollon77) correct logging message
 
