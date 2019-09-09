@@ -3,6 +3,9 @@ This is not an Adapter for ioBroker, but part of js-controller to enable the sto
 
 ## Changelog
 
+### 1.1.8 (2019-09-09)
+* (Apollon77) fix readDir to be compatible to before and some other file stuff
+
 ### 1.1.7 (2019-09-08)
 * (Apollon77) fix some special object views
 
