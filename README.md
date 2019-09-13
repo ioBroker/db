@@ -3,6 +3,9 @@ This is not an Adapter for ioBroker, but part of js-controller to enable the sto
 
 ## Changelog
 
+### 1.1.11 (2019-09-14)
+* (Apollon77) fix chmod, chown and special file functions
+
 ### 1.1.10 (2019-09-10)
 * (Apollon77) fix unlink to be compatible to socket.io
 
