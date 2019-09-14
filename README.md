@@ -3,6 +3,9 @@ This is not an Adapter for ioBroker, but part of js-controller to enable the sto
 
 ## Changelog
 
+### 1.1.12 (2019-09-15)
+* (Apollon77) fix and enhance rename method
+
 ### 1.1.11 (2019-09-14)
 * (Apollon77) fix chmod, chown and special file functions
 
