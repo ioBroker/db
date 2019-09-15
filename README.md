@@ -3,8 +3,11 @@ This is not an Adapter for ioBroker, but part of js-controller to enable the sto
 
 ## Changelog
 
+### 1.1.15 (2019-09-16)
+* (Apollon77) enhance some error messages
+
 ### 1.1.14 (2019-09-15)
-* (Apollon77) fis getObjectView for "custom" because it was returning null values
+* (Apollon77) fix getObjectView for "custom" because it was returning null values
 
 ### 1.1.13 (2019-09-15)
 * (Apollon77) latest fixes, add some more edge case handling
