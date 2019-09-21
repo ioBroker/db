@@ -3,7 +3,7 @@ This is not an Adapter for ioBroker, but part of js-controller to enable the sto
 
 ## Changelog
 
-### 1.1.16 (2019-09-21)
+### 1.1.17 (2019-09-21)
 * (Apollon77) normalize filenames to prevent problems with multiple slashes in the path
 
 ### 1.1.15 (2019-09-16)
