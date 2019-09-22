@@ -3,6 +3,9 @@ This is not an Adapter for ioBroker, but part of js-controller to enable the sto
 
 ## Changelog
 
+### 1.1.18 (2019-09-22)
+* (Apollon77) optimize handling for directories to be more compatible with socket.io before
+
 ### 1.1.17 (2019-09-21)
 * (Apollon77) normalize filenames to prevent problems with multiple slashes in the path
 
