@@ -3,6 +3,9 @@ This is not an Adapter for ioBroker, but part of js-controller to enable the sto
 
 ## Changelog
 
+### 1.1.21 (2019-09-26)
+* (Apollon77) getting States with wildcard not at the end is not working well in lua, simulate it for now
+
 ### 1.1.20 (2019-09-26)
 * (Apollon77) only use quit from redid and let ioredis handle the disconnect
 
