@@ -3,6 +3,9 @@ This is not an Adapter for ioBroker, but part of js-controller to enable the sto
 
 ## Changelog
 
+### 1.1.20 (2019-09-26)
+* (Apollon77) only use quit from redid and let ioredis handle the disconnect
+
 ### 1.1.19 (2019-09-24)
 * (Apollon77) optimize communication processes by calling quit instead of just disconnecting
 
