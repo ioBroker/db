@@ -3,6 +3,9 @@ This is not an Adapter for ioBroker, but part of js-controller to enable the sto
 
 ## Changelog
 
+### 1.1.23 (2019-09-30)
+* (Apollon77) small optimizations
+
 ### 1.1.22 (2019-09-27)
 * (Apollon77) fix fallback handling with old style "emit"
 
