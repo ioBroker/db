@@ -3,6 +3,9 @@ This is not an Adapter for ioBroker, but part of js-controller to enable the sto
 
 ## Changelog
 
+### 1.1.24 (2019-10-01)
+* (Apollon77) allow to set Redis DB and network family, defaults to 0
+
 ### 1.1.23 (2019-09-30)
 * (Apollon77) small optimizations
 
