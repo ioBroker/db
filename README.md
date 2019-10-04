@@ -3,6 +3,9 @@ This is not an Adapter for ioBroker, but part of js-controller to enable the sto
 
 ## Changelog
 
+### 1.1.27 (2019-10-04)
+* (Apollon77) try to optimize run performance a bit, especially run callbacks and onchange handlings on next tick
+
 ### 1.1.26 (2019-10-04)
 * (Apollon77) sanitize file path the same for redis as for file
 
