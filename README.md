@@ -3,6 +3,9 @@ This is not an Adapter for ioBroker, but part of js-controller to enable the sto
 
 ## Changelog
 
+### 1.1.29 (2019-10-06)
+* (Apollon77) make sure ioredis do not throw errors on unhandled promises when closing the connection
+
 ### 1.1.28 (2019-10-04)
 * (Apollon77) try to optimize run performance a bit, especially run callbacks and onchange handlings on next tick
 
