@@ -3,6 +3,9 @@ This is not an Adapter for ioBroker, but part of js-controller to enable the sto
 
 ## Changelog
 
+### 1.1.32 (2019-10-07)
+* (Apollon77) increase LUA script timeout to 10s for now till real fix for ObjectViews in js-controller 2.1
+
 ### 1.1.30 (2019-10-06)
 * (Apollon77) make sure ioredis do not throw errors on unhandled promises when closing the connection
 
