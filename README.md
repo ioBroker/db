@@ -3,6 +3,9 @@ This is not an Adapter for ioBroker, but part of js-controller to enable the sto
 
 ## Changelog
 
+### 1.1.33 (2019-10-09)
+* (Apollon77) Also allow objects with capital letters as first letter in name
+
 ### 1.1.32 (2019-10-07)
 * (Apollon77) increase LUA script timeout to 10s for now till real fix for ObjectViews in js-controller 2.1
 
