@@ -3,7 +3,11 @@ This is not an Adapter for ioBroker, but part of js-controller to enable the sto
 
 ## Changelog
 
-### 1.1.34 (2019-10-1x)
+### 1.1.35 (2019-10-13)
+* (Apollon77) Check setObject that argument is an object
+* (Apollon77) make sure also objects with _ are allowed
+
+### 1.1.34 (2019-10-13)
 * (Apollon77) Enhance one error message
 
 ### 1.1.33 (2019-10-09)
