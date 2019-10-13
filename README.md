@@ -3,6 +3,9 @@ This is not an Adapter for ioBroker, but part of js-controller to enable the sto
 
 ## Changelog
 
+### 1.1.34 (2019-10-1x)
+* (Apollon77) Enhance one error message
+
 ### 1.1.33 (2019-10-09)
 * (Apollon77) Also allow objects with capital letters as first letter in name
 
