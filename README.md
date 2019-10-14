@@ -3,8 +3,14 @@ This is not an Adapter for ioBroker, but part of js-controller to enable the sto
 
 ## Changelog
 
-### 1.1.36 (2019-10-14)
+### 1.1.38 (2019-10-14)
 * (bluefox) Check empty objects
+
+### 1.1.37 (2019-10-14)
+* (Apollon77) Reconnection enhancements
+
+### 1.1.36 (2019-10-14)
+* (Apollon77) Reconnection enhancements
 
 ### 1.1.35 (2019-10-13)
 * (Apollon77) Check setObject that argument is an object
