@@ -14,9 +14,11 @@ local decoded
 for i,key in ipairs(keys) do
 	if (key >= argStart and key < argEnd and key:sub(7, 13) == "hm-rega") then
 	    obj = redis.call("get", key)
-	    decoded = cjson.decode(obj)
-		if (decoded.native ~= nil and decoded.native.TypeName == "PROGRAM") then
-            rep[#rep+1] = obj
+	    if (obj ~= nil and obj ~= "") then
+            decoded = cjson.decode(obj)
+            if (decoded.native ~= nil and decoded.native.TypeName == "PROGRAM") then
+                rep[#rep+1] = obj
+            end
         end
 	end
 end

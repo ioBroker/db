@@ -10,7 +10,7 @@ local obj
 for i,key in ipairs(keys) do
 	if (key >= argStart and key < argEnd) then
 	    obj = redis.call("get", key)
-		if (cjson.decode(obj).type == "script") then
+		if (obj ~= nil and obj ~= "" and cjson.decode(obj).type == "script") then
             rep[#rep+1] = obj
         end
 	end
