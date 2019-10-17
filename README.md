@@ -3,6 +3,9 @@ This is not an Adapter for ioBroker, but part of js-controller to enable the sto
 
 ## Changelog
 
+### 1.1.40 (2019-10-17)
+* (Apollon77)set all currently used "preserveSettings" manually till real solution in 2.1
+
 ### 1.1.39 (2019-10-16)
 * (Apollon77) work on reconnection delays
 
