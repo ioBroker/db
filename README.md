@@ -3,6 +3,9 @@ This is not an Adapter for ioBroker, but part of js-controller to enable the sto
 
 ## Changelog
 
+### 1.1.42 (2019-10-19)
+* (Apollon77) No need to copy the Buffer when returning files
+
 ### 1.1.41 (2019-10-19)
 * (Apollon77) Allow to use Redis password as "pass" parameter
 
