@@ -3,7 +3,7 @@ This is not an Adapter for ioBroker, but part of js-controller to enable the sto
 
 ## Changelog
 
-### 1.1.44 (2019-10-19)
+### 1.1.45 (2019-10-19)
 * (Apollon77) Adjust "enhancedLogging" to be per DB
 * (bluefox) Formatting
 
