@@ -3,6 +3,9 @@ This is not an Adapter for ioBroker, but part of js-controller to enable the sto
 
 ## Changelog
 
+### 1.1.43 (2019-10-19)
+* (Apollon77) Adjust "enhancedLogging" to be per DB
+
 ### 1.1.42 (2019-10-19)
 * (Apollon77) No need to copy the Buffer when returning files
 
