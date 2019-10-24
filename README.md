@@ -3,6 +3,9 @@ This is not an Adapter for ioBroker, but part of js-controller to enable the sto
 
 ## Changelog
 
+### 1.1.46 (2019-10-24)
+* (Apollon77) Add some more logic to prevent access with invalid ids 
+
 ### 1.1.45 (2019-10-19)
 * (Apollon77) Adjust "enhancedLogging" to be per DB
 * (bluefox) Formatting
