@@ -3,6 +3,9 @@ This is not an Adapter for ioBroker, but part of js-controller to enable the sto
 
 ## Changelog
 
+### 1.1.49 (2019-10-27)
+* (Apollon77) also allow numbers as first character
+
 ### 1.1.48 (2019-10-26)
 * (Apollon77) Handle invalid file path as not found, only log debug
 
