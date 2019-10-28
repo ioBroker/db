@@ -3,6 +3,9 @@ This is not an Adapter for ioBroker, but part of js-controller to enable the sto
 
 ## Changelog
 
+### 1.1.50 (2019-10-28)
+* (Apollon77) fix common.name filtering with empty names to work as before
+
 ### 1.1.49 (2019-10-27)
 * (Apollon77) also allow numbers as first character
 
