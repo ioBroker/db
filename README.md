@@ -2,6 +2,8 @@
 This is not an Adapter for ioBroker, but part of js-controller to enable the storage of objects in REDIS.
 
 ## Changelog
+### 1.2.0 (2019-11-05)
+* (bluefox) fix applyViewFunc if the start and the end key are equal 
 
 ### 1.1.50 (2019-10-28)
 * (Apollon77) fix common.name filtering with empty names to work as before
