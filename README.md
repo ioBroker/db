@@ -2,6 +2,9 @@
 This is not an Adapter for ioBroker, but part of js-controller to enable the storage of objects in REDIS.
 
 ## Changelog
+### 1.2.1 (2019-11-07)
+* (Apollon77) prevent callbacks from being called multiple times when (un)subscribing using an array
+
 ### 1.2.0 (2019-11-05)
 * (bluefox) fix applyViewFunc if the start and the end key are equal 
 
