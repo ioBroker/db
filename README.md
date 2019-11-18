@@ -2,6 +2,9 @@
 This is not an Adapter for ioBroker, but part of js-controller to enable the storage of objects in REDIS.
 
 ## Changelog
+### 1.2.7 (2019-11-18)
+* (Apollon77) prevent pot. "sandboxed" objects from being wrong used in extendObject
+
 ### 1.2.6 (2019-11-14)
 * (Apollon77) code refactoring and some roe error checks for disconnect cases
 
