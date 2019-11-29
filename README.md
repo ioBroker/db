@@ -2,6 +2,9 @@
 This is not an Adapter for ioBroker, but part of js-controller to enable the storage of objects in REDIS.
 
 ## Changelog
+### 1.2.9 (2019-11-29)
+* (bluefox) Fixed: new objects were created with "admin" as owner and not with current user
+
 ### 1.2.8 (2019-11-22)
 * (Apollon77) fix potential crash
 
