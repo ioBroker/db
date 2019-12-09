@@ -2,6 +2,9 @@
 This is not an Adapter for ioBroker, but part of js-controller to enable the storage of objects in REDIS.
 
 ## Changelog
+### 1.2.11 (2019-12-09)
+* (bluefox) Fixed: merge of custom settings is wrong
+
 ### 1.2.10 (2019-12-06)
 * (bluefox) Fixed: when connection was destroyed while trying to register lua scripts an exception could have happened
 
