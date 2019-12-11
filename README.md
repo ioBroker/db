@@ -2,7 +2,7 @@
 This is not an Adapter for ioBroker, but part of js-controller to enable the storage of objects in REDIS.
 
 ## Changelog
-### 1.2.11 (2019-12-09)
+### 1.2.12 (2019-12-11)
 * (bluefox) Fixed: merge of custom settings is wrong
 
 ### 1.2.10 (2019-12-06)
