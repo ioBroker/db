@@ -35,7 +35,7 @@ gulp.task('01-pack', gulp.series('00-clean', done => {
     }
 
     if (!fs.existsSync('./dist')) {
-        fs.mkdir('./dist');
+        fs.mkdirSync('./dist');
     }
     fs.writeFileSync('./dist/index.js', lines.join('\n'));
     done();
