@@ -2,6 +2,10 @@
 This is not an Adapter for ioBroker, but part of js-controller to enable the storage of objects in REDIS.
 
 ## Changelog
+
+### 2.0.0 (2019-12-26)
+* (Apollon77) Split system and user/adapter subscribes; lift to 2.0 to prevent potential backward compatibility issues
+
 ### 1.2.12 (2019-12-11)
 * (bluefox) Fixed: merge of custom settings is wrong
 
