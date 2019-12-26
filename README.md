@@ -3,6 +3,9 @@ This is not an Adapter for ioBroker, but part of js-controller to enable the sto
 
 ## Changelog
 
+### 2.0.1 (2019-12-26)
+* (Apollon77) Remove socket.io Fallback ... now it is breaking and worth 2.0 :-)
+
 ### 2.0.0 (2019-12-26)
 * (Apollon77) Split system and user/adapter subscribes; lift to 2.0 to prevent potential backward compatibility issues
 
