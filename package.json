@@ -10,8 +10,8 @@
     "vinyl-sourcemaps-apply": "^0.2.1"
   },
   "devDependencies": {
-    "gulp": "^4.0.2",
     "del": "^5.1.0",
+    "gulp": "^4.0.2",
     "gulp-javascript-obfuscator": "^1.1.6"
   },
   "keywords": [
