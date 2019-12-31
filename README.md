@@ -3,6 +3,9 @@ This is not an Adapter for ioBroker, but part of js-controller to enable the sto
 
 ## Changelog
 
+### 2.0.3 (2019-12-31)
+* (Apollon77) Simplify logic and convert customs directly here. Corresponding change in controller make sure it works
+
 ### 2.0.2 (2019-12-31)
 * (Apollon77) Add check for pot. null object when getting Object list
 
