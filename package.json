@@ -1,6 +1,6 @@
 {
   "name": "iobroker.objects-redis",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "engines": {
     "node": ">=4.8.7"
   },

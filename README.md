@@ -3,6 +3,9 @@ This is not an Adapter for ioBroker, but part of js-controller to enable the sto
 
 ## Changelog
 
+### 2.0.2 (2019-12-31)
+* (Apollon77) Add check for pot. null object when getting Object list
+
 ### 2.0.1 (2019-12-26)
 * (Apollon77) Remove socket.io Fallback ... now it is breaking and worth 2.0 :-)
 
