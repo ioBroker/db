@@ -3,6 +3,10 @@ This is not an Adapter for ioBroker, but part of js-controller to enable the sto
 
 ## Changelog
 
+### 2.0.5 (2020-03-21)
+* (Apollon77) fix type in alias check
+* (Apollon77) update ioredis dependency
+
 ### 2.0.4 (2020-01-17)
 * (Apollon77) Do not have ioredis autoResubscribe because we do it by our own
 

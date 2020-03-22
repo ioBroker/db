@@ -1,9 +1,10 @@
 'use strict';
 
-const gulp      = require('gulp');
-const obfuscate = require('gulp-javascript-obfuscator');
-const del       = require('del');
-const fs        = require('fs');
+const gulp       = require('gulp');
+const obfuscate  = require('gulp-javascript-obfuscator');
+const del        = require('del');
+const fs         = require('fs');
+const sourcemaps = require('gulp-sourcemaps');
 
 gulp.task('00-clean', () =>
     del([
@@ -38,11 +39,13 @@ gulp.task('01-pack', gulp.series('00-clean', done => {
         fs.mkdirSync('./dist');
     }
     fs.writeFileSync('./dist/index.js', lines.join('\n'));
+    fs.writeFileSync('./dist/.npmignore', '*.js.map');
     done();
 }));
 
 gulp.task('02-obfuscate', gulp.series('01-pack', () =>
     gulp.src('./dist/index.js')
+        .pipe(sourcemaps.init())
         .pipe(obfuscate({
                 compact: true,
                 controlFlowFlattening: false,
@@ -60,7 +63,9 @@ gulp.task('02-obfuscate', gulp.series('01-pack', () =>
                 stringArrayThreshold: 0.75,
                 unicodeEscapeSequence: false
             }
-        )).pipe(gulp.dest('./dist'))
+        ))
+        .pipe(sourcemaps.write('./'))
+        .pipe(gulp.dest('./dist'))
 ));
 
 gulp.task('03-package.json', done => {
