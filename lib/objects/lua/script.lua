@@ -3,7 +3,7 @@
 local rep = {}
 -- local keys=redis.call("keys", KEYS[1].."*")
 local cursor = KEYS[4];
-local result=redis.call("SCAN", cursor, "MATCH", KEYS[1].."*", "COUNT", 100)
+local result=redis.call("SCAN", cursor, "MATCH", KEYS[1].."*", "COUNT", 500)
 cursor = result[1]
 local keys = result[2]
 local argStart=KEYS[1]..KEYS[2]
