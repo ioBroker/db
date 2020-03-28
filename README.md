@@ -3,6 +3,10 @@ This is not an Adapter for ioBroker, but part of js-controller to enable the sto
 
 ## Changelog
 
+### 3.0.0 (2020-03-28)
+* (foxriver76) Performance increase: adjust lua scripts and JS code to use SCAN for filter scripts
+* (foxriver76) code formatting
+
 ### 2.0.5 (2020-03-21)
 * (Apollon77) fix type in alias check
 * (Apollon77) update ioredis dependency

@@ -1,7 +1,11 @@
 -- design: custom
 -- search: state
 local rep = {}
-local keys=redis.call("keys", KEYS[1].."*")
+-- local keys=redis.call("keys", KEYS[1].."*")
+local cursor = KEYS[4];
+local result=redis.call("SCAN", cursor, "MATCH", KEYS[1].."*", "COUNT", 100)
+cursor = result[1]
+local keys = result[2]
 local argStart=KEYS[1]..KEYS[2]
 local argEnd=KEYS[1]..KEYS[3]
 local obj
@@ -10,7 +14,7 @@ local decoded
 --      if (doc.type==="state" && (doc.common.custom || doc.common.history))
 --          emit(doc._id, doc.common.custom || doc.common.history)
 --   }
-for i,key in ipairs(keys) do
+for _, key in ipairs(keys) do
 	if (key >= argStart and key < argEnd) then
 	    obj = redis.call("get", key)
 	    if (obj ~= nil and obj ~= "") then
@@ -21,4 +25,4 @@ for i,key in ipairs(keys) do
         end
 	end
 end
-return rep
+return {rep, cursor}
