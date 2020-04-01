@@ -3,6 +3,9 @@ This is not an Adapter for ioBroker, but part of js-controller to enable the sto
 
 ## Changelog
 
+### 3.1.0 (2020-04-01)
+* (Apollon77) Make sure methods that call callback async (e.g. because of db communication) always do that async
+
 ### 3.0.0 (2020-03-28)
 * (foxriver76) Performance increase: adjust lua scripts and JS code to use SCAN for filter scripts
 * (foxriver76) code formatting
