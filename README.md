@@ -3,6 +3,10 @@ This is not an Adapter for ioBroker, but part of js-controller to enable the sto
 
 ## Changelog
 
+### 3.2.0 (2020-04-06)
+* (foxriver76) make sure all internal paths for file store are linux style
+* (foxriver76) add check and warning logs when file actions are tried without a proper meta object
+
 ### 3.1.1 (2020-04-03)
 * (Apollon77) Fix some Objects File checks 
 

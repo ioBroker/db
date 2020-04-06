@@ -39,7 +39,8 @@ gulp.task('01-pack', gulp.series('00-clean', done => {
         fs.mkdirSync('./dist');
     }
     fs.writeFileSync('./dist/index.js', lines.join('\n'));
-    fs.writeFileSync('./dist/.npmignore', '*.js.map');
+    fs.writeFileSync('./dist/index.js.lookup', lines.join('\n'));
+    fs.writeFileSync('./dist/.npmignore', '*.js.map\n*.js.lookup');
     done();
 }));
 
