@@ -3,6 +3,10 @@ This is not an Adapter for ioBroker, but part of js-controller to enable the sto
 
 ## Changelog
 
+### 3.3.0 (2020-04-11)
+* (Apollon77) use deep-clone and isDeepStrictEqual
+* (Apollon77) implement Async methods for all relevant methods
+
 ### 3.2.1 (2020-04-06)
 * (Apollon77) Adjust invalid protocol error message
 
