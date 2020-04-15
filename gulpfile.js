@@ -39,13 +39,24 @@ gulp.task('01-pack', gulp.series('00-clean', done => {
         fs.mkdirSync('./dist');
     }
     fs.writeFileSync('./dist/index.js', lines.join('\n'));
-    fs.writeFileSync('./dist/index.js.lookup', lines.join('\n'));
-    fs.writeFileSync('./dist/.npmignore', '*.js.map\n*.js.lookup');
+    fs.writeFileSync('./dist/.npmignore', '*.js.map');
+
+    if (!fs.existsSync('./lookup')) {
+        fs.mkdirSync('./lookup');
+    }
+    const pack = JSON.parse(fs.readFileSync('./package.json').toString('utf8'));
+    if (!fs.existsSync('./lookup/' + pack.version)) {
+        fs.mkdirSync('./lookup/' + pack.version);
+    }
+
+    fs.writeFileSync('./lookup/' + pack.version + '/index.js', lines.join('\n'));
     done();
 }));
 
-gulp.task('02-obfuscate', gulp.series('01-pack', () =>
-    gulp.src('./dist/index.js')
+gulp.task('02-obfuscate', gulp.series('01-pack', () => {
+    const pack = JSON.parse(fs.readFileSync('./package.json').toString('utf8'));
+
+    return gulp.src('./dist/index.js')
         .pipe(sourcemaps.init())
         .pipe(obfuscate({
                 compact: true,
@@ -65,9 +76,9 @@ gulp.task('02-obfuscate', gulp.series('01-pack', () =>
                 unicodeEscapeSequence: false
             }
         ))
-        .pipe(sourcemaps.write('./'))
+        .pipe(sourcemaps.write('../lookup/' + pack.version + '/'))
         .pipe(gulp.dest('./dist'))
-));
+}));
 
 gulp.task('03-package.json', done => {
     if (!fs.existsSync('./dist')) {

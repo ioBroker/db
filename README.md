@@ -3,6 +3,9 @@ This is not an Adapter for ioBroker, but part of js-controller to enable the sto
 
 ## Changelog
 
+### 3.3.1 (2020-04-15)
+* (Apollon77) baseline version to generate map files for official js.controller 3 latest release 
+
 ### 3.3.0 (2020-04-11)
 * (Apollon77) use deep-clone and isDeepStrictEqual
 * (Apollon77) implement Async methods for all relevant methods
