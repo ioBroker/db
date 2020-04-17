@@ -7,6 +7,7 @@ Please commit these files to GitLab. They can be used when checking error messag
 ## js-controller versions to objects-lib map
 
 * objects-lib 3.3.1: js-controller 3.0.11 +
+* objects-lib 3.3.2: js-controller 3.0.13 +
 
 
 ## How to lookup

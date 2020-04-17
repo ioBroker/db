@@ -3,6 +3,9 @@ This is not an Adapter for ioBroker, but part of js-controller to enable the sto
 
 ## Changelog
 
+### 3.3.2 (2020-04-17)
+* (Apollon77) make sure when db connection is closed while reading view data it is handled correctly
+
 ### 3.3.1 (2020-04-15)
 * (Apollon77) baseline version to generate map files for official js.controller 3 latest release 
 
