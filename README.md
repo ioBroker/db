@@ -2,6 +2,8 @@
 This is not an Adapter for ioBroker, but part of js-controller to enable the storage of objects in REDIS.
 
 ## Changelog
+### 3.3.3 (2020-04-26)
+* (bluefox) Catch some errors if no callback defined
 
 ### 3.3.2 (2020-04-17)
 * (Apollon77) make sure when db connection is closed while reading view data it is handled correctly
