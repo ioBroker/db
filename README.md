@@ -2,6 +2,9 @@
 This is not an Adapter for ioBroker, but part of js-controller to enable the storage of objects in REDIS.
 
 ## Changelog
+### 3.3.4 (2020-04-28)
+* (Apollon77) Fixed one callback typo
+
 ### 3.3.3 (2020-04-26)
 * (bluefox) Catch some errors if no callback defined
 
