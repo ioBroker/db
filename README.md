@@ -2,6 +2,9 @@
 This is not an Adapter for ioBroker, but part of js-controller to enable the storage of objects in REDIS.
 
 ## Changelog
+### 3.3.6 (2020-05-03)
+* (foxriver76) change logging for invalid readFile's to debug
+
 ### 3.3.5 (2020-05-01)
 * (foxriver76) fix logging in some places
 
