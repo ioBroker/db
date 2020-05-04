@@ -1,8 +1,8 @@
 {
   "name": "iobroker.objects-redis",
-  "version": "3.3.6",
+  "version": "3.3.7",
   "engines": {
-    "node": ">=4.8.7"
+    "node": ">=8.0.0"
   },
   "dependencies": {
     "deep-clone": "^3.0.3",
