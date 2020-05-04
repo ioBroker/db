@@ -4,6 +4,7 @@ This is not an Adapter for ioBroker, but part of js-controller to enable the sto
 ## Changelog
 ### 3.3.6 (2020-05-03)
 * (foxriver76) change logging for invalid readFile's to debug
+* (foxriver76) Add fileExists function
 
 ### 3.3.5 (2020-05-01)
 * (foxriver76) fix logging in some places
