@@ -87,6 +87,7 @@ gulp.task('03-package.json', done => {
     const pack = JSON.parse(fs.readFileSync('./package.json').toString('utf8'));
     delete pack.devDependencies;
     delete pack.scripts;
+    fs.writeFileSync('./dist/CHANGELOG_OLD.md', fs.readFileSync('./CHANGELOG_OLD.md')); // is it really needed
     fs.writeFileSync('./dist/LICENSE', fs.readFileSync('./LICENSE'));
     fs.writeFileSync('./dist/README.md', fs.readFileSync('./README.md'));
     fs.writeFileSync('./dist/package.json', JSON.stringify(pack, null, 2));
