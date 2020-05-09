@@ -2,6 +2,9 @@
 This is not an Adapter for ioBroker, but part of js-controller to enable the storage of objects in REDIS.
 
 ## Changelog
+### 3.3.8 (2020-05-09)
+* (Apollon77) check that data is existing for writeFile
+
 ### 3.3.7 (2020-05-04)
 * (foxriver76) Added fileExists function
 
