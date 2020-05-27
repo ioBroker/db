@@ -2,6 +2,9 @@
 This is not an Adapter for ioBroker, but part of js-controller to enable the storage of objects in REDIS.
 
 ## Changelog
+### 4.0.0 (2020-05-27)
+* (foxriver76) use redis scan command instead keys
+
 ### 3.3.9 (2020-05-24)
 * (Apollon77) re-add fileExists method
 * (bluefox) use auth_pass as redis password if provided
