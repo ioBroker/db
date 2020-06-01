@@ -2,6 +2,9 @@
 This is not an Adapter for ioBroker, but part of js-controller to enable the storage of objects in REDIS.
 
 ## Changelog
+### 4.0.2 (2020-06-01)
+* (foxriver76) using promises for all redis calls
+
 ### 4.0.1 (2020-05-27)
 * (foxriver76) add maybeCallback(WithError) helper methods
 
