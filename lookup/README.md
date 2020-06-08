@@ -12,7 +12,7 @@ Please commit these files to GitLab. They can be used when checking error messag
 * objects-lib 3.3.8: js-controller 3.1.0+
 * objects-lib 3.3.9: js-controller 3.1.0+
 
-* objects-lib 4.0.1: js-controller 3.2.0+
+* objects-lib 4.0.x: js-controller 3.2.0
 
 
 ## How to lookup

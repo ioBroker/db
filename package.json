@@ -1,6 +1,6 @@
 {
   "name": "iobroker.objects-redis",
-  "version": "4.0.2",
+  "version": "4.0.3",
   "engines": {
     "node": ">=8.0.0"
   },
@@ -12,7 +12,7 @@
   },
   "devDependencies": {
     "del": "^5.1.0",
-    "javascript-obfuscator": "^0.28.4",
+    "javascript-obfuscator": "^1.1.0",
     "gulp": "^4.0.2",
     "gulp-javascript-obfuscator": "^1.1.6",
     "gulp-sourcemaps": "^2.6.5",
