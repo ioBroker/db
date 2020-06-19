@@ -2,6 +2,9 @@
 This is not an Adapter for ioBroker, but part of js-controller to enable the storage of objects in REDIS.
 
 ## Changelog
+### 4.0.4 (2020-06-19)
+* (foxriver76) use connection name to allow CLIENT SETNAME
+
 ### 4.0.3 (2020-06-08)
 * (foxriver76) throw error on writeFile without Meta object
 * (foxriver76) add objectExist method
