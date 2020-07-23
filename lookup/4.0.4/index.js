@@ -1515,13 +1515,14 @@ class ObjectsInRedis {
             if (!this.client) {
                 return tools.maybeCallbackWithError(callback, utils.ERRORS.ERROR_DB_CLOSED);
             }
-            const id = keys.shift();
-            try {
-                await this._delBinaryState(id.replace(/\$%\$meta$/, '$%$data'));
-                await this.client.del(id);
-                setImmediate(this._rmHelper, keys, callback);
-            } catch (e) {
-                return tools.maybeCallbackWithError(callback, e);
+
+            for (const id of keys) {
+                try {
+                    await this._delBinaryState(id.replace(/\$%\$meta$/, '$%$data'));
+                    await this.client.del(id);
+                } catch (e) {
+                    return tools.maybeCallbackWithError(callback, e);
+                }
             }
         }
     }
@@ -1685,17 +1686,17 @@ class ObjectsInRedis {
         if (!this.client) {
             return tools.maybeCallbackWithError(callback, utils.ERRORS.ERROR_DB_CLOSED);
         }
-        const id  = keys.shift();
-        const meta = metas.shift();
-        meta.acl.owner      = options.owner;
-        meta.acl.ownerGroup = options.ownerGroup;
-        try {
-            await this.client.set(id, JSON.stringify(meta));
-        } catch (e) {
-            return tools.maybeCallbackWithError(callback, e);
-        }
 
-        return setImmediate(this._chownFileHelper, keys, metas, options, callback);
+        for (const id of keys) {
+            const meta = metas.shift();
+            meta.acl.owner = options.owner;
+            meta.acl.ownerGroup = options.ownerGroup;
+            try {
+                await this.client.set(id, JSON.stringify(meta));
+            } catch (e) {
+                return tools.maybeCallbackWithError(callback, e);
+            }
+        }
     }
 
     async _chownFile(id, name, options, callback, meta) {
@@ -2221,15 +2222,15 @@ class ObjectsInRedis {
             if (!this.client) {
                 return typeof callback === 'function' && callback(utils.ERRORS.ERROR_DB_CLOSED);
             }
-            const id  = keys.shift();
-            const obj = objs.shift();
-            const message = JSON.stringify(obj);
-            try {
-                await this.client.set(id, message);
-                await this.client.publish(id, message);
-                setImmediate(this._objectHelper, keys, objs, callback);
-            } catch (e) {
-                return tools.maybeCallbackWithError(callback, e);
+            for (const id of keys) {
+                const obj = objs.shift();
+                const message = JSON.stringify(obj);
+                try {
+                    await this.client.set(id, message);
+                    await this.client.publish(id, message);
+                } catch (e) {
+                    return tools.maybeCallbackWithError(callback, e);
+                }
             }
         }
     }
