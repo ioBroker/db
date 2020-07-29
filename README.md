@@ -2,6 +2,9 @@
 This is not an Adapter for ioBroker, but part of js-controller to enable the storage of objects in REDIS.
 
 ## Changelog
+### 5.0.0 (2020-07-29)
+* (bluefox) Change the license to Apache 2.0
+
 ### 4.0.4 (2020-06-19)
 * (foxriver76) use connection name to allow CLIENT SETNAME
 
@@ -67,3 +70,8 @@ This is not an Adapter for ioBroker, but part of js-controller to enable the sto
 ### 3.0.0 (2020-03-28)
 * (foxriver76) Performance increase: adjust lua scripts and JS code to use SCAN for filter scripts
 * (foxriver76) code formatting
+
+
+## License
+Apache 2.0
+Copyright 2018-2020 bluefox <dogafox@gmail.com>  
