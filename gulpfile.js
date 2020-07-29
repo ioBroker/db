@@ -1,10 +1,8 @@
 'use strict';
 
 const gulp       = require('gulp');
-const obfuscate  = require('gulp-javascript-obfuscator');
 const del        = require('del');
 const fs         = require('fs');
-const sourcemaps = require('gulp-sourcemaps');
 
 gulp.task('00-clean', () =>
     del([
@@ -53,34 +51,7 @@ gulp.task('01-pack', gulp.series('00-clean', done => {
     done();
 }));
 
-gulp.task('02-obfuscate', gulp.series('01-pack', () => {
-    const pack = JSON.parse(fs.readFileSync('./package.json').toString('utf8'));
-
-    return gulp.src('./dist/index.js')
-        .pipe(sourcemaps.init())
-        .pipe(obfuscate({
-                compact: true,
-                controlFlowFlattening: false,
-                deadCodeInjection: false,
-                debugProtection: false,
-                debugProtectionInterval: false,
-                disableConsoleOutput: false,
-                identifierNamesGenerator: 'hexadecimal',
-                log: false,
-                renameGlobals: true,
-                rotateStringArray: true,
-                selfDefending: true,
-                stringArray: true,
-                stringArrayEncoding: false,
-                stringArrayThreshold: 0.75,
-                unicodeEscapeSequence: false
-            }
-        ))
-        .pipe(sourcemaps.write('../lookup/' + pack.version + '/'))
-        .pipe(gulp.dest('./dist'))
-}));
-
-gulp.task('03-package.json', done => {
+gulp.task('02-package.json', done => {
     if (!fs.existsSync('./dist')) {
         fs.mkdir('./dist');
     }
@@ -94,4 +65,4 @@ gulp.task('03-package.json', done => {
     done();
 });
 
-gulp.task('default', gulp.series('02-obfuscate', '03-package.json'));
+gulp.task('default', gulp.series('01-pack', '02-package.json'));
