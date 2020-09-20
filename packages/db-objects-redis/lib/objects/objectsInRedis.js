@@ -18,45 +18,26 @@
 
 const extend                = require('node.extend');
 const Redis                 = require('ioredis');
-const tools                 = require('../tools');
+const tools                 = require('@iobroker/db-base').tools;
 const fs                    = require('fs');
 const path                  = require('path');
 const crypto                = require('crypto');
 const { isDeepStrictEqual } = require('util');
 const deepClone             = require('deep-clone');
 
-const utils                 = require(path.join(getControllerDir() || __dirname, 'objectsUtils.js'));
+const utils                 = require('./objectsUtils.js');
 
-/* @@tools.js@@ */
-const scriptFiles = {};
-/* @@lua@@ */
-
-function getControllerDir() {
-    const possibilities = ['iobroker.js-controller', 'ioBroker.js-controller'];
-    let controllerPath = null;
-    for (const pkg of possibilities) {
-        try {
-            const possiblePath = require.resolve(pkg);
-            if (fs.existsSync(possiblePath)) {
-                controllerPath = possiblePath;
-                break;
-            }
-        } catch (_a) {
-            /* not found */
-        }
+function initScriptFiles() {
+    const scripts = {};
+    try {
+        fs.readdirSync(__dirname + '/lib/objects/lua')
+            .forEach(name => scripts[name.replace(/.lua$/, '')] = fs.readFileSync(path.join(__dirname, 'lua', name)).toString('utf8'));
+    } catch (err) {
+        // TODO
     }
-    // Apparently, checking vs null/undefined may miss the odd case of controllerPath being ""
-    // Thus we check for falsyness, which includes failing on an empty path
-    if (!controllerPath) {
-        controllerPath = path.join(__dirname, '..', '..', 'lib', 'objects');
-        if (!fs.existsSync(controllerPath)) {
-            controllerPath = null;
-        }
-    } else {
-        controllerPath = path.join(path.dirname(controllerPath), 'lib', 'objects');
-    }
-    return controllerPath;
+    return scripts;
 }
+const scriptFiles = initScriptFiles();
 
 class ObjectsInRedis {
 

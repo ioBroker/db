@@ -1,4 +1,4 @@
-# Objects in REDIS for ioBroker
+# Redis objects DB classes for ioBroker
 This is not an Adapter for ioBroker, but part of js-controller to enable the storage of objects in REDIS.
 
 ## Changelog
@@ -70,7 +70,6 @@ This is not an Adapter for ioBroker, but part of js-controller to enable the sto
 ### 3.0.0 (2020-03-28)
 * (foxriver76) Performance increase: adjust lua scripts and JS code to use SCAN for filter scripts
 * (foxriver76) code formatting
-
 
 ## License
 Apache 2.0
