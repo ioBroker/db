@@ -1,14 +1,12 @@
 {
   "name": "@iobroker/db-states-file",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "engines": {
     "node": ">=8.0.0"
   },
   "dependencies": {
-    "@iobroker/db-states-redis": "file:../db-states-redis",
-    "@iobroker/db-base": "file:../db-base"
-  },
-  "devDependencies": {
+    "@iobroker/db-base": "file:../db-base",
+    "@iobroker/db-states-redis": "file:../db-states-redis"
   },
   "keywords": [
     "ioBroker",
@@ -31,8 +29,7 @@
     "type": "git",
     "url": "https://github.com/ioBroker/ioBroker.objects-redis"
   },
-  "scripts": {
-  },
+  "scripts": {},
   "main": "index.js",
   "license": "SEE LICENSE IN"
 }

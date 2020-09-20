@@ -1,0 +1,34 @@
+{
+	"compilerOptions": {
+		// Monorepo setup - VSCode/TypeScript needs this for syntax help
+		"baseUrl": "./packages",
+		"paths": {
+			"@iobroker/db-base": ["db-base"],
+			"@iobroker/db-objects-file": ["db-objects-file"],
+			"@iobroker/db-objects-redis": ["db-objects-redis"],
+			"@iobroker/db-states-file": ["db-states-file"],
+			"@iobroker/db-states-redis": ["db-states-redis"],
+		},
+		"composite": true,
+		// Other type checking options
+		"allowJs": true,
+		"checkJs": true,
+		// "declaration": true,
+		// "declarationMap": true,
+		"allowSyntheticDefaultImports": true,
+		"esModuleInterop": true,
+		"module": "commonjs",
+		"moduleResolution": "node",
+		"skipLibCheck": true,
+		"strict": true,
+	},
+	"include": [
+		"packages/*/lib/**/*.js",
+		"packages/*/*.js",
+	],
+	"exclude": [
+		"**/build/**",
+		"node_modules/**",
+		"packages/**/node_modules"
+	]
+}

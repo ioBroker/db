@@ -1,6 +1,6 @@
 {
   "name": "@iobroker/db-base",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "engines": {
     "node": ">=10.0.0"
   },
@@ -9,8 +9,6 @@
     "fs-extra": "^9.0.1",
     "node.extend": "^2.0.2",
     "respjs": "^4.2.0"
-  },
-  "devDependencies": {
   },
   "keywords": [
     "ioBroker",
@@ -33,8 +31,7 @@
     "type": "git",
     "url": "https://github.com/ioBroker/ioBroker.objects-redis"
   },
-  "scripts": {
-  },
+  "scripts": {},
   "main": "index.js",
   "license": "SEE LICENSE IN"
 }

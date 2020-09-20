@@ -16,7 +16,7 @@
 
 const fs                = require('fs-extra');
 const path              = require('path');
-const tools             = require('./tools.js')
+const tools             = require('./tools.js');
 const getDefaultDataDir = tools.getDefaultDataDir;
 
 // settings = {
