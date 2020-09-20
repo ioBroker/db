@@ -1,0 +1,140 @@
+name: Test and Release
+
+# Run this job on all pushes and pull requests
+# as well as tags with a semantic version
+on:
+  push:
+    branches:
+      - "*"
+    tags:
+      # normal versions
+      - "v[0-9]+.[0-9]+.[0-9]+"
+      # pre-releases
+      - "v[0-9]+.[0-9]+.[0-9]+-**"
+  pull_request: {}
+
+jobs:
+  build:
+    if: contains(github.event.head_commit.message, '[skip ci]') == false
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [14.x]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Run ESLint
+      run: npm run lint
+
+  # ===================
+
+  # Runs unit tests on all supported node versions and OSes
+  unit-tests:
+    if: contains(github.event.head_commit.message, '[skip ci]') == false
+
+    needs: [build]
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        node-version: [10.x, 12.x, 14.x]
+        os: [ubuntu-latest]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Run component tests
+      run: npm run test
+      env:
+        CI: true
+
+  # ===================
+
+  # Deploys the final package to NPM
+  deploy:
+    # Trigger this step only when a commit on any branch is tagged with a version number
+    if: |
+      contains(github.event.head_commit.message, '[skip ci]') == false &&
+      github.event_name == 'push' &&
+      startsWith(github.ref, 'refs/tags/v')
+
+    needs: [unit-tests]
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [14.x]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - name: Extract the version and commit body from the tag
+      # The body may be multiline, therefore we need to escape some characters
+      run: |
+        VERSION="${{ github.ref }}"
+        VERSION=${VERSION##*/v}
+        echo "::set-env name=VERSION::$VERSION"
+        BODY=$(git show -s --format=%b)
+        BODY="${BODY//'%'/'%25'}"
+        BODY="${BODY//$'\n'/'%0A'}"
+        BODY="${BODY//$'\r'/'%0D'}"
+        echo "::set-env name=BODY::$BODY"
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Publish package to npm
+      run: |
+        npm config set //registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}
+        npm whoami
+        npx lerna publish from-package --yes
+
+    - name: Create Github Release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release v${{ env.VERSION }}
+        draft: false
+        # Prerelease versions create prereleases on Github
+        prerelease: ${{ contains(env.VERSION, '-') }}
+        body: ${{ env.BODY }}
+
+    - name: Notify Sentry.io about the release
+      run: |
+        npm i -g @sentry/cli
+        export SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}
+        # TODO @Apollon77 update this:
+        export SENTRY_ORG=iobroker
+        export SENTRY_PROJECT=db-objects-redis
+        export SENTRY_VERSION=${{ env.VERSION }}
+        sentry-cli releases new $SENTRY_VERSION
+        sentry-cli releases set-commits $SENTRY_VERSION --auto
+        sentry-cli releases finalize $SENTRY_VERSION

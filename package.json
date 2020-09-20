@@ -21,7 +21,8 @@
     "preversion": "release-script --lerna-check",
     "version": "release-script --lerna",
     "postversion": "git push && git push --tags",
-    "lint": "eslint \"packages/*/*.js\" \"packages/*/lib/**/*.js\""
+    "lint": "eslint \"packages/*/*.js\" \"packages/*/lib/**/*.js\"",
+    "test": "echo \"no tests defined\""
   },
   "readme": "README.md"
 }
