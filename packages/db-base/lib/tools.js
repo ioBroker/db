@@ -28,4 +28,4 @@ function getControllerDir() {
     return controllerPath;
 }
 
-module.exports = require(path.join(getControllerDir() || __dirname, 'lib/tools.js'))
+module.exports = require(path.join(getControllerDir() || __dirname, 'lib/tools.js'));

@@ -21,6 +21,7 @@
 		"moduleResolution": "node",
 		"skipLibCheck": true,
 		"strict": true,
+		"noImplicitAny": false
 	},
 	"include": [
 		"packages/*/lib/**/*.js",
