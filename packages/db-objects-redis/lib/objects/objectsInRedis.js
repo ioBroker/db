@@ -600,9 +600,9 @@ class ObjectsInRedis {
     getUserGroup(user, callback) {
         return utils.getUserGroup(this, user, (error, user, userGroups, userAcl) => {
             if (error) {
-                this.log.error(this.namespace + ' ' + error);
+                this.log.error(`${this.namespace} ${error}`);
             }
-            callback.call(this, user, userGroups, userAcl);
+            return tools.maybeCallbackWithError(callback, user, userGroups, userAcl);
         });
     }
 
@@ -1317,6 +1317,7 @@ class ObjectsInRedis {
                     return tools.maybeCallbackWithError(callback, e);
                 }
             }
+            return tools.maybeCallback(callback);
         }
     }
 
@@ -1490,6 +1491,7 @@ class ObjectsInRedis {
                 return tools.maybeCallbackWithError(callback, e);
             }
         }
+        return tools.maybeCallback(callback);
     }
 
     async _chownFile(id, name, options, callback, meta) {
@@ -2025,6 +2027,7 @@ class ObjectsInRedis {
                     return tools.maybeCallbackWithError(callback, e);
                 }
             }
+            return tools.maybeCallback(callback);
         }
     }
 
@@ -2844,17 +2847,33 @@ class ObjectsInRedis {
             rows: []
         };
 
-        // filters objs which are already present in array by property 'id'
-        const filterDuplicates = arr => {
-            const included = {};
-            return arr.filter(obj => {
-                if (included[obj.id]) {
-                    return false;
-                } else {
-                    included[obj.id] = true;
-                    return true;
-                }
-            });
+        /**
+         * filters objs which are already present (and parse Errors) in array by property 'id'
+         *
+         * @param {object[]} arr - Array of objects which should be filtered
+         * @param {boolean} duplicateFiltering - if duplicates need to be filtered
+         */
+        const filterEntries = (arr, duplicateFiltering) => {
+            if (duplicateFiltering) {
+                const included = {};
+                return arr.filter(obj => {
+                    if (included[obj.id] || obj.id === 'parseError') {
+                        return false;
+                    } else {
+                        included[obj.id] = true;
+                        return true;
+                    }
+                });
+            } else {
+                return arr.filter(obj => {
+                    // only filter parse Errors
+                    if (obj.id === 'parseError') {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                });
+            }
         };
 
         params = params || {};
@@ -2934,7 +2953,7 @@ class ObjectsInRedis {
             }
 
             // apply filter if needed
-            result.rows = filterRequired ? filterDuplicates(result.rows) : result.rows;
+            result.rows = filterEntries(result.rows, filterRequired);
             return tools.maybeCallbackWithError(callback, null, result);
         } else
         // filter by script
@@ -2975,7 +2994,7 @@ class ObjectsInRedis {
             } while (cursor !== '0');
 
             // apply filter if needed
-            result.rows = filterRequired ? filterDuplicates(result.rows) : result.rows;
+            result.rows = filterEntries(result.rows, filterRequired);
             return tools.maybeCallbackWithError(callback, null, result);
         } else
         // filter by hm-rega programs
@@ -3017,7 +3036,7 @@ class ObjectsInRedis {
             } while(cursor !== '0');
 
             // apply filter if needed
-            result.rows = filterRequired ? filterDuplicates(result.rows) : result.rows;
+            result.rows = filterEntries(result.rows, filterRequired);
             return tools.maybeCallbackWithError(callback, null, result);
         } else
         // filter by hm-rega variables
@@ -3059,7 +3078,7 @@ class ObjectsInRedis {
             } while (cursor !== '0');
 
             // apply filter if needed
-            result.rows = filterRequired ? filterDuplicates(result.rows) : result.rows;
+            result.rows = filterEntries(result.rows, filterRequired);
             typeof callback === 'function' && callback(null, result);
         } else
         // filter by custom, redis also returns if common.custom is not present
@@ -3098,7 +3117,7 @@ class ObjectsInRedis {
             } while (cursor !== '0');
 
             // apply filter if needed
-            result.rows = filterRequired ? filterDuplicates(result.rows) : result.rows;
+            result.rows = filterEntries(result.rows, filterRequired);
             return tools.maybeCallbackWithError(callback, null, result);
         } else {
             this.log.debug(`${this.namespace} No suitable Lua script, fallback to keys!: ${func.map}`);
@@ -3715,10 +3734,7 @@ class ObjectsInRedis {
         if (!_scripts) {
             if (scriptFiles && scriptFiles.filter) {
                 _scripts = [];
-                for (const name in scriptFiles) {
-                    if (!Object.prototype.hasOwnProperty.call(scriptFiles, name)) {
-                        continue;
-                    }
+                for (const name of Object.keys(scriptFiles)) {
                     const shasum = crypto.createHash('sha1');
                     const buf = Buffer.from(scriptFiles[name]);
                     shasum.update(buf);

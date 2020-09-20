@@ -78,8 +78,8 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
             this.expireState(id);
         });
         // Set as expire all states that could expire
-        Object.keys(this.dataset).forEach( id => {
-            if (!this.dataset.hasOwnProperty(id) || this.dataset[id] === undefined) {
+        Object.keys(this.dataset).forEach(id => {
+            if (this.dataset[id] === undefined) {
                 return;
             }
             if (this.dataset[id].expire) {
