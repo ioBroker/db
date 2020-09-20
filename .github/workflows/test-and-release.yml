@@ -126,15 +126,3 @@ jobs:
         # Prerelease versions create prereleases on Github
         prerelease: ${{ contains(env.VERSION, '-') }}
         body: ${{ env.BODY }}
-
-    - name: Notify Sentry.io about the release
-      run: |
-        npm i -g @sentry/cli
-        export SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}
-        # TODO @Apollon77 update this:
-        export SENTRY_ORG=iobroker
-        export SENTRY_PROJECT=db-objects-redis
-        export SENTRY_VERSION=${{ env.VERSION }}
-        sentry-cli releases new $SENTRY_VERSION
-        sentry-cli releases set-commits $SENTRY_VERSION --auto
-        sentry-cli releases finalize $SENTRY_VERSION
