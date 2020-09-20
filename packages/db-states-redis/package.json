@@ -8,8 +8,6 @@
     "@iobroker/db-base": "file:../db-base",
     "ioredis": "^4.17.3"
   },
-  "devDependencies": {
-  },
   "keywords": [
     "ioBroker",
     "redis",
@@ -31,8 +29,7 @@
     "type": "git",
     "url": "https://github.com/ioBroker/ioBroker.objects-redis"
   },
-  "scripts": {
-  },
+  "scripts": {},
   "main": "index.js",
   "license": "SEE LICENSE IN"
 }
