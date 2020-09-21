@@ -2,7 +2,7 @@
   "packages": [
     "packages/*"
   ],
-  "version": "0.0.1",
+  "version": "0.0.2",
   "//": "Set up some command options",
   "command": {
     "//": "Running a script should show the output while it is generated",
@@ -10,16 +10,15 @@
       "stream": true
     },
     "version": {
-      "//": "allow releasing from the master branch and release-* branches",
+      "//": "This is required for the release-script",
       "allowBranch": [
         "master",
-        "release-*"
+        "release-*",
+        "monorepo"
       ],
-      "//": "Don't make a new version for README changes",
       "ignoreChanges": [
         "*.md"
       ],
-      "//": "This is required for the release-script",
       "amend": true,
       "push": false
     }
