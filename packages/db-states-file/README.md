@@ -1,11 +1,5 @@
 # File DB states classes for ioBroker
-...
-
-## Changelog
-
-### 0.0.0 (2020-xx-xx)
-TODO
-
+The Library contains the Database classes for File based states database client and server.
 
 ## License
 The MIT License (MIT)

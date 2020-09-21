@@ -1,11 +1,5 @@
-# DB base classes for ioBroker
-...
-
-## Changelog
-
-### 0.0.0 (2020-xx-xx)
-TODO
-
+# Base DB classes for ioBroker
+This Library contains base classes that are used by the database classes for ioBroker
 
 ## License
 The MIT License (MIT)

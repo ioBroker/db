@@ -1,11 +1,5 @@
 # File objects DB base classes for ioBroker
-...
-
-## Changelog
-
-### 0.0.0 (2020-xx-xx)
-TODO
-
+The Library contains the Database classes for File based objects database client and server.
 
 ## License
 Apache 2.0
