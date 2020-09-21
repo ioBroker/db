@@ -13,8 +13,7 @@
       "//": "This is required for the release-script",
       "allowBranch": [
         "master",
-        "release-*",
-        "monorepo"
+        "release-*"
       ],
       "ignoreChanges": [
         "*.md"
