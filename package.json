@@ -1,42 +1,28 @@
 {
-  "name": "iobroker.objects-redis",
-  "version": "5.0.0",
-  "engines": {
-    "node": ">=8.0.0"
-  },
+  "name": "@iobroker/db",
+  "private": true,
   "dependencies": {
-    "deep-clone": "^3.0.3",
-    "ioredis": "^4.17.3",
-    "node.extend": "^2.0.2"
+    "@iobroker/db-base": "file:packages/db-base",
+    "@iobroker/db-objects-file": "file:packages/db-objects-file",
+    "@iobroker/db-objects-redis": "file:packages/db-objects-redis",
+    "@iobroker/db-states-file": "file:packages/db-states-file",
+    "@iobroker/db-states-redis": "file:packages/db-states-redis"
   },
   "devDependencies": {
-    "del": "^5.1.0",
-    "gulp": "^4.0.2"
-  },
-  "keywords": [
-    "ioBroker",
-    "redis",
-    "redundancy"
-  ],
-  "licenses": [
-    {
-      "type": "SEE LICENSE IN",
-      "url": "https://github.com/ioBroker/ioBroker.objects-redis/blob/master/LICENSE"
-    }
-  ],
-  "author": "bluefox <dogafox@gmail.com>",
-  "contributors": [
-    "bluefox <dogafox@gmail.com>",
-    "Apollon77 <iobroker@fischer-ka.de>"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ioBroker/ioBroker.objects-redis"
+    "@alcalzone/release-script": "^1.8.1",
+    "@types/fs-extra": "^9.0.1",
+    "@types/node": "^14.11.1",
+    "eslint": "^7.9.0",
+    "lerna": "^3.22.1"
   },
   "scripts": {
-    "prepublishOnly": "echo \"Error: publish from dist directory and write gulp before\" && exit 1",
-    "prepare": "gulp"
+    "prerelease": "npm install && lerna run build",
+    "release": "lerna version --no-commit-hooks",
+    "preversion": "release-script --lerna-check",
+    "version": "release-script --lerna",
+    "postversion": "git push && git push --tags",
+    "lint": "eslint \"packages/*/*.js\" \"packages/*/lib/**/*.js\"",
+    "test": "echo \"no tests defined\""
   },
-  "main": "index.js",
-  "license": "SEE LICENSE IN"
+  "readme": "README.md"
 }
