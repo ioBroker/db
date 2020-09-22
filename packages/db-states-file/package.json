@@ -13,12 +13,6 @@
     "redis",
     "redundancy"
   ],
-  "licenses": [
-    {
-      "type": "SEE LICENSE IN",
-      "url": "https://github.com/ioBroker/ioBroker.objects-redis/blob/master/LICENSE"
-    }
-  ],
   "author": "bluefox <dogafox@gmail.com>",
   "contributors": [
     "bluefox <dogafox@gmail.com>",
@@ -31,5 +25,8 @@
   },
   "scripts": {},
   "main": "index.js",
-  "license": "SEE LICENSE IN"
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
 }
