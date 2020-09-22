@@ -6,7 +6,7 @@
 	### __WORK IN PROGRESS__
 -->
 
-### 0.0.2 (2020-09-22)
+### __WORK IN PROGRESS__
 * Fix tools.js lookup and add local development and test-proof ways
 
 ### 0.0.1 (2020-09-22)
