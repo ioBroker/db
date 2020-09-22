@@ -16,9 +16,8 @@
     "lerna": "^3.22.1"
   },
   "scripts": {
-    "prerelease": "lerna bootstrap",
+    "prerelease": "lerna bootstrap && release-script --lerna-check",
     "release": "lerna version --no-commit-hooks",
-    "preversion": "release-script --lerna-check",
     "version": "release-script --lerna",
     "postversion": "git push && git push --tags",
     "lint": "eslint \"packages/*/*.js\" \"packages/*/lib/**/*.js\"",

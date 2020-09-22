@@ -21,7 +21,7 @@ function getControllerDir() {
         const checkPath = path.normalize(path.join(__dirname, '../..'));
         const pathParts = checkPath.split(path.sep);
         while (pathParts.length) {
-            const tryPath = path.join(path.sep, pathParts.join(path.sep));
+            const tryPath = pathParts.join(path.sep);
             if (fs.existsSync(path.join(tryPath, 'lib/tools.js'))) {
                 controllerPath = tryPath;
                 break;
