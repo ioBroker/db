@@ -3,6 +3,7 @@ const fs = require('fs');
 
 function getControllerDir() {
     const possibilities = ['iobroker.js-controller', 'ioBroker.js-controller'];
+    /** @type {string | null} */
     let controllerPath = null;
     for (const pkg of possibilities) {
         try {
@@ -15,32 +16,40 @@ function getControllerDir() {
             /* not found */
         }
     }
+
     // Apparently, checking vs null/undefined may miss the odd case of controllerPath being ""
     // Thus we check for falsyness, which includes failing on an empty path
     if (!controllerPath) {
-        const checkPath = path.normalize(path.join(__dirname, '../..'));
-        const pathParts = checkPath.split(path.sep);
-        while (pathParts.length) {
-            const tryPath = pathParts.join(path.sep);
-            if (fs.existsSync(path.join(tryPath, 'lib/tools.js'))) {
-                controllerPath = tryPath;
+        let checkPath = path.join(__dirname, '../..');
+        // Also check in the current check dir (along with iobroker.js-controller subdirs)
+        possibilities.unshift('');
+        outer: while (true) {
+            for (const pkg of possibilities) {
+                try {
+                    const possiblePath = path.join(checkPath, pkg);
+                    if (fs.existsSync(path.join(possiblePath, 'lib/tools.js'))) {
+                        controllerPath = possiblePath;
+                        break outer;
+                    }
+                } catch (_a) {
+                    // not found, continue with next possiblity
+                }
+            }
+
+            // Controller not found here - go to the parent dir
+            const newPath = path.dirname(checkPath);
+            if (newPath === checkPath) {
+                // We already reached the root dir, abort
                 break;
             }
-            // Mainly for local development cases
-            if (fs.existsSync(path.join(tryPath, 'iobroker.js-controller/lib/tools.js'))) {
-                controllerPath = path.join(tryPath, 'iobroker.js-controller');
-                break;
-            }
-            if (fs.existsSync(path.join(tryPath, 'ioBroker.js-controller/lib/tools.js'))) {
-                controllerPath = path.join(tryPath, 'ioBroker.js-controller');
-                break;
-            }
-            pathParts.pop();
+            checkPath = newPath;
         }
+        // ??? What is this supposed to do ???
         if (controllerPath && !fs.existsSync(controllerPath)) {
             controllerPath = null;
         }
     } else {
+        // ??? What is this supposed to do ???
         controllerPath = path.dirname(controllerPath);
     }
     return controllerPath;
