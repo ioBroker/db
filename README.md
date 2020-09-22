@@ -5,8 +5,7 @@
 	Placeholder for the next version (at the beginning of the line):
 	### __WORK IN PROGRESS__
 -->
-
-### 0.0.5 (2020-09-22)
+### __WORK IN PROGRESS__
 * Fix tools.js lookup and add local development and test-proof ways
 
 ### 0.0.1 (2020-09-22)
