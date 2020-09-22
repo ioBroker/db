@@ -16,7 +16,7 @@
     "lerna": "^3.22.1"
   },
   "scripts": {
-    "prerelease": "npm install && lerna run build",
+    "prerelease": "lerna bootstrap",
     "release": "lerna version --no-commit-hooks",
     "preversion": "release-script --lerna-check",
     "version": "release-script --lerna",

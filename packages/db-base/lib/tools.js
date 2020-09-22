@@ -18,8 +18,26 @@ function getControllerDir() {
     // Apparently, checking vs null/undefined may miss the odd case of controllerPath being ""
     // Thus we check for falsyness, which includes failing on an empty path
     if (!controllerPath) {
-        controllerPath = path.join(__dirname, '..', '..', '..', '..', 'ioBroker.js-controller');
-        if (!fs.existsSync(controllerPath)) {
+        const checkPath = path.normalize(path.join(__dirname, '../..'));
+        let pathParts = checkPath.split(path.sep);
+        while (pathParts.length) {
+            const tryPath = path.join(path.sep, pathParts.join(path.sep));
+            if (fs.existsSync(path.join(tryPath, 'lib/tools.js'))) {
+                controllerPath = tryPath;
+                break;
+            }
+            // Mainly for local development cases
+            if (fs.existsSync(path.join(tryPath, 'iobroker.js-controller/lib/tools.js'))) {
+                controllerPath = path.join(tryPath, 'iobroker.js-controller');
+                break;
+            }
+            if (fs.existsSync(path.join(tryPath, 'ioBroker.js-controller/lib/tools.js'))) {
+                controllerPath = path.join(tryPath, 'ioBroker.js-controller');
+                break;
+            }
+            pathParts.pop();
+        }
+        if (controllerPath && !fs.existsSync(controllerPath)) {
             controllerPath = null;
         }
     } else {

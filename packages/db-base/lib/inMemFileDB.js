@@ -218,6 +218,9 @@ class InMemoryFileDB {
 
         while (files.length > this.settings.backup.files) {
             const file = files.shift();
+            if (!file) {
+                continue;
+            }
             // extract time
             const ms = new Date(file.substring(0, 10) + ' ' + file.substring(11, 16).replace('-', ':') + ':00').getTime();
             if (limit > ms) {
