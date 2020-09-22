@@ -19,7 +19,7 @@ function getControllerDir() {
     // Thus we check for falsyness, which includes failing on an empty path
     if (!controllerPath) {
         const checkPath = path.normalize(path.join(__dirname, '../..'));
-        let pathParts = checkPath.split(path.sep);
+        const pathParts = checkPath.split(path.sep);
         while (pathParts.length) {
             const tryPath = path.join(path.sep, pathParts.join(path.sep));
             if (fs.existsSync(path.join(tryPath, 'lib/tools.js'))) {
