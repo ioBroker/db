@@ -2867,11 +2867,7 @@ class ObjectsInRedis {
             } else {
                 return arr.filter(obj => {
                     // only filter parse Errors
-                    if (obj.id === 'parseError') {
-                        return false;
-                    } else {
-                        return true;
-                    }
+                    return obj.id !== 'parseError';
                 });
             }
         };
