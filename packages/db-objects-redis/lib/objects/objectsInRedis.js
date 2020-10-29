@@ -822,6 +822,10 @@ class ObjectsInRedis {
      * @returns {Promise<boolean>}
      */
     async fileExists(id, name, options) {
+        if (typeof name !== 'string') {
+            name = '';
+        }
+
         if (name.startsWith('/')) {
             name = name.substring(1);
         }
