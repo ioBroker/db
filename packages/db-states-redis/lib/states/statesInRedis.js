@@ -522,6 +522,11 @@ class StateRedis {
             obj.q = 0;
         }
 
+        // set comment
+        if (typeof state.c === 'string' && state.c) {
+            obj.c = state.c.substring(0, 512);
+        }
+
         obj.from = state.from;
 
         if (state.user !== undefined) {
