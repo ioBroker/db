@@ -2664,46 +2664,20 @@ class ObjectsInRedis {
             obj.acl = oldObj.acl;
         }
 
-        // add user default rights
+        // add user default rights if no acl provided
         if (this.defaultNewAcl && !obj.acl) {
             obj.acl = deepClone(this.defaultNewAcl);
             delete obj.acl.file;
             if (obj.type !== 'state') {
                 delete obj.acl.state;
             }
-            // take the owner as current user
+            // take the current user as owner if given
             if (options.user) {
                 obj.acl.owner = options.user;
             }
-            // take the group as current user's group
+            // take the current group as owner if given
             if (options.group) {
                 obj.acl.ownerGroup = options.group;
-            } else  {
-                obj.acl.ownerGroup = null;
-                return this.getUserGroup(obj.acl.owner, async (user, groups /* , permissions */) => {
-                    if (!groups || !groups[0]) {
-                        options.group = (this.defaultNewAcl && this.defaultNewAcl.ownerGroup) || utils.CONSTS.SYSTEM_ADMIN_GROUP;
-                    } else {
-                        options.group = groups[0];
-                    }
-                    obj.acl.ownerGroup = options.group;
-                    const message = JSON.stringify(obj);
-                    try {
-                        await this.client.set(this.objNamespace + id, message);
-
-                        // object updated -> if type changed to meta -> cache
-                        if (oldObj && oldObj.type === 'meta' && this.existingMetaObjects[id] === false) {
-                            this.existingMetaObjects[id] = true;
-                        }
-
-                        //this.settings.connection.enhancedLogging && this.log.silly(this.namespace + ' redis publish ' + this.objNamespace + id + ' ' + message);
-                        await this.client.publish(this.objNamespace + id, message);
-
-                        return tools.maybeCallbackWithError(callback, null, {id});
-                    } catch (e) {
-                        return tools.maybeCallbackWithError(callback, e, {id});
-                    }
-                });
             }
         }
 
@@ -2754,11 +2728,12 @@ class ObjectsInRedis {
             options.acl = null;
         }
 
-        utils.checkObjectRights(this, null, null, options, utils.CONSTS.ACCESS_WRITE, (err, options) => {
+        utils.checkObjectRights(this, null, null, options, utils.CONSTS.ACCESS_WRITE, err => {
+            // do not use options from checkObjectRights because this will mess up configured default acl
             if (err) {
                 typeof callback === 'function' && setImmediate(() => callback(err));
             } else {
-                return this._setObject(id, obj, options, callback);
+                return this._setObject(id, obj, options || {}, callback);
             }
         });
     }

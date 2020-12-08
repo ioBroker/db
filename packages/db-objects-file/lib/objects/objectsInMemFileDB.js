@@ -1995,7 +1995,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
             obj.acl = this.dataset[id].acl;
         }
 
-        // add user default rights
+        // add user default rights if no acl provided
         if (this.defaultNewAcl && !obj.acl) {
             obj.acl = deepClone(this.defaultNewAcl);
             delete obj.acl.file;
@@ -2006,21 +2006,11 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
             if (options.user) {
                 obj.acl.owner = options.user;
             }
-            // take the group as current user's group
+            // take the current user as owner if given
             if (options.group) {
                 obj.acl.ownerGroup = options.group;
-            } else  {
-                obj.acl.ownerGroup = null;
-                return this.getUserGroup(obj.acl.owner, (user, groups /* , permissions */) => {
-                    if (!groups || !groups[0]) {
-                        options.group = (this.defaultNewAcl && this.defaultNewAcl.ownerGroup) || utils.CONSTS.SYSTEM_ADMIN_GROUP;
-                    } else {
-                        options.group = groups[0];
-                    }
-                    obj.acl.ownerGroup = options.group;
-                    this._setObjectDirect(id, obj, callback);
-                });
             }
+            return this._setObjectDirect(id, obj, callback);
         }
 
         if (this.defaultNewAcl && obj.acl && !obj.acl.ownerGroup && options.group) {
@@ -2075,11 +2065,12 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
             options.acl = null;
         }
 
-        utils.checkObjectRights(this, id, this.dataset[id], options, utils.CONSTS.ACCESS_WRITE, (err, options) => {
+        utils.checkObjectRights(this, id, this.dataset[id], options, utils.CONSTS.ACCESS_WRITE, err => {
+            // do not use options from checkObjectRights because this will mess up configured default acl
             if (err) {
                 typeof callback === 'function' && setImmediate(() => callback(err));
             } else {
-                return this._setObject(id, obj, options, callback);
+                return this._setObject(id, obj, options || {}, callback);
             }
         });
     }
