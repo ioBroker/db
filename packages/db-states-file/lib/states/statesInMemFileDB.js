@@ -232,7 +232,7 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
 
         // comment
         if (state.c && typeof state.c === 'string') {
-            obj.c = state.c.toString().substring(0, 512);
+            obj.c = state.c.substring(0, 512);
         }
 
         if (state.ms !== undefined) {
