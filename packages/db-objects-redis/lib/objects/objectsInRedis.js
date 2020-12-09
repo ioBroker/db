@@ -2671,12 +2671,12 @@ class ObjectsInRedis {
             if (obj.type !== 'state') {
                 delete obj.acl.state;
             }
-            // take the current user as owner if given
-            if (options.user) {
+            // take the current user as owner if given, but if admin we keep default
+            if (options.user && options.user !== utils.CONSTS.SYSTEM_ADMIN_USER) {
                 obj.acl.owner = options.user;
             }
-            // take the current group as owner if given
-            if (options.group) {
+            // take the current group as owner if given, but if admin we keep default
+            if (options.group && options.group !== utils.CONSTS.SYSTEM_ADMIN_GROUP) {
                 obj.acl.ownerGroup = options.group;
             }
         }
