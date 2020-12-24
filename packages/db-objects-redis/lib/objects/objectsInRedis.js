@@ -1681,7 +1681,7 @@ class ObjectsInRedis {
             meta.acl.permissions = options.mode;
             try {
                 await this.client.set(id, JSON.stringify(meta));
-                return setImmediate(this._chmodFileHelper, keys, metas, options, callback);
+                return setImmediate(() => this._chmodFileHelper(keys, metas, options, callback));
             } catch (e) {
                 return tools.maybeCallbackWithError(callback, e);
             }
