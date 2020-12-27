@@ -1676,14 +1676,17 @@ class ObjectsInRedis {
             if (!this.client) {
                 return tools.maybeCallbackWithError(callback, utils.ERRORS.ERROR_DB_CLOSED);
             }
-            const id   = keys.shift();
-            const meta = metas.shift();
-            meta.acl.permissions = options.mode;
-            try {
-                await this.client.set(id, JSON.stringify(meta));
-                return setImmediate(() => this._chmodFileHelper(keys, metas, options, callback));
-            } catch (e) {
-                return tools.maybeCallbackWithError(callback, e);
+
+            for (const i in keys) {
+                const id = keys[i];
+                const meta = metas[i];
+                meta.acl.permissions = options.mode;
+                try {
+                    await this.client.set(id, JSON.stringify(meta));
+                    return tools.maybeCallback(callback);
+                } catch (e) {
+                    return tools.maybeCallbackWithError(callback, e);
+                }
             }
         }
     }
@@ -2856,6 +2859,7 @@ class ObjectsInRedis {
          *
          * @param {object[]} arr - Array of objects which should be filtered
          * @param {boolean} duplicateFiltering - if duplicates need to be filtered
+         * @return {object[]}
          */
         const filterEntries = (arr, duplicateFiltering) => {
             if (duplicateFiltering) {
