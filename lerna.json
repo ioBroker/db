@@ -16,7 +16,6 @@
         "release-*"
       ],
       "ignoreChanges": [
-        "*.md"
       ],
       "amend": true,
       "push": false
