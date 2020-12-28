@@ -15,7 +15,9 @@
         "master",
         "release-*"
       ],
-      "ignoreChanges": [],
+      "ignoreChanges": [
+        "*.md"
+      ],
       "amend": true,
       "push": false
     }
