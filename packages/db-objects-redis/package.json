@@ -1,13 +1,13 @@
 {
   "name": "@iobroker/db-objects-redis",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "engines": {
     "node": ">=10.0.0"
   },
   "dependencies": {
     "@iobroker/db-base": "file:../db-base",
     "deep-clone": "^3.0.3",
-    "ioredis": "^4.17.3",
+    "ioredis": "^4.19.4",
     "node.extend": "^2.0.2"
   },
   "keywords": [
