@@ -1995,32 +1995,22 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
             obj.acl = this.dataset[id].acl;
         }
 
-        // add user default rights
+        // add user default rights if no acl provided
         if (this.defaultNewAcl && !obj.acl) {
             obj.acl = deepClone(this.defaultNewAcl);
             delete obj.acl.file;
             if (obj.type !== 'state') {
                 delete obj.acl.state;
             }
-            // take the owner as current user
-            if (options.user) {
+            // take the owner as current user, but if admin we keep default
+            if (options.user && options.user !== utils.CONSTS.SYSTEM_ADMIN_USER) {
                 obj.acl.owner = options.user;
             }
-            // take the group as current user's group
-            if (options.group) {
+            // take the current group as owner if given, but if admin we keep default
+            if (options.group && options.group !== utils.CONSTS.SYSTEM_ADMIN_GROUP) {
                 obj.acl.ownerGroup = options.group;
-            } else  {
-                obj.acl.ownerGroup = null;
-                return this.getUserGroup(obj.acl.owner, (user, groups /* , permissions */) => {
-                    if (!groups || !groups[0]) {
-                        options.group = (this.defaultNewAcl && this.defaultNewAcl.ownerGroup) || utils.CONSTS.SYSTEM_ADMIN_GROUP;
-                    } else {
-                        options.group = groups[0];
-                    }
-                    obj.acl.ownerGroup = options.group;
-                    this._setObjectDirect(id, obj, callback);
-                });
             }
+            return this._setObjectDirect(id, obj, callback);
         }
 
         if (this.defaultNewAcl && obj.acl && !obj.acl.ownerGroup && options.group) {
@@ -2075,11 +2065,12 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
             options.acl = null;
         }
 
-        utils.checkObjectRights(this, id, this.dataset[id], options, utils.CONSTS.ACCESS_WRITE, (err, options) => {
+        utils.checkObjectRights(this, id, this.dataset[id], options, utils.CONSTS.ACCESS_WRITE, err => {
+            // do not use options from checkObjectRights because this will mess up configured default acl
             if (err) {
                 typeof callback === 'function' && setImmediate(() => callback(err));
             } else {
-                return this._setObject(id, obj, options, callback);
+                return this._setObject(id, obj, options || {}, callback);
             }
         });
     }
