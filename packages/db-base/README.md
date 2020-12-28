@@ -1,6 +1,7 @@
 # Base DB classes for ioBroker
 This Library contains base classes that are used by the database classes for ioBroker
 
+
 ## License
 The MIT License (MIT)
 

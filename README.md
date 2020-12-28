@@ -6,7 +6,6 @@
 	### __WORK IN PROGRESS__
 -->
 
-
 ### __WORK IN PROGRESS__
 * (Apollon77) add method to get default port for the various db types
 * (foxriver76) use standard acl as first priority on setObject
