@@ -6,7 +6,7 @@
 	### __WORK IN PROGRESS__
 -->
 
-### __WORK IN PROGRESS__
+### 0.0.10 (2020-12-29)
 * (Apollon77) log an info message on redis for states and objects db reconnect after an error state
 
 ### 0.0.9 (2020-12-28)
