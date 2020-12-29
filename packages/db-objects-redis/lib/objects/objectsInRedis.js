@@ -124,6 +124,7 @@ class ObjectsInRedis {
         let ignoreErrors = false;
         let connected = false;
         let reconnectCounter = 0;
+        let errorLogged = false;
 
         if (this.settings.connection.port === 0) { // Port = 0 means unix socket
             // initiate a unix socket connection
@@ -167,6 +168,7 @@ class ObjectsInRedis {
                 return;
             }
             this.log.error(this.settings.namespace + ' ' + error.message);
+            errorLogged = true;
         });
 
         this.client.on('end', () => {
@@ -177,6 +179,10 @@ class ObjectsInRedis {
         this.client.on('connect', () => {
             this.settings.connection.enhancedLogging && this.log.silly(this.namespace + ' Objects-Redis Event connect (stop=' + this.stop + ')');
             connected = true;
+            if (errorLogged) {
+                this.log.info(this.settings.namespace + ' Objects database successfully reconnected');
+                errorLogged = false;
+            }
         });
 
         this.client.on('close', () => {
