@@ -49,7 +49,7 @@ jobs:
     strategy:
       matrix:
         node-version: [10.x, 12.x, 14.x]
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-18.04, windows-latest, macos-latest]
         js-controller: [master] # git branches/commits/tags to test against
 
     steps:
