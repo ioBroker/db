@@ -6,7 +6,7 @@
 	### __WORK IN PROGRESS__
 -->
 
-### 0.0.11 (2020-12-30)
+### __WORK IN PROGRESS__
 * (Apollon77) make sure common.custom is always an object and handle legacy cases to fix former invalid content to prevent crashes
 
 ### 0.0.10 (2020-12-29)

@@ -2614,7 +2614,7 @@ class ObjectsInRedis {
                         delete oldObj.common.custom;
                     }
                     // also remove invalid data from new objects ... should not happen because adapter.js checks too
-                    if (obj.common.custom !== undefined && obj.common.custom !== null && !tools.isObject(obj.common.custom)) {
+                    if (obj.common && obj.common.custom !== undefined && obj.common.custom !== null && !tools.isObject(obj.common.custom)) {
                         delete obj.common.custom;
                     }
 
