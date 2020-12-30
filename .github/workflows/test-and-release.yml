@@ -39,7 +39,7 @@ jobs:
 
   # ===================
 
-  # Runs unit tests on all supported node versions and OSes
+  # Runs unit tests on all supported combinations of node versions, OSes and JS-Controller
   unit-tests:
     if: contains(github.event.head_commit.message, '[skip ci]') == false
 
@@ -50,6 +50,7 @@ jobs:
       matrix:
         node-version: [10.x, 12.x, 14.x]
         os: [ubuntu-latest, windows-latest, macos-latest]
+        js-controller: [master] # git branches/commits/tags to test against
 
     steps:
     - name: Checkout code
@@ -61,9 +62,27 @@ jobs:
         node-version: ${{ matrix.node-version }}
 
     - name: Install dependencies
-      run: npm ci
+      run: |
+        npm ci
+        npm i -g lerna
+        lerna exec -- npm link
 
-    - name: Run component tests
+    - name: Clone JS-Controller
+      run: |
+        git clone https://github.com/ioBroker/ioBroker.js-controller
+        cd ioBroker.js-controller
+        git checkout ${{ matrix.js-controller }}
+    
+    - name: Install JS-Controller's dependencies
+      # TODO: Determine the DB-dependencies automatically
+      run: |
+        npm i
+        npm link @iobroker/db-objects-file
+        npm link @iobroker/db-objects-redis
+        npm link @iobroker/db-states-file
+        npm link @iobroker/db-states-redis
+
+    - name: Run JS-Controller's tests
       run: npm run test
       env:
         CI: true
