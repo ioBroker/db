@@ -68,7 +68,7 @@ class InMemoryFileDB {
 
         this.dataDir = (this.settings.connection.dataDir || getDefaultDataDir());
         if (!path.isAbsolute(this.dataDir)) {
-            this.dataDir = path.normalize(path.join(__dirname, '..', this.dataDir));
+            this.dataDir = path.normalize(path.join(__dirname, '../..', this.dataDir));
         }
         this.dataDir = this.dataDir.replace(/\\/g, '/');
 
@@ -108,6 +108,7 @@ class InMemoryFileDB {
 
         this.log = tools.getLogger(this.settings.logger);
 
+        this.log.debug(this.namespace + ' Data File: ' + this.datasetName);
         // load values from file
         if (fs.existsSync(this.datasetName)) {
             try {

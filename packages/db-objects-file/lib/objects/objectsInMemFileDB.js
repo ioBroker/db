@@ -1478,7 +1478,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
 
     // -------------- OBJECT FUNCTIONS -------------------------------------------
     clone(obj) {
-        if (obj === null || obj === undefined || typeof obj !== 'object') {
+        if (obj === null || obj === undefined || !tools.isObject(obj)) {
             return obj;
         }
 

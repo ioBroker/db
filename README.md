@@ -6,6 +6,10 @@
 	### __WORK IN PROGRESS__
 -->
 
+### __WORK IN PROGRESS__
+* (Apollon77) handle non-object cases in clone better (Sentry IOBROKER-JS-CONTROLLER-1Z9)
+* (Apollon77) fix path to iobroker-data to store data files
+
 ### 0.0.12 (2020-12-30)
 * (Apollon77) make sure common.custom is always an object and handle legacy cases to fix former invalid content to prevent crashes
 
