@@ -49,7 +49,7 @@ jobs:
     strategy:
       matrix:
         node-version: [10.x, 12.x, 14.x]
-        os: [ubuntu-18.04, windows-latest, macos-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest]
         js-controller: [master] # git branches/commits/tags to test against
 
     steps:
@@ -85,7 +85,7 @@ jobs:
 
     # JS-Controller tests need Redis to be installed
     - name: Install Redis (Linux)
-      if: ${{ matrix.os == 'ubuntu-18.04' }}
+      if: ${{ matrix.os == 'ubuntu-latest' }}
       run: |
         sudo add-apt-repository ppa:chris-lea/redis-server -y
         sudo apt-get update -q
@@ -112,7 +112,7 @@ jobs:
         CI: true
 
     - name: Run JS-Controller's Redis Sentinel Tests (Linux)
-      if: ${{ matrix.os == 'ubuntu-18.04' }}
+      if: ${{ matrix.os == 'ubuntu-latest' }}
       run: |
         cd ioBroker.js-controller
         sudo chmod ogu+x test/redis-socket/setup-socket.sh
