@@ -66,7 +66,6 @@ class InMemoryFileDB {
         };
 
         this.dataDir = (this.settings.connection.dataDir || tools.getDefaultDataDir());
-        console.log('DATA-DIR: ' + this.dataDir);
         if (!path.isAbsolute(this.dataDir)) {
             this.dataDir = path.normalize(path.join(tools.getControllerDir(), this.dataDir));
         }
