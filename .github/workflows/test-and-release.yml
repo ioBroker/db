@@ -63,7 +63,6 @@ jobs:
 
     - name: Install dependencies
       run: |
-        pwd
         npm ci
         npm i -g lerna
         lerna exec -- npm link
@@ -77,7 +76,7 @@ jobs:
     - name: Install JS-Controller's dependencies
       # TODO: Determine the DB-dependencies automatically
       run: |
-        pwd
+        cd ioBroker.js-controller
         npm i
         npm link @iobroker/db-objects-file
         npm link @iobroker/db-objects-redis
@@ -86,7 +85,7 @@ jobs:
 
     - name: Run JS-Controller's tests
       run: |
-        pwd
+        cd ioBroker.js-controller
         npm run test
       env:
         CI: true
