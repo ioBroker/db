@@ -43,4 +43,7 @@ function getControllerDir() {
     }
 }
 
-module.exports = require(path.join(getControllerDir() || __dirname, 'lib/tools.js'));
+const controllerDir = getControllerDir() || __dirname;
+
+module.exports = require(path.join(controllerDir , 'lib/tools.js'));
+module.exports.getControllerDir = () => controllerDir;

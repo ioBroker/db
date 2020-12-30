@@ -6,6 +6,9 @@
 	### __WORK IN PROGRESS__
 -->
 
+### __WORK IN PROGRESS__
+* (Apollon77) initialize data directory for file DBs relative to js-controller dir
+
 ### 0.0.13 (2020-12-30)
 * (Apollon77) handle non-object cases in clone better (Sentry IOBROKER-JS-CONTROLLER-1Z9)
 * (Apollon77) fix path to iobroker-data to store data files

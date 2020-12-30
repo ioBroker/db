@@ -17,7 +17,6 @@
 const fs                = require('fs-extra');
 const path              = require('path');
 const tools             = require('./tools.js');
-const getDefaultDataDir = tools.getDefaultDataDir;
 
 // settings = {
 //    change:    function (id, state) {},
@@ -66,9 +65,10 @@ class InMemoryFileDB {
             path: ''      // use default path
         };
 
-        this.dataDir = (this.settings.connection.dataDir || getDefaultDataDir());
+        this.dataDir = (this.settings.connection.dataDir || tools.getDefaultDataDir());
+        console.log('DATA-DIR: ' + this.dataDir);
         if (!path.isAbsolute(this.dataDir)) {
-            this.dataDir = path.normalize(path.join(__dirname, '../..', this.dataDir));
+            this.dataDir = path.normalize(path.join(tools.getControllerDir(), this.dataDir));
         }
         this.dataDir = this.dataDir.replace(/\\/g, '/');
 
