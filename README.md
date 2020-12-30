@@ -6,6 +6,9 @@
 	### __WORK IN PROGRESS__
 -->
 
+### __WORK IN PROGRESS__
+* (Apollon77) make sure common.custom is always an object and handle legacy cases to fix former invalid content to prevent crashes
+
 ### 0.0.10 (2020-12-29)
 * (Apollon77) log an info message on redis for states and objects db reconnect after an error state
 

@@ -1931,6 +1931,15 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
             this.preserveSettings.forEach(commonSetting => {
                 // special case if "custom"
                 if (commonSetting === 'custom') {
+                    // we had broken objects where common.custom was a "non-object" ... check and fix them here, no warning because users will most likely have no idea how to deal with it
+                    if (this.dataset[id].common.custom !== undefined && this.dataset[id].common.custom !== null && !tools.isObject(this.dataset[id].common.custom)) {
+                        delete this.dataset[id].common.custom;
+                    }
+                    // also remove invalid data from new objects ... should not happen because adapter.js checks too
+                    if (obj.common.custom !== undefined && obj.common.custom !== null && !tools.isObject(obj.common.custom)) {
+                        delete obj.common.custom;
+                    }
+
                     if (!this.dataset[id].common.custom) {
                         // do nothing
                     } else if ((!obj.common || !obj.common.custom) && this.dataset[id].common.custom) {
@@ -2406,6 +2415,11 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
         }
 
         this.dataset[id] = this.dataset[id] || {};
+        obj = deepClone(obj); // copy here to prevent "sandboxed" objects from JavaScript adapter
+        if (oldObj.common && oldObj.common.custom !== undefined && oldObj.common.custom !== null && !tools.isObject(oldObj.common.custom)) {
+            delete oldObj.common.custom;
+        }
+
         this.dataset[id] = extend(true, this.dataset[id], obj);
         this.dataset[id]._id = id;
 

@@ -2574,7 +2574,7 @@ class ObjectsInRedis {
             this.log.warn(this.namespace + ' setObject: Argument object is null');
             return typeof callback === 'function' && setImmediate(() => callback('obj is null'));
         }
-        if (typeof obj !== 'object') {
+        if (!tools.isObject(obj)) {
             this.log.warn(this.namespace + ' setObject: Argument object is no object: ' + obj);
             return typeof callback === 'function' && setImmediate(() => callback('obj is no object'));
         }
@@ -2609,6 +2609,15 @@ class ObjectsInRedis {
             this.preserveSettings.forEach(commonSetting => {
                 // special case if "custom"
                 if (commonSetting === 'custom') {
+                    // we had broken objects where common.custom was a "non-object" ... check and fix them here, no warning because users will most likely have no idea how to deal with it
+                    if (oldObj.common.custom !== undefined && oldObj.common.custom !== null && !tools.isObject(oldObj.common.custom)) {
+                        delete oldObj.common.custom;
+                    }
+                    // also remove invalid data from new objects ... should not happen because adapter.js checks too
+                    if (obj.common.custom !== undefined && obj.common.custom !== null && !tools.isObject(obj.common.custom)) {
+                        delete obj.common.custom;
+                    }
+
                     if (!oldObj.common.custom) {
                         // do nothing
                     } else if ((!obj.common || !obj.common.custom) && oldObj.common.custom) {
@@ -3424,7 +3433,12 @@ class ObjectsInRedis {
         }
 
         oldObj = oldObj || {};
-        oldObj = extend(true, oldObj, deepClone(obj)); // copy here to prevent "sandboxed" objects from JavaScript adapter
+        obj = deepClone(obj); // copy here to prevent "sandboxed" objects from JavaScript adapter
+        if (oldObj.common && oldObj.common.custom !== undefined && oldObj.common.custom !== null && !tools.isObject(oldObj.common.custom)) {
+            delete oldObj.common.custom;
+        }
+
+        oldObj = extend(true, oldObj, obj);
         oldObj._id = id;
 
         // add user default rights
