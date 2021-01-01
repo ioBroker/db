@@ -16,7 +16,7 @@
 
 const InMemoryFileDB        = require('@iobroker/db-base').inMemoryFileDB;
 const tools                 = require('@iobroker/db-base').tools;
-const { isDeepStrictEqual } = require('util');
+//const { isDeepStrictEqual } = require('util');
 
 // settings = {
 //    change:    function (id, state) {},
@@ -61,7 +61,7 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
         this.stateExpires = {};
         this.sessionExpires = {};
         this.ONE_DAY_IN_SECS = 24*60*60*1000;
-        this.adapterSubs = [];
+//        this.adapterSubs = [];
         this.writeFileInterval = this.settings.connection && typeof this.settings.connection.writeFileInterval === 'number' ?
             parseInt(this.settings.connection.writeFileInterval) : 30000;
         this.log.silly(`${this.namespace} States DB uses file write interval of ${this.writeFileInterval} ms`);
@@ -72,6 +72,7 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
         this.expireAll();
     }
 
+    // internal functionality
     expireAll() {
         Object.keys(this.stateExpires).forEach( id => {
             clearTimeout(this.stateExpires[id]);
@@ -92,6 +93,7 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
         }
     }
 
+    // internal functionality
     expireState(id, dontPublish) {
         if (this.stateExpires[id] !== undefined) {
             delete this.stateExpires[id];
@@ -107,6 +109,7 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
         }
     }
 
+    // internal functionality
     expireSession(id) {
         if (this.sessionExpires[id] && this.sessionExpires[id].timeout) {
             clearTimeout(this.sessionExpires[id].timeout);
@@ -119,6 +122,7 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
     }
 
     // Destructor of the class. Called by shutting down.
+    // internal functionality
     destroy() {
         this.expireAll();
 
@@ -130,6 +134,7 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
         }
     }
 
+    // needed by Server
     getStates(keys, callback, _dontModify) {
         if (!keys) {
             typeof callback === 'function' && setImmediate(() => callback('no keys', null));
@@ -146,14 +151,15 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
         typeof callback === 'function' && setImmediate(() => callback(null, result));
     }
 
+    // needed by Server
     getState(id, callback) {
         typeof callback === 'function' && setImmediate(state => callback(null, state), this.dataset[id] !== undefined ? this.dataset[id] : null);
     }
 
-    /**
+/*    /**
      * Promise-version of getState
      */
-    getStateAsync(id) {
+/*    getStateAsync(id) {
         return new Promise((resolve, reject) => {
             this.getState(id, (err, res) => {
                 if (err) {
@@ -164,7 +170,8 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
             });
         });
     }
-
+*/
+    /*
     /**
      * @method setState
      * @param id {String}           the id of the value.
@@ -191,7 +198,7 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
      *
      * @param callback {Function}   will be called when redis confirmed reception of the command
      */
-    setState(id, state, callback) {
+/*    setState(id, state, callback) {
         const obj = {};
 
         if (typeof state !== 'object' || state === null) {
@@ -260,11 +267,11 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
         }
         this._setStateDirect(id, obj, state.expire, callback);
     }
-
-    /**
+*/
+/*    /**
      * Promise-version of setState
      */
-    setStateAsync(id, state) {
+/*    setStateAsync(id, state) {
         return new Promise((resolve, reject) => {
             this.setState(id, state, (err, res) => {
                 if (err) {
@@ -275,7 +282,8 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
             });
         });
     }
-
+*/
+    // needed by Server
     _setStateDirect(id, obj, expire, callback) {
         if (typeof expire === 'function') {
             callback = expire;
@@ -309,6 +317,7 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
         }
     }
 
+    /*
     setRawState(id, state, callback) {
         this.dataset[id] = state;
         typeof callback === 'function' && setImmediate(() => callback(null, id));
@@ -317,7 +326,8 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
             this.stateTimer = setTimeout(() => this.saveState(), this.writeFileInterval);
         }
     }
-
+*/
+    // needed by Server
     delState(id, callback) {
         if (this.stateExpires[id]) {
             clearTimeout(this.stateExpires[id]);
@@ -325,11 +335,12 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
         }
 
         if (this.dataset[id]) {
+            const isBinary = Buffer.isBuffer(this.dataset[id]);
             delete this.dataset[id];
 
             typeof callback === 'function' && setImmediate(callback, null, id);
 
-            setImmediate(() => this.publishAll('state', id, null));
+            !isBinary && setImmediate(() => this.publishAll('state', id, null));
         } else {
             typeof callback === 'function' && setImmediate(callback, null, id);
         }
@@ -339,6 +350,7 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
         }
     }
 
+    // needed by Server
     getKeys(pattern, callback, _dontModify) {
         // special case because of simulation of redis
         if (pattern.substring(0, 3) === 'io.') {
@@ -347,29 +359,32 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
 
         const r = new RegExp(tools.pattern2RegEx(pattern));
         const result = [];
-        for (const id in this.dataset) {
+        for (const id of Object.keys(this.dataset)) {
             r.test(id) && result.push(id);
         }
         typeof callback === 'function' && setImmediate(() => callback(null, result));
     }
 
+/*
     subscribe(pattern, cb) {
         this.subscribeForClient(this.callbackSubscriptionClient, pattern, cb);
     }
-
+*/
+    // needed by Server
     subscribeForClient(client, pattern, cb) {
         this.handleSubscribe(client, 'state', pattern, cb);
     }
-
+/*
     unsubscribe(pattern, cb) {
         this.unsubscribeForClient(this.callbackSubscriptionClient, pattern, cb);
     }
-
+*/
+    // needed by Server
     unsubscribeForClient(client, pattern, cb) {
         this.handleUnsubscribe(client, 'state', pattern, cb);
     }
 
-    /**
+/*    /**
      * Register some instance as subscribable.
      * If some instance says, that it is subscribable, the instance can read every time (and at start)
      * all subscriptions to their states and will receive messages about changes of subscriptions
@@ -377,7 +392,7 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
      * @param instance name of instance
      * @param cb callback which says if subscription added or yet exists
      */
-    registerAdapterSubs(instance, cb) {
+/*    registerAdapterSubs(instance, cb) {
         let added = false;
         if (this.adapterSubs.indexOf(instance) === -1) {
             this.adapterSubs.push(instance);
@@ -388,14 +403,14 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
             cb(null, added);
         }
     }
-
-    /**
+*/
+/*    /**
      * Unregister instance as subscribable.
      *
      * @param instance name of instance
      * @param cb callback which says if subscription removed or no
      */
-    unregisterAdapterSubs(instance, cb) {
+/*    unregisterAdapterSubs(instance, cb) {
         const pos = this.adapterSubs.indexOf(instance);
         if (pos !== -1) {
             this.adapterSubs.splice(pos, 1);
@@ -404,8 +419,8 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
             cb(null, pos !== -1);
         }
     }
-
-    pushMessage(id, state, callback) {
+*/
+/*    pushMessage(id, state, callback) {
         state._id = this.globalMessageId++;
 
         if (this.globalMessageId >= 0xFFFFFFFF) {
@@ -416,24 +431,26 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
 
         setImmediate(() => this.publishAll('messagebox', 'messagebox.' + id, state));
     }
-
-    subscribeMessage(id, cb) {
+*/
+/*    subscribeMessage(id, cb) {
         this.subscribeMessageForClient(this.callbackSubscriptionClient, id, cb);
     }
-
+*/
+    // needed by Server
     subscribeMessageForClient(client, id, cb) {
         this.handleSubscribe(client, 'messagebox', 'messagebox.' + id, cb);
     }
 
-    unsubscribeMessage(id, cb) {
+/*    unsubscribeMessage(id, cb) {
         this.unsubscribeMessageForClient(this.callbackSubscriptionClient, id, cb);
     }
-
+*/
+    // needed by Server
     unsubscribeMessageForClient(client, id, cb) {
         this.handleUnsubscribe(client, 'messagebox', 'messagebox.' + id, cb);
     }
 
-    /**
+/*    /**
      * @method pushLog
      * @param {String} id           the id of the logger.
      * @param {object} log          log object, looks like
@@ -453,7 +470,7 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
      *
      * @param callback {Function}   will be called when confirmed reception of the command
      */
-    pushLog(id, log, callback) {
+/*    pushLog(id, log, callback) {
         // do not store messages.
         //logs[id] = logs[id] || [];
         log._id = this.globalLogId++;
@@ -519,23 +536,27 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
     subscribeLog(id, cb) {
         this.subscribeLogForClient(this.callbackSubscriptionClient, id, cb);
     }
-
+*/
+    // needed by Server
     subscribeLogForClient(client, id, cb) {
         this.handleSubscribe(client, 'log', 'log.' + id, cb);
     }
-
+/*
     unsubscribeLog(id, cb) {
         this.unsubscribeLogForClient(this.callbackSubscriptionClient, id, cb);
     }
-
+*/
+    // needed by Server
     unsubscribeLogForClient(client, id, cb) {
         this.handleUnsubscribe(client, 'log', 'log.' + id, cb);
     }
 
+    // needed by Server
     getSession(id, callback) {
         typeof callback === 'function' && setImmediate(session => callback(session), this.session[id]);
     }
 
+    // internal functionality
     handleSessionExpire(id, expireDate) {
         if (this.sessionExpires[id] && this.sessionExpires[id].timeout) {
             clearTimeout(this.sessionExpires[id].timeout);
@@ -563,6 +584,7 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
         }
     }
 
+    // needed by Server
     setSession(id, expire, obj, callback) {
         this.session[id] = obj || {};
 
@@ -577,6 +599,7 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
         typeof callback === 'function' && setImmediate(() => callback());
     }
 
+    // needed by Server
     destroySession(id, callback) {
         if (this.session[id]) {
             delete this.session[id];
@@ -584,6 +607,7 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
         typeof callback === 'function' && setImmediate(() => callback());
     }
 
+    // needed by Server
     setBinaryState(id, data, callback) {
         if (!Buffer.isBuffer(data)) {
             data = Buffer.from(data);
@@ -596,7 +620,7 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
         }
     }
 
-    getBinaryState(id, callback) {
+/*    getBinaryState(id, callback) {
         if (this.dataset[id]) {
             typeof callback === 'function' && setImmediate(state => callback(null, state), this.dataset[id]);
         } else {
@@ -614,6 +638,7 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
             this.stateTimer = setTimeout(() => this.saveState(), this.writeFileInterval);
         }
     }
+ */
 }
 
 module.exports = StatesInMemoryFileDB;

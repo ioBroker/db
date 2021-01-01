@@ -52,12 +52,6 @@ class StatesInMemoryServer extends StatesInMemoryFileDB {
     constructor(settings) {
         super(settings);
 
-        this.server = {
-            app: null,
-            server: null,
-            io: null,
-            settings: this.settings
-        };
         this.serverConnections = {};
         this.namespaceStates     = (this.settings.redisNamespace   || 'io') + '.';
         this.namespaceMsg        = (this.settings.namespaceMsg     || 'messagebox') + '.';
@@ -67,11 +61,18 @@ class StatesInMemoryServer extends StatesInMemoryFileDB {
         this.namespaceMsgLen     = this.namespaceMsg.length;
         this.namespaceLogLen     = this.namespaceLog.length;
         //this.namespaceSessionlen = this.namespaceSession.length;
-        this._initRedisServer(this.settings.connection, this.server);
+        this._initRedisServer(this.settings.connection, (e) => {
+            if (e) {
+                this.log.error(this.namespace + ' Cannot start inMem-states on port ' + (this.settings.port || 9000) + ': ' + e.message);
+                process.exit(24); // todo: replace it with exitcode
+            }
 
-        if (this.settings.connected) {
-            setImmediate(() => this.settings.connected(this));
-        }
+            this.log.debug(this.namespace + ' ' + (settings.secure ? 'Secure ' : '') + ' Redis inMem-states listening on port ' + (this.settings.port || 9000));
+
+            if (typeof this.settings.connected === 'function') {
+                setImmediate(() => this.settings.connected());
+            }
+        });
     }
 
     /**
@@ -443,17 +444,17 @@ class StatesInMemoryServer extends StatesInMemoryFileDB {
     /**
      * Destructor of the class. Called by shutting down.
      */
-    destroy() {
+    destroy(callback) {
         super.destroy();
 
-        if (this.server.server) {
+        if (this.server) {
             for (const s of Object.keys(this.serverConnections)) {
                 this.serverConnections[s].close();
                 delete this.serverConnections[s];
             }
 
             try {
-                this.server.server.close();
+                this.server && this.server.close(callback);
             } catch (e) {
                 console.log(e.message);
             }
@@ -489,27 +490,27 @@ class StatesInMemoryServer extends StatesInMemoryFileDB {
     /**
      * Initialize Redis Server
      * @param settings Settings object
-     * @param server Network server to use
+     * @param callback listening/connection callback
      * @private
      */
-    _initRedisServer(settings, server) {
+    _initRedisServer(settings, callback) {
         try {
             if (settings.secure) {
-                throw Error('Secure Redis unsupported');
-            } else {
-                this.server.server = net.createServer();
+                callback && callback(new Error('Secure Redis unsupported for File-DB'));
             }
-            this.server.server.on('error', err =>
+            this.server = net.createServer();
+            this.server.on('error', err =>
                 this.log.info(this.namespace + ' ' + (settings.secure ? 'Secure ' : '') + ' Error inMem-states listening on port ' + (settings.port || 9000)) + ': ' + err);
-            server.server.listen(settings.port || 9000, (settings.host && settings.host !== 'localhost') ? settings.host : ((settings.host === 'localhost') ? '127.0.0.1' : undefined));
+            this.server.on('connection', socket => this._initSocket(socket));
+
+            this.server.listen(
+                settings.port || 9000,
+                (settings.host && settings.host !== 'localhost') ? settings.host : ((settings.host === 'localhost') ? '127.0.0.1' : undefined),
+                callback
+            );
         } catch (e) {
-            this.log.error(this.namespace + ' Cannot start inMem-states on port ' + (settings.port || 9000) + ': ' + e.message);
-            process.exit(24); // todo: replace it with exitcode
+            callback && callback(e);
         }
-
-        this.server.server.on('connection', socket => this._initSocket(socket));
-
-        this.log.debug(this.namespace + ' ' + (settings.secure ? 'Secure ' : '') + ' Redis inMem-states listening on port ' + (settings.port || 9000));
     }
 }
 

@@ -28,7 +28,7 @@ function bufferJsonDecoder(key, value) {
     return value;
 }
 
-class StateRedis {
+class StateRedisClient {
 
     constructor(settings) {
         this.settings = settings || {};
@@ -38,9 +38,6 @@ class StateRedis {
         this.namespaceLog = (this.settings.namespaceLog || 'log') + '.';
         this.namespaceSession = (this.settings.namespaceSession || 'session') + '.';
 
-        const onChange = this.settings.change; // on change handler
-        const onChangeUser = this.settings.changeUser; // on change handler for User events
-
         this.globalMessageId = Math.round(Math.random() * 100000000);
         this.globalLogId = Math.round(Math.random() * 100000000);
         this.namespace = this.settings.namespace || this.settings.hostname || '';
@@ -49,7 +46,6 @@ class StateRedis {
         this.client = null;
         this.sub = null;
         this.subSystem = null;
-        const ioRegExp = new RegExp('^' + this.namespaceRedis.replace(/\./g, '\\.') + '[_A-Za-z0-9ÄÖÜäöüа-яА-Я]+'); // io.[_A-Za-z0-9]+
 
         this.log = this.settings.logger;
         if (!this.log) {
@@ -71,7 +67,24 @@ class StateRedis {
             this.log.silly = this.log.debug;
         }
 
+        if (this.settings.autoConnect === undefined || this.settings.autoConnect) {
+            this.connectDb();
+        }
+    }
+
+    connectDb() {
         this.settings.connection = this.settings.connection || {};
+
+        const onChange = this.settings.change; // on change handler
+        const onChangeUser = this.settings.changeUser; // on change handler for User events
+
+        const ioRegExp = new RegExp('^' + this.namespaceRedis.replace(/\./g, '\\.') + '[_A-Za-z0-9ÄÖÜäöüа-яА-Я]+'); // io.[_A-Za-z0-9]+
+
+        let ready = false;
+        let initError = false;
+        let connected = false;
+        let reconnectCounter = 0;
+        let errorLogged = false;
 
         // limit max number of log entries in the list
         this.settings.connection.maxQueue = this.settings.connection.maxQueue || 1000;
@@ -118,12 +131,6 @@ class StateRedis {
         };
         delete this.settings.connection.options.retry_max_delay;
         this.settings.connection.options.enableReadyCheck = true;
-
-        let ready = false;
-        let initError = false;
-        let connected = false;
-        let reconnectCounter = 0;
-        let errorLogged = false;
 
         if (this.settings.connection.port === 0) { // Port = 0 means unix socket
             // initiate a unix socket connection
@@ -320,7 +327,7 @@ class StateRedis {
                         } else {
                             this.log.debug(`${this.namespace} States ${ready ? 'system re' : ''}connected to redis: ${this.settings.connection.host}:${this.settings.connection.port}`);
                         }
-                        !ready && typeof this.settings.connected === 'function' && this.settings.connected(this);
+                        !ready && typeof this.settings.connected === 'function' && this.settings.connected();
                         ready = true;
                     }
 
@@ -402,7 +409,7 @@ class StateRedis {
                         } else {
                             this.log.debug(this.namespace + ' States ' + (ready ? 'user re' : '') + 'connected to redis: ' + this.settings.connection.host + ':' + this.settings.connection.port);
                         }
-                        !ready && typeof this.settings.connected === 'function' && this.settings.connected(this);
+                        !ready && typeof this.settings.connected === 'function' && this.settings.connected();
                         ready = true;
                     }
 
@@ -422,7 +429,7 @@ class StateRedis {
                 } else {
                     this.log.debug(this.namespace + ' States ' + (ready ? 'client re' : '') + 'connected to redis: ' + this.settings.connection.host + ':' + this.settings.connection.port);
                 }
-                !ready && typeof this.settings.connected === 'function' && this.settings.connected(this);
+                !ready && typeof this.settings.connected === 'function' && this.settings.connected();
                 ready = true;
             }
 
@@ -1168,4 +1175,4 @@ class StateRedis {
     }
 }
 
-module.exports = StateRedis;
+module.exports = StateRedisClient;
