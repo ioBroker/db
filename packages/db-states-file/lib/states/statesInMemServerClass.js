@@ -30,8 +30,8 @@ class StatesInMemoryServerClass extends StatesInRedisClient {
             hostname:   settings.hostname,
             connected: () => {
                 this.connectDb(); // now that server is connected also connect client
-            },
-        }
+            }
+        };
         this.statesServer = new StatesInMemServer(serverSettings);
     }
 

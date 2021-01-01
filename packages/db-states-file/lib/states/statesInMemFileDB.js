@@ -61,7 +61,7 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
         this.stateExpires = {};
         this.sessionExpires = {};
         this.ONE_DAY_IN_SECS = 24*60*60*1000;
-//        this.adapterSubs = [];
+        //this.adapterSubs = [];
         this.writeFileInterval = this.settings.connection && typeof this.settings.connection.writeFileInterval === 'number' ?
             parseInt(this.settings.connection.writeFileInterval) : 30000;
         this.log.silly(`${this.namespace} States DB uses file write interval of ${this.writeFileInterval} ms`);
@@ -156,10 +156,10 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
         typeof callback === 'function' && setImmediate(state => callback(null, state), this.dataset[id] !== undefined ? this.dataset[id] : null);
     }
 
-/*    /**
+    /*/**
      * Promise-version of getState
      */
-/*    getStateAsync(id) {
+    /*getStateAsync(id) {
         return new Promise((resolve, reject) => {
             this.getState(id, (err, res) => {
                 if (err) {
@@ -198,7 +198,7 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
      *
      * @param callback {Function}   will be called when redis confirmed reception of the command
      */
-/*    setState(id, state, callback) {
+    /*setState(id, state, callback) {
         const obj = {};
 
         if (typeof state !== 'object' || state === null) {
@@ -268,10 +268,10 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
         this._setStateDirect(id, obj, state.expire, callback);
     }
 */
-/*    /**
+    /*/**
      * Promise-version of setState
      */
-/*    setStateAsync(id, state) {
+    /*setStateAsync(id, state) {
         return new Promise((resolve, reject) => {
             this.setState(id, state, (err, res) => {
                 if (err) {
@@ -365,7 +365,7 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
         typeof callback === 'function' && setImmediate(() => callback(null, result));
     }
 
-/*
+    /*
     subscribe(pattern, cb) {
         this.subscribeForClient(this.callbackSubscriptionClient, pattern, cb);
     }
@@ -374,7 +374,7 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
     subscribeForClient(client, pattern, cb) {
         this.handleSubscribe(client, 'state', pattern, cb);
     }
-/*
+    /*
     unsubscribe(pattern, cb) {
         this.unsubscribeForClient(this.callbackSubscriptionClient, pattern, cb);
     }
@@ -384,7 +384,7 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
         this.handleUnsubscribe(client, 'state', pattern, cb);
     }
 
-/*    /**
+    /*    /**
      * Register some instance as subscribable.
      * If some instance says, that it is subscribable, the instance can read every time (and at start)
      * all subscriptions to their states and will receive messages about changes of subscriptions
@@ -392,7 +392,7 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
      * @param instance name of instance
      * @param cb callback which says if subscription added or yet exists
      */
-/*    registerAdapterSubs(instance, cb) {
+    /*    registerAdapterSubs(instance, cb) {
         let added = false;
         if (this.adapterSubs.indexOf(instance) === -1) {
             this.adapterSubs.push(instance);
@@ -404,13 +404,13 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
         }
     }
 */
-/*    /**
+    /*    /**
      * Unregister instance as subscribable.
      *
      * @param instance name of instance
      * @param cb callback which says if subscription removed or no
      */
-/*    unregisterAdapterSubs(instance, cb) {
+    /*    unregisterAdapterSubs(instance, cb) {
         const pos = this.adapterSubs.indexOf(instance);
         if (pos !== -1) {
             this.adapterSubs.splice(pos, 1);
@@ -420,7 +420,7 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
         }
     }
 */
-/*    pushMessage(id, state, callback) {
+    /*    pushMessage(id, state, callback) {
         state._id = this.globalMessageId++;
 
         if (this.globalMessageId >= 0xFFFFFFFF) {
@@ -432,7 +432,7 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
         setImmediate(() => this.publishAll('messagebox', 'messagebox.' + id, state));
     }
 */
-/*    subscribeMessage(id, cb) {
+    /*    subscribeMessage(id, cb) {
         this.subscribeMessageForClient(this.callbackSubscriptionClient, id, cb);
     }
 */
@@ -441,7 +441,7 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
         this.handleSubscribe(client, 'messagebox', 'messagebox.' + id, cb);
     }
 
-/*    unsubscribeMessage(id, cb) {
+    /*    unsubscribeMessage(id, cb) {
         this.unsubscribeMessageForClient(this.callbackSubscriptionClient, id, cb);
     }
 */
@@ -450,7 +450,7 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
         this.handleUnsubscribe(client, 'messagebox', 'messagebox.' + id, cb);
     }
 
-/*    /**
+    /*    /**
      * @method pushLog
      * @param {String} id           the id of the logger.
      * @param {object} log          log object, looks like
@@ -470,7 +470,7 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
      *
      * @param callback {Function}   will be called when confirmed reception of the command
      */
-/*    pushLog(id, log, callback) {
+    /*    pushLog(id, log, callback) {
         // do not store messages.
         //logs[id] = logs[id] || [];
         log._id = this.globalLogId++;
@@ -541,7 +541,7 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
     subscribeLogForClient(client, id, cb) {
         this.handleSubscribe(client, 'log', 'log.' + id, cb);
     }
-/*
+    /*
     unsubscribeLog(id, cb) {
         this.unsubscribeLogForClient(this.callbackSubscriptionClient, id, cb);
     }

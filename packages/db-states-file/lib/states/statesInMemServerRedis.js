@@ -61,7 +61,7 @@ class StatesInMemoryServer extends StatesInMemoryFileDB {
         this.namespaceMsgLen     = this.namespaceMsg.length;
         this.namespaceLogLen     = this.namespaceLog.length;
         //this.namespaceSessionlen = this.namespaceSession.length;
-        this._initRedisServer(this.settings.connection, (e) => {
+        this._initRedisServer(this.settings.connection, e => {
             if (e) {
                 this.log.error(this.namespace + ' Cannot start inMem-states on port ' + (this.settings.port || 9000) + ': ' + e.message);
                 process.exit(24); // todo: replace it with exitcode
