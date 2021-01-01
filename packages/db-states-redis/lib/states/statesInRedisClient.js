@@ -47,25 +47,7 @@ class StateRedisClient {
         this.sub = null;
         this.subSystem = null;
 
-        this.log = this.settings.logger;
-        if (!this.log) {
-            this.log = {
-                silly: function (_msg) {/* console.log(msg); */
-                },
-                debug: function (_msg) {/* console.log(msg); */
-                },
-                info: function (_msg) {/* console.log(msg); */
-                },
-                warn: function (msg) {
-                    console.log(msg);
-                },
-                error: function (msg) {
-                    console.log(msg);
-                }
-            };
-        } else if (!this.log.silly) {
-            this.log.silly = this.log.debug;
-        }
+        this.log = tools.getLogger(this.settings.logger);
 
         if (this.settings.autoConnect === undefined || this.settings.autoConnect) {
             this.connectDb();

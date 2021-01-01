@@ -55,12 +55,6 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
     constructor(settings) {
         super(settings);
 
-        this.server = {
-            app: null,
-            server: null,
-            io: null,
-            settings: this.settings
-        };
         this.serverConnections = {};
         this.namespaceObjects    = (this.settings.redisNamespace || (settings.connection && settings.connection.redisNamespace) || 'cfg') + '.';
         this.namespaceFile       = this.namespaceObjects + 'f.';
@@ -74,16 +68,24 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
         this.normalizeFileRegex1 = new RegExp('^(.*)\\$%\\$(.*)\\$%\\$(meta|data)$');
         this.normalizeFileRegex2 = new RegExp('^(.*)\\$%\\$(.*)\\/?\\*$');
 
-        this._initRedisServer(this.settings.connection, this.server);
+        this._initRedisServer(this.settings.connection, e => {
+            if (e) {
+                this.log.error(this.namespace + ' Cannot start inMem-objects on port ' + (settings.port || 9001) + ': ' + e.message);
+                process.exit(24); // todo: replace it with exitcode
+            }
 
-        if (this.settings.connected) {
-            setImmediate(() => this.settings.connected(this));
-        }
+            this.log.debug(this.namespace + ' ' + (settings.secure ? 'Secure ' : '') + ' Redis inMem-objects listening on port ' + (settings.port || 9001));
+
+            if (typeof this.settings.connected === 'function') {
+                setImmediate(() => this.settings.connected());
+            }
+        });
     }
 
-    addPreserveSettings(_settings) {
+    /*addPreserveSettings(_settings) {
         // when Redis is used this is done by objectsInRedis already
-    }
+    }*/
+
     /**
      * Separate Namespace from ID and return both
      * @param idWithNamespace ID or Array of IDs containing a redis namespace and the real ID
@@ -698,17 +700,17 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
     /**
      * Destructor of the class. Called by shutting down.
      */
-    destroy() {
+    destroy(callback) {
         super.destroy();
 
-        if (this.server.server) {
+        if (this.server) {
             Object.keys(this.serverConnections).forEach(s => {
                 this.serverConnections[s].close();
                 delete this.serverConnections[s];
             });
 
             try {
-                this.server.server.close();
+                this.server && this.server.close(callback);
             } catch (e) {
                 console.log(e.message);
             }
@@ -810,26 +812,27 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
     /**
      * Initialize Redis Server
      * @param settings Settings object
-     * @param server Network server to use
+     * @param callback listening/connection callback
      * @private
      */
-    _initRedisServer(settings, server) {
+    _initRedisServer(settings, callback) {
         try {
             if (settings.secure) {
-                throw Error('Secure Redis unsupported');
-            } else {
-                this.server.server = net.createServer();
+                callback && callback(new Error('Secure Redis unsupported for File-DB'));
             }
-            this.server.server.on('error', err => this.log.info(this.namespace + ' ' + (settings.secure ? 'Secure ' : '') + ' Error inMem-objects listening on port ' + (settings.port || 9001)) + ': ' + err);
-            server.server.listen(settings.port || 9001, (settings.host && settings.host !== 'localhost') ? settings.host : ((settings.host === 'localhost') ? '127.0.0.1' : undefined));
+            this.server = net.createServer();
+            this.server.on('error', err =>
+                this.log.info(this.namespace + ' ' + (settings.secure ? 'Secure ' : '') + ' Error inMem-objects listening on port ' + (settings.port || 9001)) + ': ' + err);
+            this.server.on('connection', socket => this._initSocket(socket));
+
+            this.server.listen(
+                settings.port || 9001,
+                (settings.host && settings.host !== 'localhost') ? settings.host : ((settings.host === 'localhost') ? '127.0.0.1' : undefined),
+                callback
+            );
         } catch (e) {
-            this.log.error(this.namespace + ' Cannot start inMem-objects on port ' + (settings.port || 9001) + ': ' + e.message);
-            process.exit(24);
+            callback && callback(e);
         }
-
-        this.server.server.on('connection', socket => this._initSocket(socket));
-
-        this.log.debug(this.namespace + ' ' + (settings.secure ? 'Secure ' : '') + ' Redis inMem-objects listening on port ' + (settings.port || 9001));
     }
 }
 

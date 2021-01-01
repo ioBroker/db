@@ -24,7 +24,6 @@ const path                  = require('path');
 const crypto                = require('crypto');
 const { isDeepStrictEqual } = require('util');
 const deepClone             = require('deep-clone');
-
 const utils                 = require('./objectsUtils.js');
 
 function initScriptFiles() {
@@ -39,20 +38,15 @@ function initScriptFiles() {
 }
 const scriptFiles = initScriptFiles();
 
-class ObjectsInRedis {
+class ObjectsInRedisClient {
 
     constructor(settings) {
-        // const originalSettings = settings;
         this.settings = settings || {};
         this.redisNamespace = (this.settings.redisNamespace || (this.settings.connection && this.settings.connection.redisNamespace) || 'cfg') + '.';
         this.fileNamespace = this.redisNamespace + 'f.';
         this.fileNamespaceL = this.fileNamespace.length;
         this.objNamespace = this.redisNamespace + 'o.';
         this.objNamespaceL = this.objNamespace.length;
-        const ioRegExp = new RegExp('^' + this.objNamespace.replace(/\./g, '\\.') + '[_A-Za-z0-9ÄÖÜäöüа-яА-Я]+'); // cfg.o.[_A-Za-z0-9]+
-
-        const onChange = this.settings.change; // on change handler
-        const onChangeUser = this.settings.changeUser; // on change handler for User events
 
         this.stop = false;
         this.client = null;
@@ -66,9 +60,20 @@ class ObjectsInRedis {
         // cached meta objects for file operations
         this.existingMetaObjects = {};
 
-        this.log = utils.getLogger(this.settings.logger);
+        this.log = tools.getLogger(this.settings.logger);
 
+        if (this.settings.autoConnect === undefined || this.settings.autoConnect) {
+            this.connectDb();
+        }
+    }
+
+    connectDb() {
         this.settings.connection = this.settings.connection || {};
+
+        const ioRegExp = new RegExp('^' + this.objNamespace.replace(/\./g, '\\.') + '[_A-Za-z0-9ÄÖÜäöüа-яА-Я]+'); // cfg.o.[_A-Za-z0-9]+
+
+        const onChange = this.settings.change; // on change handler
+        const onChangeUser = this.settings.changeUser; // on change handler for User events
 
         // limit max number of log entries in the list
         this.settings.connection.maxQueue = this.settings.connection.maxQueue || 1000;
@@ -76,6 +81,13 @@ class ObjectsInRedis {
         this.settings.connection.options = this.settings.connection.options || {};
         const retry_max_delay = this.settings.connection.options.retry_max_delay || 5000;
         const retry_max_count = this.settings.connection.options.retry_max_count || 19;
+
+        let ready = false;
+        let initError = false;
+        let ignoreErrors = false;
+        let connected = false;
+        let reconnectCounter = 0;
+        let errorLogged = false;
 
         this.settings.connection.options.retryStrategy = reconnectCount => {
             if (!ready && initError && ignoreErrors) {
@@ -118,13 +130,6 @@ class ObjectsInRedis {
 
         delete this.settings.connection.options.retry_max_delay;
         this.settings.connection.options.enableReadyCheck = true;
-
-        let ready = false;
-        let initError = false;
-        let ignoreErrors = false;
-        let connected = false;
-        let reconnectCounter = 0;
-        let errorLogged = false;
 
         if (this.settings.connection.port === 0) { // Port = 0 means unix socket
             // initiate a unix socket connection
@@ -237,11 +242,11 @@ class ObjectsInRedis {
                                         const obj = message ? JSON.parse(message) : null;
 
                                         if (this.settings.controller &&
-                                                id === 'system.config' &&
-                                                obj &&
-                                                obj.common &&
-                                                obj.common.defaultNewAcl &&
-                                                !isDeepStrictEqual(obj.common.defaultNewAcl, this.defaultNewAcl)) {
+                                            id === 'system.config' &&
+                                            obj &&
+                                            obj.common &&
+                                            obj.common.defaultNewAcl &&
+                                            !isDeepStrictEqual(obj.common.defaultNewAcl, this.defaultNewAcl)) {
                                             this.defaultNewAcl = JSON.parse(JSON.stringify(obj.common.defaultNewAcl));
                                             this.setDefaultAcl(this.defaultNewAcl);
                                         }
@@ -291,7 +296,7 @@ class ObjectsInRedis {
                         } else {
                             this.log.debug(this.namespace + ' Objects ' + (ready ? 'system re' : '') + 'connected to redis: ' + this.settings.connection.host + ':' + this.settings.connection.port);
                         }
-                        !ready && typeof this.settings.connected === 'function' && this.settings.connected(this);
+                        !ready && typeof this.settings.connected === 'function' && this.settings.connected();
                         ready = true;
                     }
                     // subscribe on system.config only if js-controller
@@ -372,7 +377,7 @@ class ObjectsInRedis {
                         } else {
                             this.log.debug(this.namespace + ' Objects ' + (ready ? 'user re' : '') + 'connected to redis: ' + this.settings.connection.host + ':' + this.settings.connection.port);
                         }
-                        !ready && typeof this.settings.connected === 'function' && this.settings.connected(this);
+                        !ready && typeof this.settings.connected === 'function' && this.settings.connected();
                         ready = true;
                     }
 
@@ -419,7 +424,7 @@ class ObjectsInRedis {
                     } else {
                         this.log.debug(this.namespace + ' Objects ' + (ready ? 'client re' : '') + 'connected to redis: ' + this.settings.connection.host + ':' + this.settings.connection.port);
                     }
-                    !ready && typeof this.settings.connected === 'function' && this.settings.connected(this);
+                    !ready && typeof this.settings.connected === 'function' && this.settings.connected();
                     ready = true;
                 }
             });
@@ -3820,4 +3825,4 @@ class ObjectsInRedis {
     }
 }
 
-module.exports = ObjectsInRedis;
+module.exports = ObjectsInRedisClient;

@@ -643,25 +643,6 @@ function checkObjectRights(objects, id, object, options, flag, callback) {
     }
 }
 
-function getLogger(log) {
-    if (!log) {
-        log = {
-            silly: function (_msg) {/*console.log(msg);*/},
-            debug: function (_msg) {/*console.log(msg);*/},
-            info:  function (_msg) {/*console.log(msg);*/},
-            warn:  function (msg) {
-                console.log(msg);
-            },
-            error: function (msg) {
-                console.log(msg);
-            }
-        };
-    } else if (!log.silly) {
-        log.silly = log.debug;
-    }
-    return log;
-}
-
 // For objects
 const defaultAcl = {
     groups: [],
