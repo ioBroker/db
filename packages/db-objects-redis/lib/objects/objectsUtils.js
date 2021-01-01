@@ -687,7 +687,6 @@ module.exports = {
     sanitizePath,
     checkObject,
     checkObjectRights,
-    getLogger,
 
     regCheckId,
 
