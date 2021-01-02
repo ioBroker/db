@@ -102,13 +102,14 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
         }
     }
 
-    /**
+    /*/**
      * Checks if given Id is a meta object, else throws error
      *
      * @param {string} id to check
      * @throws Error if id is invalid
      */
-    // check later
+    // check later, remove
+    /*
     async validateMetaObject(id) {
         if (this.existingMetaObjects[id] === undefined) {
             // if not cached -> getObject
@@ -122,7 +123,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
         } else if (this.existingMetaObjects[id] === false) {
             return Promise.reject(new Error(`${id} is not an object of type "meta"`));
         }
-    }
+    }*/
 
     // internal functionality
     normalizeFilename(name) {
@@ -207,7 +208,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
     }
 
     // check later
-    checkFile(id, name, options, flag, callback) {
+    /*checkFile(id, name, options, flag, callback) {
         this.loadFileSettings(id);
 
         const acl = this.fileOptions[id][name] || {};
@@ -217,12 +218,12 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
         } else {
             return callback && callback(true, options);
         }
-    }
+    }*/
 
     // needed by server, check later
-    checkFileRights(id, name, options, flag, callback) {
+    /*checkFileRights(id, name, options, flag, callback) {
         return utils.checkFileRights(this, id, name, options, flag, callback);
-    }
+    }*/
 
     /*
     setDefaultAcl(callback) {
@@ -259,12 +260,12 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
     }*/
 
     // check later
-    getUserGroup(user, callback) {
+    /*getUserGroup(user, callback) {
         return utils.getUserGroup(this, user, (error, user, userGroups, userAcl) => {
             error && this.log.error(`${this.namespace} ${error}`);
             callback(user, userGroups, userAcl);
         });
-    }
+    }*/
 
     /*
     insert(id, attName, ignore, options, obj, callback) {
@@ -446,7 +447,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
         if (options && options.acl) {
             options.acl = null;
         }
-        if (!callback) {
+        /*if (!callback) {
             return new Promise((resolve, reject) => {
                 this.writeFile(id, name, data, options, (err, res, mimeType) => {
                     if (!err) {
@@ -456,14 +457,14 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
                     }
                 });
             });
-        }
+        }*/
 
-        try {
+        /*try {
             await this.validateMetaObject(id);
         } catch (e) {
             this.log.error(`Cannot write file ${name}: ${e.message}`);
             return tools.maybeCallbackWithError(callback, e);
-        }
+        }*/
 
         const _path = utils.sanitizePath(id, name, callback);
         if (!_path) {
@@ -478,13 +479,13 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
             this.files[id] = this.files[id] || {};
 
             // If file yet exists => check the permissions
-            return this.checkFileRights(id, name, options, utils.CONSTS.ACCESS_WRITE, (err, options) => {
-                if (err) {
-                    return tools.maybeCallbackWithError(callback, err);
-                } else {
-                    return this._writeFile(id, name, data, options, callback);
-                }
-            });
+            //return this.checkFileRights(id, name, options, utils.CONSTS.ACCESS_WRITE, (err, options) => {
+            //    if (err) {
+            //        return tools.maybeCallbackWithError(callback, err);
+            //    } else {
+            return this._writeFile(id, name, data, options, callback);
+            //    }
+            //});
         } catch (e) {
             return tools.maybeCallbackWithError(callback, e);
         }
@@ -580,7 +581,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
             options.acl = null;
         }
 
-        if (!callback) {
+        /*if (!callback) {
             return new Promise((resolve, reject) => {
                 this.readFile(id, name, options, (err, res, mimeType) =>{
                     if (!err) {
@@ -590,7 +591,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
                     }
                 });
             });
-        }
+        }*/
 
         const _path = utils.sanitizePath(id, name, callback);
         if (!_path) {
@@ -599,30 +600,30 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
         id = _path.id;
         name = _path.name;
 
-        this.checkFileRights(id, name, options, utils.CONSTS.ACCESS_READ, (err, options) => {
-            if (err) {
-                typeof callback === 'function' && setImmediate(() => callback(err));
-            } else {
-                return this._readFile(id, name, options, callback);
-            }
-        });
+        //this.checkFileRights(id, name, options, utils.CONSTS.ACCESS_READ, (err, options) => {
+        //    if (err) {
+        //        typeof callback === 'function' && setImmediate(() => callback(err));
+        //    } else {
+        return this._readFile(id, name, options, callback);
+        //    }
+        //});
     }
 
     /**
      * Check if given object exists
      *
      * @param {string} id id of the object
-     * @param {object} [options] optional user context
+     * @param {object} [_options] optional user context
      * @return {Promise<boolean>}
      */
     // needed by server
-    async objectExists(id, options) {
+    async objectExists(id, _options) {
         if (!id || typeof id !== 'string') {
             return Promise.reject(new Error(`invalid id ${JSON.stringify(id)}`));
         }
 
         try {
-            await new Promise((resolve, reject) => {
+            /*await new Promise((resolve, reject) => {
                 utils.checkObjectRights(this, null, null, options, utils.CONSTS.ACCESS_LIST, err => {
                     if (err) {
                         reject(err);
@@ -630,7 +631,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
                         resolve();
                     }
                 });
-            });
+            });*/
             // check if the id exists
             return Object.prototype.hasOwnProperty.call(this.dataset, id);
         } catch (e) {
@@ -644,11 +645,11 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
      *
      * @param {string} id id of the namespace
      * @param {string} [name] name of the file
-     * @param {object} [options] optional user context
+     * @param {object} [_options] optional user context
      * @returns {Promise<boolean>}
      */
     // needed by server
-    async fileExists(id, name, options) {
+    async fileExists(id, name, _options) {
         if (typeof name !== 'string') {
             name = '';
         }
@@ -656,7 +657,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
         const location = path.join(this.objectsDir, id, name);
 
         try {
-            await new Promise((resolve, reject) => {
+            /*await new Promise((resolve, reject) => {
                 this.checkFileRights(id, name, options, utils.CONSTS.ACCESS_READ, err => {
                     if (err) {
                         reject(err);
@@ -665,6 +666,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
                     }
                 });
             });
+            */
             const stat = await fs.promises.lstat(location);
             return Promise.resolve(stat.isFile());
         } catch (e) {
@@ -681,11 +683,11 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
      *
      * @param {string} id id of the namespace
      * @param {string} [name] name of the directory
-     * @param {object} [options] optional user context
+     * @param {object} [_options] optional user context
      * @returns {Promise<boolean>}
      */
     // special functionality Server
-    async dirExists(id, name, options) {
+    async dirExists(id, name, _options) {
         if (typeof name !== 'string') {
             name = '';
         }
@@ -693,7 +695,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
         const location = path.join(this.objectsDir, id, name);
 
         try {
-            await new Promise((resolve, reject) => {
+            /*await new Promise((resolve, reject) => {
                 this.checkFileRights(id, name, options, utils.CONSTS.ACCESS_READ, err => {
                     if (err) {
                         reject(err);
@@ -701,7 +703,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
                         resolve();
                     }
                 });
-            });
+            });*/
             const stat = await fs.promises.lstat(location);
             return Promise.resolve(stat.isDirectory());
         } catch (e) {
@@ -794,17 +796,17 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
         id   = _path.id;
         name = _path.name;
 
-        this.checkFileRights(id, name, options, utils.CONSTS.ACCESS_WRITE, (err, options) => {
-            if (err) {
-                typeof callback === 'function' && setImmediate(() => callback(err));
-            } else {
-                if (!options.acl.file['delete']) {
-                    typeof callback === 'function' && setImmediate(() => callback(utils.ERRORS.ERROR_PERMISSION));
-                } else {
-                    return this._unlink(id, name, options, callback);
-                }
-            }
-        });
+        //this.checkFileRights(id, name, options, utils.CONSTS.ACCESS_WRITE, (err, options) => {
+        //    if (err) {
+        //        typeof callback === 'function' && setImmediate(() => callback(err));
+        //    } else {
+        //        if (!options.acl.file['delete']) {
+        //            typeof callback === 'function' && setImmediate(() => callback(utils.ERRORS.ERROR_PERMISSION));
+        //        } else {
+        return this._unlink(id, name, options, callback);
+        //        }
+        //    }
+        //});
     }
 
     /*
@@ -958,17 +960,17 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
             name = _path.name;
         }
 
-        this.checkFileRights(id, name, options, utils.CONSTS.ACCESS_READ, (err, options) => {
-            if (err) {
-                typeof callback === 'function' && setImmediate(() => callback(err));
-            } else {
-                if (!options.acl.file.list) {
-                    typeof callback === 'function' && setImmediate(() => callback(utils.ERRORS.ERROR_PERMISSION));
-                } else {
-                    return this._readDir(id, name, options, callback);
-                }
-            }
-        });
+        //this.checkFileRights(id, name, options, utils.CONSTS.ACCESS_READ, (err, options) => {
+        //    if (err) {
+        //        typeof callback === 'function' && setImmediate(() => callback(err));
+        //    } else {
+        //        if (!options.acl.file.list) {
+        //            typeof callback === 'function' && setImmediate(() => callback(utils.ERRORS.ERROR_PERMISSION));
+        //        } else {
+        return this._readDir(id, name, options, callback);
+        //        }
+        //    }
+        //});
     }
 
     // needed by server
@@ -1022,17 +1024,17 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
             newName = newName.substring(1);
         }
 
-        this.checkFileRights(id, oldName, options, utils.CONSTS.ACCESS_WRITE, (err, options) => {
-            if (err) {
-                typeof callback === 'function' && setImmediate(() => callback(err));
-            } else {
-                if (!options.acl.file.write) {
-                    typeof callback === 'function' && setImmediate(() => callback(utils.ERRORS.ERROR_PERMISSION));
-                } else {
-                    return this._rename(id, oldName, newName, options, callback);
-                }
-            }
-        });
+        //this.checkFileRights(id, oldName, options, utils.CONSTS.ACCESS_WRITE, (err, options) => {
+        //    if (err) {
+        //        typeof callback === 'function' && setImmediate(() => callback(err));
+        //    } else {
+        //        if (!options.acl.file.write) {
+        //            typeof callback === 'function' && setImmediate(() => callback(utils.ERRORS.ERROR_PERMISSION));
+        //        } else {
+        return this._rename(id, oldName, newName, options, callback);
+        //        }
+        //    }
+        //});
     }
 
     /*
@@ -1543,13 +1545,13 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
             options = null;
         }
 
-        utils.checkObjectRights(this, null, null, options, utils.CONSTS.ACCESS_LIST, (err, options) => {
-            if (err) {
-                typeof callback === 'function' && setImmediate(() => callback(err));
-            } else {
-                return this._subscribeConfigForClient(client, pattern, options, callback);
-            }
-        });
+        //utils.checkObjectRights(this, null, null, options, utils.CONSTS.ACCESS_LIST, (err, options) => {
+        //    if (err) {
+        //        typeof callback === 'function' && setImmediate(() => callback(err));
+        //    } else {
+        return this._subscribeConfigForClient(client, pattern, options, callback);
+        //    }
+        //});
     }
 
     /*
@@ -1575,13 +1577,13 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
             options = null;
         }
 
-        utils.checkObjectRights(this, null, null, options, utils.CONSTS.ACCESS_LIST, (err, options) => {
-            if (err) {
-                typeof callback === 'function' && setImmediate(() => callback(err));
-            } else {
-                return this._unsubscribeConfigForClient(client, pattern, options, callback);
-            }
-        });
+        //utils.checkObjectRights(this, null, null, options, utils.CONSTS.ACCESS_LIST, (err, options) => {
+        //    if (err) {
+        //        typeof callback === 'function' && setImmediate(() => callback(err));
+        //    } else {
+        return this._unsubscribeConfigForClient(client, pattern, options, callback);
+        //    }
+        //});
 
     }
 
@@ -1754,7 +1756,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
             callback = options;
             options = null;
         }
-        if (!callback) {
+        /*if (!callback) {
             return new Promise((resolve, reject) => {
                 this.getObject(id, options, (err, obj) => {
                     if (err) {
@@ -1764,24 +1766,24 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
                     }
                 });
             });
-        }
+        }*/
 
         if (typeof callback === 'function') {
             if (options && options.acl) {
                 options.acl = null;
             }
-            utils.checkObjectRights(this, id, this.dataset[id], options, utils.CONSTS.ACCESS_READ, (err, options) => {
-                if (err) {
-                    return tools.maybeCallbackWithError(callback, err);
-                } else {
-                    return this._getObject(id, options, callback);
-                }
-            });
+            //utils.checkObjectRights(this, id, this.dataset[id], options, utils.CONSTS.ACCESS_READ, (err, options) => {
+            //    if (err) {
+            //        return tools.maybeCallbackWithError(callback, err);
+            //    } else {
+            return this._getObject(id, options, callback);
+            //    }
+            //});
         }
     }
 
     // check later
-    getObjectAsync(id, options) {
+    /*getObjectAsync(id, options) {
         return new Promise((resolve, reject) => {
             this.getObject(id, options, (err, obj) => {
                 if (err) {
@@ -1791,7 +1793,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
                 }
             });
         });
-    }
+    }*/
 
     // needed by server
     _getKeys(pattern, options, callback, _dontModify) {
@@ -1812,7 +1814,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
             options = null;
         }
 
-        if (!callback) {
+        /*if (!callback) {
             return new Promise((resolve, reject) => {
                 this.getKeys(pattern, options, (err, obj) => {
                     if (err) {
@@ -1822,18 +1824,18 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
                     }
                 }, dontModify);
             });
-        }
+        }*/
 
         if (options && options.acl) {
             options.acl = null;
         }
-        utils.checkObjectRights(this, null, null, options, utils.CONSTS.ACCESS_LIST, (err, options) => {
-            if (err) {
-                typeof callback === 'function' && setImmediate(() => callback(err));
-            } else {
-                return this._getKeys(pattern, options, callback, dontModify);
-            }
-        });
+        //utils.checkObjectRights(this, null, null, options, utils.CONSTS.ACCESS_LIST, (err, options) => {
+        //    if (err) {
+        //        typeof callback === 'function' && setImmediate(() => callback(err));
+        //    } else {
+        return this._getKeys(pattern, options, callback, dontModify);
+        //    }
+        //});
     }
 
     /*
@@ -1853,11 +1855,11 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
         }
         const result = [];
         for (let i = 0; i < keys.length; i++) {
-            if (utils.checkObject(this.dataset[keys[i]], options, utils.CONSTS.ACCESS_READ)) {
-                result.push(this.clone(this.dataset[keys[i]]));
-            } else {
-                result.push({error: utils.ERRORS.ERROR_PERMISSION});
-            }
+            //if (utils.checkObject(this.dataset[keys[i]], options, utils.CONSTS.ACCESS_READ)) {
+            result.push(this.clone(this.dataset[keys[i]]));
+            //} else {
+            //    result.push({error: utils.ERRORS.ERROR_PERMISSION});
+            //}
         }
         typeof callback === 'function' && setImmediate(() => callback(null, result));
     }
@@ -1867,7 +1869,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
             callback = options;
             options = null;
         }
-        if (!callback) {
+        /*if (!callback) {
             return new Promise((resolve, reject) => {
                 this.getObjects(keys, options, (err, objs) => {
                     if (err) {
@@ -1877,19 +1879,19 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
                     }
                 }, dontModify);
             });
-        }
+        }*/
 
         if (options && options.acl) {
             options.acl = null;
         }
         if (typeof callback === 'function') {
-            utils.checkObjectRights(this, null, null, options, utils.CONSTS.ACCESS_READ, (err, options) => {
-                if (err) {
-                    setImmediate(() => callback(err));
-                } else {
-                    return this._getObjects(keys, options, callback, dontModify);
-                }
-            });
+            //utils.checkObjectRights(this, null, null, options, utils.CONSTS.ACCESS_READ, (err, options) => {
+            //    if (err) {
+            //        setImmediate(() => callback(err));
+            //    } else {
+            return this._getObjects(keys, options, callback, dontModify);
+            //    }
+            //});
         }
     }
 
@@ -2178,7 +2180,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
             callback = options;
             options = null;
         }
-        if (!callback) {
+        /*if (!callback) {
             return new Promise((resolve, reject) => {
                 this.delObject(id, options, err => {
                     if (err) {
@@ -2188,18 +2190,18 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
                     }
                 });
             });
-        }
+        }*/
 
         if (options && options.acl) {
             options.acl = null;
         }
-        utils.checkObjectRights(this, id, this.dataset[id], options, utils.CONSTS.ACCESS_DELETE, (err, options) => {
-            if (err) {
-                typeof callback === 'function' && setImmediate(() => callback(err));
-            } else {
-                return this._delObject(id, options, callback);
-            }
-        });
+        //utils.checkObjectRights(this, id, this.dataset[id], options, utils.CONSTS.ACCESS_DELETE, (err, options) => {
+        //    if (err) {
+        //        typeof callback === 'function' && setImmediate(() => callback(err));
+        //    } else {
+        return this._delObject(id, options, callback);
+        //    }
+        //});
     }
 
     /*
@@ -2238,9 +2240,9 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
                 }
             }
             if (this.dataset[id]) {
-                if (!utils.checkObject(this.dataset[id], options, utils.CONSTS.ACCESS_READ)) {
+                /*if (!utils.checkObject(this.dataset[id], options, utils.CONSTS.ACCESS_READ)) {
                     continue;
-                }
+                }*/
                 try {
                     f(this.dataset[id]);
                 } catch (e) {
@@ -2273,7 +2275,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
             callback = options;
             options = null;
         }
-        if (!callback) {
+        /*if (!callback) {
             return new Promise((resolve, reject) => {
                 this._applyView(func, params, options, (err, obj) => {
                     if (err) {
@@ -2283,20 +2285,20 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
                     }
                 });
             });
-        }
+        }*/
 
         if (options && options.acl) {
             options.acl = null;
         }
 
         if (typeof callback === 'function') {
-            utils.checkObjectRights(this, null, null, options, utils.CONSTS.ACCESS_LIST, (err, options) => {
-                if (err) {
-                    setImmediate(() => callback(err));
-                } else {
-                    return this._applyViewFunc(func, params, options, callback);
-                }
-            });
+            //utils.checkObjectRights(this, null, null, options, utils.CONSTS.ACCESS_LIST, (err, options) => {
+            //    if (err) {
+            //        setImmediate(() => callback(err));
+            //    } else {
+            return this._applyViewFunc(func, params, options, callback);
+            //    }
+            //});
         }
     }
 
@@ -2320,7 +2322,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
             callback = options;
             options = null;
         }
-        if (!callback) {
+        /*if (!callback) {
             return new Promise((resolve, reject) => {
                 this.getObjectView(design, search, params, options, (err, obj) => {
                     if (err) {
@@ -2330,20 +2332,20 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
                     }
                 });
             });
-        }
+        }*/
 
         if (options && options.acl) {
             options.acl = null;
         }
 
         if (typeof callback === 'function') {
-            utils.checkObjectRights(this, null, null, options, utils.CONSTS.ACCESS_LIST, (err, options) => {
-                if (err) {
-                    setImmediate(() => callback(err));
-                } else {
-                    return this._getObjectView(design, search, params, options, callback);
-                }
-            });
+            //utils.checkObjectRights(this, null, null, options, utils.CONSTS.ACCESS_LIST, (err, options) => {
+            //    if (err) {
+            //        setImmediate(() => callback(err));
+            //    } else {
+            return this._getObjectView(design, search, params, options, callback);
+            //    }
+            //});
         }
     }
 
