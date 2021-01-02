@@ -691,9 +691,9 @@ class ObjectsInRedisClient {
         }
 
         if (!callback) {
-            return new Promise((resolve, reject) =>
+            return /** @type {Promise<void>} */ (new Promise((resolve, reject) =>
                 this.writeFile(id, name, data, options, err =>
-                    err ? reject(err) : resolve()));
+                    err ? reject(err) : resolve())));
         }
 
         try {
@@ -726,9 +726,9 @@ class ObjectsInRedisClient {
     }
 
     writeFileAsync(id, name, data, options) {
-        return new Promise((resolve, reject) =>
+        return /** @type {Promise<void>} */ (new Promise((resolve, reject) =>
             this.writeFile(id, name, data, options, err =>
-                err ? reject(err) : resolve()));
+                err ? reject(err) : resolve())));
     }
 
     async _readFile(id, name, options, callback, meta) {
@@ -807,7 +807,7 @@ class ObjectsInRedisClient {
         }
 
         try {
-            await new Promise((resolve, reject) => {
+            await /** @type {Promise<void>} */ (new Promise((resolve, reject) => {
                 utils.checkObjectRights(this, null, null, options, utils.CONSTS.ACCESS_LIST, err => {
                     if (err) {
                         reject(err);
@@ -815,7 +815,7 @@ class ObjectsInRedisClient {
                         resolve();
                     }
                 });
-            });
+            }));
             const exists = await this.client.exists(this.objNamespace + id);
             return !!exists;
         } catch (e) {
@@ -842,7 +842,7 @@ class ObjectsInRedisClient {
         }
 
         try {
-            await new Promise((resolve, reject) => {
+            await /** @type {Promise<void>} */ (new Promise((resolve, reject) => {
                 this.checkFileRights(id, name, options, utils.CONSTS.ACCESS_READ, err => {
                     if (err) {
                         reject(err);
@@ -850,7 +850,7 @@ class ObjectsInRedisClient {
                         resolve();
                     }
                 });
-            });
+            }));
             id = this.getFileId(id, name, false);
             const exists = await this.client.exists(id);
             return !!exists;
@@ -911,9 +911,9 @@ class ObjectsInRedisClient {
     }
 
     unlinkAsync(id, name, options) {
-        return new Promise((resolve, reject) =>
+        return /** @type {Promise<void>} */ (new Promise((resolve, reject) =>
             this.unlink(id, name, options, err =>
-                err ? reject(err) : resolve()));
+                err ? reject(err) : resolve())));
     }
 
     delFile(id, name, options, callback) {
@@ -1262,9 +1262,9 @@ class ObjectsInRedisClient {
     }
 
     renameAsync(id, oldName, newName, options) {
-        return new Promise((resolve, reject) =>
+        return /** @type {Promise<void>} */ (new Promise((resolve, reject) =>
             this.rename(id, oldName, newName, options, err =>
-                err ? reject(err) : resolve()));
+                err ? reject(err) : resolve())));
     }
 
     async _touch(id, name, options, callback, meta) {
@@ -1311,9 +1311,9 @@ class ObjectsInRedisClient {
     }
 
     touchAsync(id, name, options) {
-        return new Promise((resolve, reject) =>
+        return /** @type {Promise<void>} */ (new Promise((resolve, reject) =>
             this.touch(id, name, options, err =>
-                err ? reject(err) : resolve()));
+                err ? reject(err) : resolve())));
     }
 
     async _rmHelper(keys, callback) {
@@ -1483,9 +1483,9 @@ class ObjectsInRedisClient {
     }
 
     mkdirAsync(id, dirName, options) {
-        return new Promise((resolve, reject) =>
+        return /** @type {Promise<void>} */ (new Promise((resolve, reject) =>
             this.mkdir(id, dirName, options, err =>
-                err ? reject(err) : resolve()));
+                err ? reject(err) : resolve())));
     }
 
     async _chownFileHelper(keys, metas, options, callback) {
@@ -1675,31 +1675,30 @@ class ObjectsInRedisClient {
     }
 
     chownFileAsync(id, name, options) {
-        return new Promise((resolve, reject) =>
+        return /** @type {Promise<void>} */ (new Promise((resolve, reject) =>
             this.chownFile(id, name, options, err =>
-                err ? reject(err) : resolve()));
+                err ? reject(err) : resolve())));
     }
 
     async _chmodFileHelper(keys, metas, options, callback) {
         if (!keys || !keys.length) {
             return tools.maybeCallback(callback);
-        } else {
-            if (!this.client) {
-                return tools.maybeCallbackWithError(callback, utils.ERRORS.ERROR_DB_CLOSED);
-            }
+        }
+        if (!this.client) {
+            return tools.maybeCallbackWithError(callback, utils.ERRORS.ERROR_DB_CLOSED);
+        }
 
-            for (const i in keys) {
-                const id = keys[i];
-                const meta = metas[i];
-                meta.acl.permissions = options.mode;
-                try {
-                    await this.client.set(id, JSON.stringify(meta));
-                    return tools.maybeCallback(callback);
-                } catch (e) {
-                    return tools.maybeCallbackWithError(callback, e);
-                }
+        for (const i in keys) {
+            const id = keys[i];
+            const meta = metas[i];
+            meta.acl.permissions = options.mode;
+            try {
+                await this.client.set(id, JSON.stringify(meta));
+            } catch (e) {
+                return tools.maybeCallbackWithError(callback, e);
             }
         }
+        return tools.maybeCallback(callback);
     }
 
     async _chmodFile(id, name, options, callback, meta) {
@@ -1853,9 +1852,9 @@ class ObjectsInRedisClient {
     }
 
     chmodFileAsync(id, name, options) {
-        return new Promise((resolve, reject) =>
+        return /** @type {Promise<void>} */ (new Promise((resolve, reject) =>
             this.chmodFile(id, name, options, err =>
-                err ? reject(err) : resolve()));
+                err ? reject(err) : resolve())));
     }
 
     enableFileCache(enabled, options, callback) {
@@ -1933,9 +1932,9 @@ class ObjectsInRedisClient {
     }
 
     subscribeAsync(pattern, options) {
-        return new Promise((resolve, reject) =>
+        return /** @type {Promise<void>} */ (new Promise((resolve, reject) =>
             this.subscribe(pattern, options, err =>
-                err ? reject(err) : resolve()));
+                err ? reject(err) : resolve())));
     }
 
     subscribeUser(pattern, options, callback) {
@@ -1953,9 +1952,9 @@ class ObjectsInRedisClient {
     }
 
     subscribeUserAsync(pattern, options) {
-        return new Promise((resolve, reject) =>
+        return /** @type {Promise<void>} */ (new Promise((resolve, reject) =>
             this.subscribeUser(pattern, options, err =>
-                err ? reject(err) : resolve()));
+                err ? reject(err) : resolve())));
     }
 
     _unsubscribe(pattern, options, subClient, callback) {
@@ -2003,9 +2002,9 @@ class ObjectsInRedisClient {
     }
 
     unsubscribeAsync(pattern, options) {
-        return new Promise((resolve, reject) =>
+        return /** @type {Promise<void>} */ (new Promise((resolve, reject) =>
             this.unsubscribe(pattern, options, err =>
-                err ? reject(err) : resolve()));
+                err ? reject(err) : resolve())));
     }
 
     unsubscribeUser(pattern, options, callback) {
@@ -2023,9 +2022,9 @@ class ObjectsInRedisClient {
     }
 
     unsubscribeUserAsync(pattern, options) {
-        return new Promise((resolve, reject) =>
+        return /** @type {Promise<void>} */ (new Promise((resolve, reject) =>
             this.unsubscribeUser(pattern, options, err =>
-                err ? reject(err) : resolve()));
+                err ? reject(err) : resolve())));
     }
 
     async _objectHelper(keys, objs, callback) {
@@ -2835,9 +2834,9 @@ class ObjectsInRedisClient {
     }
 
     delObjectAsync(id, options) {
-        return new Promise((resolve, reject) =>
+        return /** @type {Promise<void>} */ (new Promise((resolve, reject) =>
             this.delObject(id, options, err =>
-                err ? reject(err) : resolve()));
+                err ? reject(err) : resolve())));
     }
 
     // this function is very ineffective. Because reads all objects and then process them
@@ -3699,9 +3698,9 @@ class ObjectsInRedisClient {
     }
 
     destroyDBAsync(options) {
-        return new Promise((resolve, reject) =>
+        return /** @type {Promise<void>} */ (new Promise((resolve, reject) =>
             this.destroyDB(options, err =>
-                err ? reject(err) : resolve()));
+                err ? reject(err) : resolve())));
     }
 
     // Destructor of the class. Called by shutting down.
