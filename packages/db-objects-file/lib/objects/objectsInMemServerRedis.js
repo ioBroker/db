@@ -280,13 +280,13 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
                     if (this.settings.connection.enhancedLogging) {
                         this.log.silly(`${namespaceLog} Script transformed into getObjectView: design=${scriptDesign}, search=${scriptSearch}`);
                     }
-                    this.getObjectView(scriptDesign, scriptSearch, {
+                    this._getObjectView(scriptDesign, scriptSearch, {
                         startkey: data[3],
                         endkey: data[4],
                         include_docs: true
                     }, (err, objs) => {
                         if (err) {
-                            handler && handler.sendError(responseId, new Error('getObjectView Error for ' + scriptDesign + '/' + scriptSearch + ': ' + err));
+                            handler && handler.sendError(responseId, new Error('_getObjectView Error for ' + scriptDesign + '/' + scriptSearch + ': ' + err));
                             return;
                         }
                         const res = [];
@@ -309,7 +309,7 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
                     include_docs: true
                 }, (err, objs) => {
                     if (err) {
-                        handler && handler.sendError(responseId, new Error('getObjectView Error ' + err));
+                        handler && handler.sendError(responseId, new Error('_getObjectView Error ' + err));
                         return;
                     }
                     const res = [];
@@ -355,9 +355,9 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
                     }
                     keys.push(id);
                 });
-                this.getObjects(keys, (err, result) => {
+                this._getObjects(keys, (err, result) => {
                     if (err || !result) {
-                        handler && handler.sendError(responseId, new Error('ERROR getObjects: ' + err)); // TODO
+                        handler && handler.sendError(responseId, new Error('ERROR _getObjects: ' + err)); // TODO
                         return;
                     }
                     for (let i = 0; i < result.length; i++) {
@@ -376,12 +376,12 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
                             this.log.warn(`${namespaceLog} Got MGET request for non File ID in File-ID chunk for ${dataId}`);
                             return;
                         }
-                        this.loadFileSettings(id);
+                        this._loadFileSettings(id);
                         if (!this.fileOptions[id] || !this.fileOptions[id][name]) {
                             response.push(null);
                             return;
                         }
-                        const obj = this.clone(this.fileOptions[id][name]);
+                        const obj = this._clone(this.fileOptions[id][name]);
                         try {
                             // @ts-ignore
                             obj.stats = fs.statSync(path.join(this.objectsDir, id, name));
@@ -409,7 +409,7 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
             const {id, namespace, name, isMeta} = this._normalizeId(data[0]);
 
             if (namespace === this.namespaceObj) {
-                this.getObject(id, (err, result) => {
+                this._getObject(id, (err, result) => {
                     if (err || !result) {
                         handler && handler.sendNull(responseId);
                     } else {
@@ -434,13 +434,13 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
                         }));
                         return;
                     }
-                    this.loadFileSettings(id);
+                    this._loadFileSettings(id);
                     if (!this.fileOptions[id] || !this.fileOptions[id][name]) {
                         handler.sendNull(responseId);
                         return;
                     }
 
-                    let obj = this.clone(this.fileOptions[id][name]);
+                    let obj = this._clone(this.fileOptions[id][name]);
                     if (typeof obj !== 'object') {
                         obj = {
                             mimeType: obj,
@@ -455,7 +455,7 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
                     handler.sendBulk(responseId, JSON.stringify(obj));
                 } else {
                     // Handle request for File data
-                    this.readFile(id, name, (err, data, _mimeType) => {
+                    this._readFile(id, name, (err, data, _mimeType) => {
                         if (err || data === undefined || data === null) {
                             handler && handler.sendNull(responseId);
                         } else {
@@ -494,7 +494,7 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
                 // Handle request to set meta data, we ignore it because
                 // will be set when data are written
                 if (isMeta) {
-                    this.loadFileSettings(id);
+                    this._loadFileSettings(id);
 
                     try {
                         fs.ensureDirSync(path.join(this.objectsDir, id, path.dirname(name)));
@@ -511,7 +511,7 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
                     handler.sendString(responseId, 'OK');
                 } else {
                     // Handle request to write the file
-                    this.writeFile(id, name, data[1], err => {
+                    this._writeFile(id, name, data[1], err => {
                         if (err) {
                             handler && handler.sendError(responseId, new Error(`ERROR writeFile id=${id}: ${err.message}`));
                         } else {
@@ -539,7 +539,7 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
                     handler.sendString(responseId, 'OK');
                 } else {
                     // Handle request for File data
-                    this.rename(oldDetails.id, oldDetails.name, newDetails.name, err => {
+                    this._rename(oldDetails.id, oldDetails.name, newDetails.name, err => {
                         if (err) {
                             handler && handler.sendNull(responseId);
                         } else {
@@ -557,9 +557,9 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
             const {id, namespace, name, isMeta} = this._normalizeId(data[0]);
 
             if (namespace === this.namespaceObj) {
-                this.delObject(id, err => {
+                this._delObject(id, err => {
                     if (err) {
-                        handler && handler.sendError(responseId, new Error('ERROR delObject ' + id + ': ' + err));
+                        handler && handler.sendError(responseId, new Error('ERROR _delObject ' + id + ': ' + err));
                     } else {
                         handler && handler.sendInteger(responseId, 1);
                     }
@@ -571,7 +571,7 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
                     handler.sendString(responseId, 'OK');
                 } else {
                     // Handle request to remove the file
-                    this.unlink(id, name, err => {
+                    this._unlink(id, name, err => {
                         if (err) {
                             handler && handler.sendError(responseId, new Error(`ERROR unlink id=${id}: ${err}`));
                         } else {
@@ -594,14 +594,14 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
 
             if (namespace === this.namespaceObj) {
                 try {
-                    const exists = await this.objectExists(id);
+                    const exists = await this._objectExists(id);
                     handler.sendInteger(responseId, +exists);
                 } catch (e) {
                     return handler.sendError(responseId, e);
                 }
             } else if (namespace === this.namespaceFile) {
                 // @ts-ignore
-                handler.sendInteger(responseId, +await this.fileExists(id, name));
+                handler.sendInteger(responseId, +await this._fileExists(id, name));
             } else {
                 handler.sendError(responseId, new Error(`EXISTS-UNSUPPORTED for namespace ${namespace}`));
             }
@@ -630,7 +630,7 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
             const {id, namespace} = this._normalizeId(data[0]);
 
             if (namespace === this.namespaceObj) {
-                this.subscribeConfigForClient(handler, id, () =>
+                this._subscribeConfigForClient(handler, id, () =>
                     handler && handler.sendArray(responseId, ['psubscribe', data[0], 1]));
             } else {
                 handler.sendError(responseId, new Error('PSUBSCRIBE-UNSUPPORTED for namespace ' + namespace + ': Data=' + JSON.stringify(data)));
@@ -642,7 +642,7 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
             const {id, namespace} = this._normalizeId(data[0]);
 
             if (namespace === this.namespaceObj) {
-                this.unsubscribeConfigForClient(handler, id, () =>
+                this._unsubscribeConfigForClient(handler, id, () =>
                     handler && handler.sendArray(responseId, ['punsubscribe', data[0], 1]));
             } else {
                 handler.sendError(responseId, new Error('PUNSUBSCRIBE-UNSUPPORTED for namespace ' + namespace + ': Data=' + JSON.stringify(data)));
@@ -726,7 +726,7 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
         const {id, namespace, name, isMeta} = this._normalizeId(pattern);
 
         if (namespace === this.namespaceObj) {
-            this.getKeys(id, (err, result) => {
+            this._getKeys(id, (err, result) => {
                 if (err || !result) {
                     return handler && handler.sendError(responseId, new Error(`ERROR getKeys: ${err}`));
                 }
@@ -739,7 +739,7 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
         } else if (namespace === this.namespaceFile) {
             // Handle request to get meta data keys
             if (isMeta === undefined) {
-                this.readDir(id, name, (err, res) => {
+                this._readDir(id, name, (err, res) => {
                     if (err && err.toString().endsWith(utils.ERRORS.ERROR_NOT_FOUND)) {
                         res = [];
                         err = null;

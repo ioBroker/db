@@ -70,13 +70,13 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
     }
 
     // internal functionality
-    normalizeFilename(name) {
+    _normalizeFilename(name) {
         return name ? name.replace(/[/\\]+/g, '/') : name;
     }
 
     // -------------- FILE FUNCTIONS -------------------------------------------
     // internal functionality
-    saveFileSettings(id, force) {
+    _saveFileSettings(id, force) {
         if (typeof id === 'boolean') {
             force = id;
             id = undefined;
@@ -118,7 +118,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
     }
 
     // internal functionality
-    loadFileSettings(id) {
+    _loadFileSettings(id) {
         if (!this.fileOptions[id]) {
             const location = path.join(this.objectsDir, id, '_data.json');
             if (fs.existsSync(location)) {
@@ -130,7 +130,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
                 }
                 let corrected = false;
                 Object.keys(this.fileOptions[id]).forEach(filename => {
-                    const normalized = this.normalizeFilename(filename);
+                    const normalized = this._normalizeFilename(filename);
                     if (normalized !== filename) {
                         const options = this.fileOptions[id][filename];
                         delete this.fileOptions[id][filename];
@@ -177,7 +177,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
             return results;
         }
 
-        this.getObjectView('system', 'meta', null, (err, res) => {
+        this._getObjectView('system', 'meta', null, (err, res) => {
             if (err) {
                 return typeof callback === 'function' && callback(err);
             }
@@ -216,7 +216,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
                         resNotifies.push('Ignoring Directory "' + dir + '" because officially not created as meta object. Please remove directory!');
                         return;
                     }
-                    this.loadFileSettings(dir);
+                    this._loadFileSettings(dir);
                     const files = getAllFiles(dirPath);
                     files.forEach(file => {
                         const localFile = file.substr(dirPath.length + 1);
@@ -244,7 +244,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
                             dirSynced++;
                         }
                     });
-                    this.saveFileSettings(dir);
+                    this._saveFileSettings(dir);
                     resSynced += dirSynced;
                     dirSynced && resNotifies.push('Added ' + dirSynced + ' Files in Directory "' + dir + '"');
                 });
@@ -257,7 +257,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
     }
 
     // needed by server
-    async writeFile(id, name, data, options, callback) {
+    async _writeFile(id, name, data, options, callback) {
         if (typeof options === 'function') {
             callback = options;
             options = null;
@@ -279,7 +279,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
         options = options || {};
 
         try {
-            this.loadFileSettings(id);
+            this._loadFileSettings(id);
 
             this.files[id] = this.files[id] || {};
 
@@ -327,7 +327,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
                 }
 
                 // Store dir description
-                this.saveFileSettings(id);
+                this._saveFileSettings(id);
             } catch (e) {
                 this.log.error(this.namespace + ' Cannot write files: ' + path.join(this.objectsDir, id, name) + ': ' + e.message);
                 return tools.maybeCallbackWithError(callback, e);
@@ -339,7 +339,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
     }
 
     // needed by server
-    async readFile(id, name, options, callback) {
+    async _readFile(id, name, options, callback) {
         if (typeof options === 'function') {
             callback = options;
             options  = null;
@@ -357,7 +357,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
 
         options = options || {};
         try {
-            this.loadFileSettings(id);
+            this._loadFileSettings(id);
 
             this.files[id] = this.files[id] || {};
 
@@ -443,7 +443,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
      * @return {Promise<boolean>}
      */
     // needed by server
-    async objectExists(id, _options) {
+    async _objectExists(id, _options) {
         if (!id || typeof id !== 'string') {
             return Promise.reject(new Error(`invalid id ${JSON.stringify(id)}`));
         }
@@ -466,7 +466,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
      * @returns {Promise<boolean>}
      */
     // needed by server
-    async fileExists(id, name, _options) {
+    async _fileExists(id, name, _options) {
         if (typeof name !== 'string') {
             name = '';
         }
@@ -514,7 +514,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
     }
 
     // needed by server
-    unlink(id, name, options, callback) {
+    _unlink(id, name, options, callback) {
         if (typeof options === 'function') {
             callback = options;
             options  = null;
@@ -529,7 +529,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
         try {
             let changed = false;
 
-            this.loadFileSettings(id);
+            this._loadFileSettings(id);
 
             if (this.fileOptions[id][name]) {
                 changed = true;
@@ -548,7 +548,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
                     let cnt = 0;
                     for (let f = 0; f < fdir.length; f++) {
                         cnt++;
-                        this.unlink(id, name + '/' + fdir[f], options, err => {
+                        this._unlink(id, name + '/' + fdir[f], options, err => {
                             if (!--cnt) {
                                 this.log.debug('Delete directory ' + path.join(id, name));
                                 try {
@@ -583,7 +583,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
             }
             // Store dir description
             if (changed) {
-                this.saveFileSettings(id);
+                this._saveFileSettings(id);
             }
         } catch (e) {
             return tools.maybeCallbackWithError(callback, e);
@@ -591,7 +591,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
     }
 
     // needed by server
-    async readDir(id, name, options, callback) {
+    async _readDir(id, name, options, callback) {
         if (typeof options === 'function') {
             callback = options;
             options = null;
@@ -625,7 +625,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
             name += '/';
         }
 
-        this.loadFileSettings(id);
+        this._loadFileSettings(id);
 
         const len = (name) ? name.length : 0;
         for (const f of Object.keys(this.fileOptions[id])) {
@@ -741,7 +741,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
     }
 
     // needed by server
-    rename(id, oldName, newName, options, callback) {
+    _rename(id, oldName, newName, options, callback) {
         if (typeof options === 'function') {
             callback = options;
             options = null;
@@ -757,7 +757,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
         }
 
         try {
-            this.loadFileSettings(id);
+            this._loadFileSettings(id);
 
             const location = path.join(this.objectsDir, id, '_data.json');
             Object.keys(this.fileOptions[id]).forEach(name => {
@@ -787,7 +787,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
     }
 
     // internal functionality
-    clone(obj) {
+    _clone(obj) {
         if (obj === null || obj === undefined || !tools.isObject(obj)) {
             return obj;
         }
@@ -795,13 +795,13 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
         const temp = obj.constructor(); // changed
 
         for (const key of Object.keys(obj)) {
-            temp[key] = this.clone(obj[key]);
+            temp[key] = this._clone(obj[key]);
         }
         return temp;
     }
 
     // needed by server
-    subscribeConfigForClient(client, pattern, options, callback) {
+    _subscribeConfigForClient(client, pattern, options, callback) {
         if (typeof options === 'function') {
             callback = options;
             options = null;
@@ -813,7 +813,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
     }
 
     // needed by server
-    unsubscribeConfigForClient(client, pattern, options, callback) {
+    _unsubscribeConfigForClient(client, pattern, options, callback) {
         if (typeof options === 'function') {
             callback = options;
             options = null;
@@ -825,7 +825,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
     }
 
     // needed by server
-    getObject(id, options, callback) {
+    _getObject(id, options, callback) {
         if (typeof options === 'function') {
             callback = options;
             options = null;
@@ -835,7 +835,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
     }
 
     // needed by server
-    getKeys(pattern, options, callback, _dontModify) {
+    _getKeys(pattern, options, callback, _dontModify) {
         if (typeof options === 'function') {
             callback = options;
             options = null;
@@ -857,7 +857,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
     }
 
     // needed by server
-    getObjects(keys, options, callback, _dontModify) {
+    _getObjects(keys, options, callback, _dontModify) {
         if (typeof options === 'function') {
             callback = options;
             options = null;
@@ -900,7 +900,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
     }
 
     // needed by server
-    delObject(id, options, callback) {
+    _delObject(id, options, callback) {
         if (typeof options === 'function') {
             callback = options;
             options = null;
@@ -988,7 +988,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
     }
 
     // needed by server
-    getObjectView(design, search, params, options, callback) {
+    _getObjectView(design, search, params, options, callback) {
         if (typeof options === 'function') {
             callback = options;
             options = null;
@@ -1011,19 +1011,6 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
         }
     }
 
-    // special functionality
-    _destroyDB(_options, callback) {
-        if (fs.existsSync(this.datasetName)) {
-            fs.unlinkSync(this.datasetName);
-        }
-
-        // also delete user files
-        if (fs.existsSync(this.objectsDir)) {
-            fs.emptyDirSync(this.objectsDir);
-        }
-
-        typeof callback === 'function' && setImmediate(() => callback());
-    }
     // special functionality
     destroyDB(options, callback) {
         if (typeof options === 'function') {
@@ -1054,7 +1041,16 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
                 if (!options.acl.file.write || options.user !== utils.CONSTS.SYSTEM_ADMIN_USER) {
                     typeof callback === 'function' && setImmediate(() => callback(utils.ERRORS.ERROR_PERMISSION));
                 } else {
-                    return this._destroyDB(options, callback);
+                    if (fs.existsSync(this.datasetName)) {
+                        fs.unlinkSync(this.datasetName);
+                    }
+
+                    // also delete user files
+                    if (fs.existsSync(this.objectsDir)) {
+                        fs.emptyDirSync(this.objectsDir);
+                    }
+
+                    typeof callback === 'function' && setImmediate(() => callback());
                 }
             }
         });
@@ -1064,7 +1060,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
     destroy() {
         super.destroy();
 
-        this.saveFileSettings(true);
+        this._saveFileSettings(true);
         if (this.stateTimer) {
             clearTimeout(this.stateTimer);
             this.stateTimer = null;

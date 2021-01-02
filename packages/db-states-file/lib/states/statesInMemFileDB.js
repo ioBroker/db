@@ -67,14 +67,14 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
         //this.settings.connection.maxQueue = this.settings.connection.maxQueue || 1000;
 
         // Reset expires, that are still in DB
-        this.expireAll();
+        this._expireAll();
     }
 
     // internal functionality
-    expireAll() {
+    _expireAll() {
         Object.keys(this.stateExpires).forEach( id => {
             clearTimeout(this.stateExpires[id]);
-            this.expireState(id);
+            this._expireState(id);
         });
         // Set as expire all states that could expire
         Object.keys(this.dataset).forEach(id => {
@@ -82,7 +82,7 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
                 return;
             }
             if (this.dataset[id].expire) {
-                this.expireState(id, true);
+                this._expireState(id, true);
             }
         });
 
@@ -92,7 +92,7 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
     }
 
     // internal functionality
-    expireState(id, dontPublish) {
+    _expireState(id, dontPublish) {
         if (this.stateExpires[id] !== undefined) {
             delete this.stateExpires[id];
         }
@@ -108,7 +108,7 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
     }
 
     // internal functionality
-    expireSession(id) {
+    _expireSession(id) {
         if (this.sessionExpires[id] && this.sessionExpires[id].timeout) {
             clearTimeout(this.sessionExpires[id].timeout);
             delete this.sessionExpires[id];
@@ -122,7 +122,7 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
     // Destructor of the class. Called by shutting down.
     // internal functionality
     destroy() {
-        this.expireAll();
+        this._expireAll();
 
         super.destroy();
 
@@ -133,7 +133,7 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
     }
 
     // needed by Server
-    getStates(keys, callback, _dontModify) {
+    _getStates(keys, callback, _dontModify) {
         if (!keys) {
             typeof callback === 'function' && setImmediate(() => callback('no keys', null));
             return;
@@ -150,7 +150,7 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
     }
 
     // needed by Server
-    getState(id, callback) {
+    _getState(id, callback) {
         typeof callback === 'function' && setImmediate(state => callback(null, state), this.dataset[id] !== undefined ? this.dataset[id] : null);
     }
 
@@ -167,7 +167,7 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
         }
 
         if (expire) {
-            this.stateExpires[id] = setTimeout(() => this.expireState(id), expire * 1000);
+            this.stateExpires[id] = setTimeout(() => this._expireState(id), expire * 1000);
 
             obj.expire = true;
         }
@@ -189,7 +189,7 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
     }
 
     // needed by Server
-    delState(id, callback) {
+    _delState(id, callback) {
         if (this.stateExpires[id]) {
             clearTimeout(this.stateExpires[id]);
             delete this.stateExpires[id];
@@ -212,7 +212,7 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
     }
 
     // needed by Server
-    getKeys(pattern, callback, _dontModify) {
+    _getKeys(pattern, callback, _dontModify) {
         // special case because of simulation of redis
         if (pattern.substring(0, 3) === 'io.') {
             pattern = pattern.substring(3);
@@ -227,55 +227,55 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
     }
 
     // needed by Server
-    subscribeForClient(client, pattern, cb) {
+    _subscribeForClient(client, pattern, cb) {
         this.handleSubscribe(client, 'state', pattern, cb);
     }
 
     // needed by Server
-    unsubscribeForClient(client, pattern, cb) {
+    _unsubscribeForClient(client, pattern, cb) {
         this.handleUnsubscribe(client, 'state', pattern, cb);
     }
 
     // needed by Server
-    subscribeMessageForClient(client, id, cb) {
+    _subscribeMessageForClient(client, id, cb) {
         this.handleSubscribe(client, 'messagebox', 'messagebox.' + id, cb);
     }
 
     // needed by Server
-    unsubscribeMessageForClient(client, id, cb) {
+    _unsubscribeMessageForClient(client, id, cb) {
         this.handleUnsubscribe(client, 'messagebox', 'messagebox.' + id, cb);
     }
 
     // needed by Server
-    subscribeLogForClient(client, id, cb) {
+    _subscribeLogForClient(client, id, cb) {
         this.handleSubscribe(client, 'log', 'log.' + id, cb);
     }
 
     // needed by Server
-    unsubscribeLogForClient(client, id, cb) {
+    _unsubscribeLogForClient(client, id, cb) {
         this.handleUnsubscribe(client, 'log', 'log.' + id, cb);
     }
 
     // needed by Server
-    getSession(id, callback) {
+    _getSession(id, callback) {
         typeof callback === 'function' && setImmediate(session => callback(session), this.session[id]);
     }
 
     // internal functionality
-    handleSessionExpire(id, expireDate) {
+    _handleSessionExpire(id, expireDate) {
         if (this.sessionExpires[id] && this.sessionExpires[id].timeout) {
             clearTimeout(this.sessionExpires[id].timeout);
             delete this.sessionExpires[id];
         }
         const expireDelay = expireDate - Date.now();
         if (expireDelay <= 0) {
-            this.expireSession(id);
+            this._expireSession(id);
         } else if (expireDate <= this.ONE_DAY_IN_SECS) {
             this.sessionExpires[id] = {
                 sessionEnd: expireDate,
                 timeout: setTimeout(() => {
                     this.sessionExpires[id].timeout = null;
-                    this.expireSession(id);
+                    this._expireSession(id);
                 }, expireDate)
             };
         } else {
@@ -283,14 +283,14 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
                 sessionEnd: expireDate,
                 timeout: setTimeout(() => {
                     this.sessionExpires[id].timeout = null;
-                    this.handleSessionExpire(id, expireDate);
+                    this._handleSessionExpire(id, expireDate);
                 }, this.ONE_DAY_IN_SECS)
             };
         }
     }
 
     // needed by Server
-    setSession(id, expire, obj, callback) {
+    _setSession(id, expire, obj, callback) {
         this.session[id] = obj || {};
 
         if (this.sessionExpires[id] && this.sessionExpires[id].timeout) {
@@ -298,14 +298,14 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
             delete this.sessionExpires[id];
         }
 
-        this.handleSessionExpire(id, Date.now() + expire * 1000);
+        this._handleSessionExpire(id, Date.now() + expire * 1000);
         this.session[id]._expire = true;
 
         typeof callback === 'function' && setImmediate(() => callback());
     }
 
     // needed by Server
-    destroySession(id, callback) {
+    _destroySession(id, callback) {
         if (this.session[id]) {
             delete this.session[id];
         }
@@ -313,7 +313,7 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
     }
 
     // needed by Server
-    setBinaryState(id, data, callback) {
+    _setBinaryState(id, data, callback) {
         if (!Buffer.isBuffer(data)) {
             data = Buffer.from(data);
         }
