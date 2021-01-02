@@ -16,7 +16,6 @@
 
 const InMemoryFileDB        = require('@iobroker/db-base').inMemoryFileDB;
 const tools                 = require('@iobroker/db-base').tools;
-//const { isDeepStrictEqual } = require('util');
 
 // settings = {
 //    change:    function (id, state) {},
@@ -61,7 +60,6 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
         this.stateExpires = {};
         this.sessionExpires = {};
         this.ONE_DAY_IN_SECS = 24*60*60*1000;
-        //this.adapterSubs = [];
         this.writeFileInterval = this.settings.connection && typeof this.settings.connection.writeFileInterval === 'number' ?
             parseInt(this.settings.connection.writeFileInterval) : 30000;
         this.log.silly(`${this.namespace} States DB uses file write interval of ${this.writeFileInterval} ms`);
@@ -156,133 +154,6 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
         typeof callback === 'function' && setImmediate(state => callback(null, state), this.dataset[id] !== undefined ? this.dataset[id] : null);
     }
 
-    /*/**
-     * Promise-version of getState
-     */
-    /*getStateAsync(id) {
-        return new Promise((resolve, reject) => {
-            this.getState(id, (err, res) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(res);
-                }
-            });
-        });
-    }
-*/
-    /*
-    /**
-     * @method setState
-     * @param id {String}           the id of the value.
-     * @param state {any}
-     *
-     *
-     *      an object containing the actual value and some metadata:<br>
-     *      setState(id, {'val': val, 'ts': ts, 'ack': ack, 'from': from, 'lc': lc, 'user': system.user.NAME})
-     *
-     *      if no object is given state is treated as val:<br>
-     *      setState(id, val)
-     *
-     *      <ul><li><b>val</b>  the actual value. Can be any JSON-stringifiable object. If undefined the
-     *                          value is kept unchanged.</li>
-     *
-     *      <li><b>ack</b>  a boolean that can be used to mark a value as confirmed, used in bidirectional systems which
-     *                      acknowledge that a value has been successfully set. Will be set to false if undefined.</li>
-     *
-     *      <li><b>ts</b>   a unix timestamp indicating the last write-operation on the state. Will be set by the
-     *                      setState method if undefined.</li>
-     *
-     *      <li><b>lc</b>   a unix timestamp indicating the last change of the actual value. this should be undefined
-     *                      when calling setState, it will be set by the setValue method itself.</li></ul>
-     *
-     * @param callback {Function}   will be called when redis confirmed reception of the command
-     */
-    /*setState(id, state, callback) {
-        const obj = {};
-
-        if (typeof state !== 'object' || state === null) {
-            state = {
-                val: state
-            };
-        }
-
-        let oldObj = this.dataset[id];
-
-        if (!oldObj) {
-            oldObj = {val: null};
-        }
-
-        if (state.val !== undefined) {
-            obj.val = state.val;
-        } else {
-            obj.val = oldObj.val;
-        }
-
-        if (state.ack !== undefined) {
-            obj.ack = state.ack === null ? oldObj.ack || false : state.ack;
-        } else {
-            obj.ack = false;
-        }
-
-        if (state.ts !== undefined) {
-            obj.ts = (state.ts < 946681200000) ? state.ts * 1000 : state.ts; // if less 2000.01.01 00:00:00
-        } else {
-            obj.ts = Date.now();
-        }
-
-        if (state.q !== undefined) {
-            obj.q = state.q;
-        } else {
-            obj.q = 0;
-        }
-
-        // comment
-        if (state.c && typeof state.c === 'string') {
-            obj.c = state.c.substring(0, 512);
-        }
-
-        if (state.ms !== undefined) {
-            obj.ms = state.ms;
-        }
-
-        obj.from = state.from;
-
-        if (state.user !== undefined) {
-            obj.user = state.user;
-        }
-
-        let hasChanged;
-
-        if (state.lc !== undefined) {
-            obj.lc = state.lc;
-        } else {
-            // isDeepStrictEqual works on objects and primitive values
-            hasChanged = !isDeepStrictEqual(oldObj.val, obj.val);
-            if (!oldObj.lc || hasChanged) {
-                obj.lc = obj.ts;
-            } else {
-                obj.lc = oldObj.lc;
-            }
-        }
-        this._setStateDirect(id, obj, state.expire, callback);
-    }
-*/
-    /*/**
-     * Promise-version of setState
-     */
-    /*setStateAsync(id, state) {
-        return new Promise((resolve, reject) => {
-            this.setState(id, state, (err, res) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(res);
-                }
-            });
-        });
-    }
-*/
     // needed by Server
     _setStateDirect(id, obj, expire, callback) {
         if (typeof expire === 'function') {
@@ -317,16 +188,6 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
         }
     }
 
-    /*
-    setRawState(id, state, callback) {
-        this.dataset[id] = state;
-        typeof callback === 'function' && setImmediate(() => callback(null, id));
-
-        if (!this.stateTimer) {
-            this.stateTimer = setTimeout(() => this.saveState(), this.writeFileInterval);
-        }
-    }
-*/
     // needed by Server
     delState(id, callback) {
         if (this.stateExpires[id]) {
@@ -365,187 +226,31 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
         typeof callback === 'function' && setImmediate(() => callback(null, result));
     }
 
-    /*
-    subscribe(pattern, cb) {
-        this.subscribeForClient(this.callbackSubscriptionClient, pattern, cb);
-    }
-*/
     // needed by Server
     subscribeForClient(client, pattern, cb) {
         this.handleSubscribe(client, 'state', pattern, cb);
     }
-    /*
-    unsubscribe(pattern, cb) {
-        this.unsubscribeForClient(this.callbackSubscriptionClient, pattern, cb);
-    }
-*/
+
     // needed by Server
     unsubscribeForClient(client, pattern, cb) {
         this.handleUnsubscribe(client, 'state', pattern, cb);
     }
 
-    /*    /**
-     * Register some instance as subscribable.
-     * If some instance says, that it is subscribable, the instance can read every time (and at start)
-     * all subscriptions to their states and will receive messages about changes of subscriptions
-     *
-     * @param instance name of instance
-     * @param cb callback which says if subscription added or yet exists
-     */
-    /*    registerAdapterSubs(instance, cb) {
-        let added = false;
-        if (this.adapterSubs.indexOf(instance) === -1) {
-            this.adapterSubs.push(instance);
-            this.adapterSubs.sort();
-            added = true;
-        }
-        if (cb) {
-            cb(null, added);
-        }
-    }
-*/
-    /*    /**
-     * Unregister instance as subscribable.
-     *
-     * @param instance name of instance
-     * @param cb callback which says if subscription removed or no
-     */
-    /*    unregisterAdapterSubs(instance, cb) {
-        const pos = this.adapterSubs.indexOf(instance);
-        if (pos !== -1) {
-            this.adapterSubs.splice(pos, 1);
-        }
-        if (cb) {
-            cb(null, pos !== -1);
-        }
-    }
-*/
-    /*    pushMessage(id, state, callback) {
-        state._id = this.globalMessageId++;
-
-        if (this.globalMessageId >= 0xFFFFFFFF) {
-            this.globalMessageId = 0;
-        }
-
-        typeof callback === 'function' && setImmediate(() => callback(null, id));
-
-        setImmediate(() => this.publishAll('messagebox', 'messagebox.' + id, state));
-    }
-*/
-    /*    subscribeMessage(id, cb) {
-        this.subscribeMessageForClient(this.callbackSubscriptionClient, id, cb);
-    }
-*/
     // needed by Server
     subscribeMessageForClient(client, id, cb) {
         this.handleSubscribe(client, 'messagebox', 'messagebox.' + id, cb);
     }
 
-    /*    unsubscribeMessage(id, cb) {
-        this.unsubscribeMessageForClient(this.callbackSubscriptionClient, id, cb);
-    }
-*/
     // needed by Server
     unsubscribeMessageForClient(client, id, cb) {
         this.handleUnsubscribe(client, 'messagebox', 'messagebox.' + id, cb);
     }
 
-    /*    /**
-     * @method pushLog
-     * @param {String} id           the id of the logger.
-     * @param {object} log          log object, looks like
-     *      pushLog(id, {message: msg, severity: info|debug|warn|error, from: that.namespace, ts: Date.now()})
-     *
-     *      <ul><li><b>message</b>  the actual value. Can be any JSON-stringifiable object. If undefined the
-     *                          value is kept unchanged.</li>
-     *
-     *      <li><b>severity</b>  a boolean that can be used to mark a value as confirmed, used in bidirectional systems which
-     *                      acknowledge that a value has been successfully set. Will be set to false if undefined.</li>
-     *
-     *      <li><b>from</b>   a unix timestamp indicating the last write-operation on the state. Will be set by the
-     *                      setState method if undefined.</li>
-     *
-     *      <li><b>ts</b>   a unix timestamp indicating the last change of the actual value. this should be undefined
-     *                      when calling setState, it will be set by the setValue method itself.</li></ul>
-     *
-     * @param callback {Function}   will be called when confirmed reception of the command
-     */
-    /*    pushLog(id, log, callback) {
-        // do not store messages.
-        //logs[id] = logs[id] || [];
-        log._id = this.globalLogId++;
-        if (this.globalLogId >= 0xFFFFFFFF) {
-            this.globalLogId = 0;
-        }
-        //logs[id].unshift(state);
-        //if (logs[id].length > settings.connection.maxQueue) {
-        //    logs[id].splice(settings.connection.maxQueue - logs[id].length);
-        //}
-        typeof callback === 'function' && setImmediate(() => callback(null, id));
-
-        setImmediate(() => this.publishAll('log', 'log.' + id, log));
-    }
-
-    lenLog(id, callback) {
-        if (this.logs[id]) {
-            typeof callback === 'function' && setImmediate(logLen => callback(null, logLen, id), this.logs[id].length);
-        } else {
-            typeof callback === 'function' && setImmediate(() => callback(tools.ERRORS.ERROR_NOT_FOUND, null, id));
-        }
-    }
-
-    getLog(id, callback) {
-        if (this.logs[id]) {
-            typeof callback === 'function' && setImmediate((logEntry, logLen) => callback(null, logEntry, logLen), this.logs[id].pop(), this.logs[id].length);
-        } else {
-            typeof callback === 'function' && setImmediate(() => callback(tools.ERRORS.ERROR_NOT_FOUND, null, 0));
-        }
-    }
-
-    delLog(id, logId, callback) {
-        if (this.logs[id]) {
-            let found = false;
-            for (let i = this.logs[id].length - 1; i >= 0; i--) {
-                if (this.logs[id][i]._id === logId) {
-                    this.logs[id].splice(i, 1);
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) {
-                // Protection against too much lost IDs
-                if (this.logs[id].length > 100) {
-                    console.log('WARNING: cannot find logs with id = ' + logId);
-                    this.log.error(this.namespace + ' WARNING: cannot find logs with id = ' + logId);
-                    this.logs[id].splice(100, this.logs[id].length - 100);
-                }
-                typeof callback === 'function' && setImmediate(() => callback(tools.ERRORS.ERROR_NOT_FOUND));
-            } else {
-                typeof callback === 'function' && setImmediate(() => callback());
-            }
-        } else if (typeof callback === 'function') {
-            setImmediate(() => callback(tools.ERRORS.ERROR_NOT_FOUND));
-        }
-    }
-
-    clearAllLogs(callback) {
-        this.logs = {};
-        typeof callback === 'function' && setImmediate(() => callback());
-    }
-
-    subscribeLog(id, cb) {
-        this.subscribeLogForClient(this.callbackSubscriptionClient, id, cb);
-    }
-*/
     // needed by Server
     subscribeLogForClient(client, id, cb) {
         this.handleSubscribe(client, 'log', 'log.' + id, cb);
     }
-    /*
-    unsubscribeLog(id, cb) {
-        this.unsubscribeLogForClient(this.callbackSubscriptionClient, id, cb);
-    }
-*/
+
     // needed by Server
     unsubscribeLogForClient(client, id, cb) {
         this.handleUnsubscribe(client, 'log', 'log.' + id, cb);
@@ -619,26 +324,6 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
             this.stateTimer = setTimeout(() => this.saveState(), this.writeFileInterval);
         }
     }
-
-/*    getBinaryState(id, callback) {
-        if (this.dataset[id]) {
-            typeof callback === 'function' && setImmediate(state => callback(null, state), this.dataset[id]);
-        } else {
-            typeof callback === 'function' && setImmediate(() => callback('not exists'));
-        }
-    }
-
-    delBinaryState(id, callback) {
-        if (this.dataset[id]) {
-            delete this.dataset[id];
-        }
-        typeof callback === 'function' && setImmediate(() => callback(null, id));
-
-        if (!this.stateTimer) {
-            this.stateTimer = setTimeout(() => this.saveState(), this.writeFileInterval);
-        }
-    }
- */
 }
 
 module.exports = StatesInMemoryFileDB;

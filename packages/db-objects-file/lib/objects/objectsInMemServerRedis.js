@@ -82,10 +82,6 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
         });
     }
 
-    /*addPreserveSettings(_settings) {
-        // when Redis is used this is done by objectsInRedis already
-    }*/
-
     /**
      * Separate Namespace from ID and return both
      * @param idWithNamespace ID or Array of IDs containing a redis namespace and the real ID
