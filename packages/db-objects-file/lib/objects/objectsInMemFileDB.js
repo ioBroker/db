@@ -1750,7 +1750,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
 
     // needed by server
     _getObject(id, _options, callback) {
-        const obj = this.clone(this.dataset[id]);
+        const obj = this.dataset[id];
         typeof callback === 'function' && setImmediate(() => callback(null, obj));
     }
     // needed by server
@@ -1859,7 +1859,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
         const result = [];
         for (let i = 0; i < keys.length; i++) {
             //if (utils.checkObject(this.dataset[keys[i]], options, utils.CONSTS.ACCESS_READ)) {
-            result.push(this.clone(this.dataset[keys[i]]));
+            result.push(this.dataset[keys[i]]);
             //} else {
             //    result.push({error: utils.ERRORS.ERROR_PERMISSION});
             //}
@@ -2084,7 +2084,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
 
     // needed by server
     _setObjectDirect(id, obj, callback) {
-        this.dataset[id] = deepClone(obj);
+        this.dataset[id] = obj;
 
         // object updated -> if type changed to meta -> cache
         if (this.dataset[id].type === 'meta' && this.existingMetaObjects[id] === false) {
