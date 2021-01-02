@@ -55,16 +55,6 @@ class ObjectsInMemoryServerClass extends ObjectsInRedisClient {
     async dirExists(id, name, options) {
         return this.objectsServer.dirExists(id, name, options);
     }
-
-    // Try to increase performance by directly calling server code for real logic
-    async _setObject(id, obj, options, callback) {
-        return this.objectsServer._setObjectDirect(id, obj, callback);
-    }
-
-    async _getObject(id, options, callback) {
-        return this.objectsServer._getObject(id, options, callback);
-    }
-
 }
 
 module.exports = ObjectsInMemoryServerClass;
