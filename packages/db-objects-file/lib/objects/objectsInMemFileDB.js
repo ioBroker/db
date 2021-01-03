@@ -539,7 +539,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
         }
         // Store dir description
         if (changed) {
-            setImmediate(() => this._saveFileSettings(id));
+            this._saveFileSettings(id, true);
         }
     }
 
@@ -707,7 +707,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
                 this.files[id][name.replace(oldName, newName)] = data;
             }
         });
-        this._saveFileSettings(id);
+        this._saveFileSettings(id, true);
     }
 
     // internal functionality
