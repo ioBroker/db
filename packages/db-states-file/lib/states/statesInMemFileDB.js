@@ -133,34 +133,20 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
     }
 
     // needed by Server
-    _getStates(keys, callback, _dontModify) {
-        if (!keys) {
-            typeof callback === 'function' && setImmediate(() => callback('no keys', null));
-            return;
+    _getStates(keys) {
+        if (!keys || !Array.isArray(keys)) {
+            throw new Error('no keys');
         }
-        if (!keys.length) {
-            typeof callback === 'function' && setImmediate(() => callback(null, []));
-            return;
-        }
-        const result = [];
-        for (let i = 0; i < keys.length; i++) {
-            result.push(this.dataset[keys[i]] !== undefined ? this.dataset[keys[i]] : null);
-        }
-        typeof callback === 'function' && setImmediate(() => callback(null, result));
+        return keys.map(el => this.dataset[el] !== undefined ? this.dataset[el] : null);
     }
 
     // needed by Server
-    _getState(id, callback) {
-        typeof callback === 'function' && setImmediate(state => callback(null, state), this.dataset[id] !== undefined ? this.dataset[id] : null);
+    _getState(id) {
+        return this.dataset[id] !== undefined ? this.dataset[id] : null;
     }
 
     // needed by Server
-    _setStateDirect(id, obj, expire, callback) {
-        if (typeof expire === 'function') {
-            callback = expire;
-            expire = undefined;
-        }
-
+    _setStateDirect(id, obj, expire) {
         if (this.stateExpires[id]) {
             clearTimeout(this.stateExpires[id]);
             delete this.stateExpires[id];
@@ -172,7 +158,6 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
             obj.expire = true;
         }
         this.dataset[id] = obj;
-        typeof callback === 'function' && setImmediate(() => callback(null, id));
 
         // If val === undefined, the state was just created and not filled with value
         if (obj.val !== undefined) {
@@ -189,7 +174,7 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
     }
 
     // needed by Server
-    _delState(id, callback) {
+    _delState(id) {
         if (this.stateExpires[id]) {
             clearTimeout(this.stateExpires[id]);
             delete this.stateExpires[id];
@@ -199,11 +184,7 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
             const isBinary = Buffer.isBuffer(this.dataset[id]);
             delete this.dataset[id];
 
-            typeof callback === 'function' && setImmediate(callback, null, id);
-
             !isBinary && setImmediate(() => this.publishAll('state', id, null));
-        } else {
-            typeof callback === 'function' && setImmediate(callback, null, id);
         }
 
         if (!this.stateTimer) {
@@ -212,53 +193,44 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
     }
 
     // needed by Server
-    _getKeys(pattern, callback, _dontModify) {
-        // special case because of simulation of redis
-        if (pattern.substring(0, 3) === 'io.') {
-            pattern = pattern.substring(3);
-        }
-
+    _getKeys(pattern) {
         const r = new RegExp(tools.pattern2RegEx(pattern));
-        const result = [];
-        for (const id of Object.keys(this.dataset)) {
-            r.test(id) && result.push(id);
-        }
-        typeof callback === 'function' && setImmediate(() => callback(null, result));
+        return Object.keys(this.dataset).filter(id => r.test(id));
     }
 
     // needed by Server
-    _subscribeForClient(client, pattern, cb) {
-        this.handleSubscribe(client, 'state', pattern, cb);
+    _subscribeForClient(client, pattern) {
+        this.handleSubscribe(client, 'state', pattern);
     }
 
     // needed by Server
-    _unsubscribeForClient(client, pattern, cb) {
-        this.handleUnsubscribe(client, 'state', pattern, cb);
+    _unsubscribeForClient(client, pattern) {
+        this.handleUnsubscribe(client, 'state', pattern);
     }
 
     // needed by Server
-    _subscribeMessageForClient(client, id, cb) {
-        this.handleSubscribe(client, 'messagebox', 'messagebox.' + id, cb);
+    _subscribeMessageForClient(client, id) {
+        this.handleSubscribe(client, 'messagebox', 'messagebox.' + id);
     }
 
     // needed by Server
-    _unsubscribeMessageForClient(client, id, cb) {
-        this.handleUnsubscribe(client, 'messagebox', 'messagebox.' + id, cb);
+    _unsubscribeMessageForClient(client, id) {
+        this.handleUnsubscribe(client, 'messagebox', 'messagebox.' + id);
     }
 
     // needed by Server
-    _subscribeLogForClient(client, id, cb) {
-        this.handleSubscribe(client, 'log', 'log.' + id, cb);
+    _subscribeLogForClient(client, id) {
+        this.handleSubscribe(client, 'log', 'log.' + id);
     }
 
     // needed by Server
-    _unsubscribeLogForClient(client, id, cb) {
-        this.handleUnsubscribe(client, 'log', 'log.' + id, cb);
+    _unsubscribeLogForClient(client, id) {
+        this.handleUnsubscribe(client, 'log', 'log.' + id);
     }
 
     // needed by Server
-    _getSession(id, callback) {
-        typeof callback === 'function' && setImmediate(session => callback(session), this.session[id]);
+    _getSession(id) {
+        return this.session[id] !== undefined ? this.session[id] : null;
     }
 
     // internal functionality
@@ -290,7 +262,7 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
     }
 
     // needed by Server
-    _setSession(id, expire, obj, callback) {
+    _setSession(id, expire, obj) {
         this.session[id] = obj || {};
 
         if (this.sessionExpires[id] && this.sessionExpires[id].timeout) {
@@ -300,25 +272,21 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
 
         this._handleSessionExpire(id, Date.now() + expire * 1000);
         this.session[id]._expire = true;
-
-        typeof callback === 'function' && setImmediate(() => callback());
     }
 
     // needed by Server
-    _destroySession(id, callback) {
+    _destroySession(id) {
         if (this.session[id]) {
             delete this.session[id];
         }
-        typeof callback === 'function' && setImmediate(() => callback());
     }
 
     // needed by Server
-    _setBinaryState(id, data, callback) {
+    _setBinaryState(id, data) {
         if (!Buffer.isBuffer(data)) {
             data = Buffer.from(data);
         }
         this.dataset[id] = data;
-        typeof callback === 'function' && setImmediate(() => callback(null, id));
 
         if (!this.stateTimer) {
             this.stateTimer = setTimeout(() => this.saveState(), this.writeFileInterval);
