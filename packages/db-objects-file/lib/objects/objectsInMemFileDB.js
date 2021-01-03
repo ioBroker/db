@@ -503,13 +503,6 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
 
         this._loadFileSettings(id);
 
-        if (this.fileOptions[id][name]) {
-            changed = true;
-            delete this.fileOptions[id][name];
-        }
-        if (this.files[id] && this.files[id][name]) {
-            delete this.files[id][name];
-        }
         const location = path.join(this.objectsDir, id, name);
         if (fs.existsSync(location)) {
             const stat = fs.statSync(location);
@@ -537,10 +530,16 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
         } else {
             throw new Error(utils.ERRORS.ERROR_NOT_FOUND);
         }
-        // Store dir description
-        if (changed) {
-            this._saveFileSettings(id, true);
+
+        if (this.fileOptions[id][name]) {
+            delete this.fileOptions[id][name];
         }
+        if (this.files[id] && this.files[id][name]) {
+            delete this.files[id][name];
+        }
+
+        // Store dir description
+        this._saveFileSettings(id, true);
     }
 
     // needed by server
@@ -580,6 +579,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
                 }
             }
         }
+        this.log.debug('fileOptions: ' + JSON.stringify(_files));
 
         const location = path.join(this.objectsDir, id, name);
         if (fs.existsSync(location)) {
@@ -590,6 +590,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
                 }
                 if (dirFiles[i] !== '_data.json' && _files.indexOf(dirFiles[i]) === -1) {
                     _files.push(dirFiles[i]);
+                    this.log.debug('Add: ' + dirFiles[i]);
                 }
             }
         } else {
