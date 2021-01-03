@@ -534,7 +534,7 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
                 try {
                     this._delObject(id);
                 } catch (err) {
-                    return void handler.sendError(responseId, new Error('ERROR _delObject ' + id + ': ' + err.message));
+                    return void handler.sendError(responseId, err);
                 }
                 handler.sendInteger(responseId, 1);
             } else if (namespace === this.namespaceFile) {
@@ -547,7 +547,7 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
                     try {
                         this._unlink(id, name);
                     } catch (err) {
-                        return void handler.sendError(responseId, new Error(`ERROR unlink id=${id}: ${err}`));
+                        return void handler.sendError(responseId, err);
                     }
                     handler.sendString(responseId, 'OK');
                 }
