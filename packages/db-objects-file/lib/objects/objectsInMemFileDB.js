@@ -177,91 +177,88 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
             return results;
         }
 
-        this._getObjectView('system', 'meta', null, (err, res) => {
-            if (err) {
-                return typeof callback === 'function' && callback(err);
-            }
-            // collect Meta objects
-            const metaObjects = {};
-            res.rows.forEach(obj => {
-                if (!obj.value || !obj.value.common || !obj.value.common.type) {
-                    return;
-                }
-                if (limitId && obj.id !== limitId) {
-                    return;
-                }
-                metaObjects[obj.id] = obj.value.common.type;
-            });
-
-            try {
-                if (!fs.existsSync(this.objectsDir)) {
-                    typeof callback === 'function' && callback(null, resSynced, resNotifies);
-                    return;
-                }
-                const baseDirs = fs.readdirSync(this.objectsDir);
-                baseDirs.forEach(dir => {
-                    let dirSynced = 0;
-                    if (dir === '..' || dir === '.') {
-                        return;
-                    }
-                    const dirPath = path.join(this.objectsDir, dir);
-                    const stat = fs.statSync(dirPath);
-                    if (!stat.isDirectory()) {
-                        return;
-                    }
-                    if (limitId && dir !== limitId) {
-                        return;
-                    }
-                    if (!metaObjects[dir]) {
-                        resNotifies.push('Ignoring Directory "' + dir + '" because officially not created as meta object. Please remove directory!');
-                        return;
-                    }
-                    this._loadFileSettings(dir);
-                    const files = getAllFiles(dirPath);
-                    files.forEach(file => {
-                        const localFile = file.substr(dirPath.length + 1);
-                        if (localFile === '_data.json') {
-                            return;
-                        }
-                        if (!this.fileOptions[dir][localFile]) {
-                            const fileStat    = fs.statSync(file);
-                            const ext         = path.extname(localFile);
-                            const mime        = utils.getMimeType(ext);
-                            const _mimeType   = mime.mimeType;
-                            const isBinary    = mime.isBinary;
-
-                            this.fileOptions[dir][localFile] = {
-                                createdAt: fileStat.ctimeMs,
-                                acl      : {
-                                    owner:       (this.defaultNewAcl && this.defaultNewAcl.owner)      || utils.CONSTS.SYSTEM_ADMIN_USER,
-                                    ownerGroup:  (this.defaultNewAcl && this.defaultNewAcl.ownerGroup) || utils.CONSTS.SYSTEM_ADMIN_GROUP,
-                                    permissions: (this.defaultNewAcl && this.defaultNewAcl.file)       || (utils.CONSTS.ACCESS_USER_RW | utils.CONSTS.ACCESS_GROUP_READ | utils.CONSTS.ACCESS_EVERY_READ)// 0x644
-                                },
-                                mimeType  : _mimeType,
-                                binary    : isBinary,
-                                modifiedAt: fileStat.mtimeMs
-                            };
-                            dirSynced++;
-                        }
-                    });
-                    this._saveFileSettings(dir);
-                    resSynced += dirSynced;
-                    dirSynced && resNotifies.push('Added ' + dirSynced + ' Files in Directory "' + dir + '"');
-                });
-            } catch (e) {
-                typeof callback === 'function' && callback(e, resSynced, resNotifies);
+        let res;
+        try {
+            res = this._getObjectView('system', 'meta', null);
+        } catch (err) {
+            return typeof callback === 'function' && callback(err);
+        }
+        // collect Meta objects
+        const metaObjects = {};
+        res.rows.forEach(obj => {
+            if (!obj || !obj.value || !obj.value.common || !obj.value.common.type) {
                 return;
             }
-            typeof callback === 'function' && callback(null, resSynced, resNotifies);
+            if (limitId && obj.id !== limitId) {
+                return;
+            }
+            metaObjects[obj.id] = obj.value.common.type;
         });
+
+        try {
+            if (!fs.existsSync(this.objectsDir)) {
+                typeof callback === 'function' && callback(null, resSynced, resNotifies);
+                return;
+            }
+            const baseDirs = fs.readdirSync(this.objectsDir);
+            baseDirs.forEach(dir => {
+                let dirSynced = 0;
+                if (dir === '..' || dir === '.') {
+                    return;
+                }
+                const dirPath = path.join(this.objectsDir, dir);
+                const stat = fs.statSync(dirPath);
+                if (!stat.isDirectory()) {
+                    return;
+                }
+                if (limitId && dir !== limitId) {
+                    return;
+                }
+                if (!metaObjects[dir]) {
+                    resNotifies.push('Ignoring Directory "' + dir + '" because officially not created as meta object. Please remove directory!');
+                    return;
+                }
+                this._loadFileSettings(dir);
+                const files = getAllFiles(dirPath);
+                files.forEach(file => {
+                    const localFile = file.substr(dirPath.length + 1);
+                    if (localFile === '_data.json') {
+                        return;
+                    }
+                    if (!this.fileOptions[dir][localFile]) {
+                        const fileStat    = fs.statSync(file);
+                        const ext         = path.extname(localFile);
+                        const mime        = utils.getMimeType(ext);
+                        const _mimeType   = mime.mimeType;
+                        const isBinary    = mime.isBinary;
+
+                        this.fileOptions[dir][localFile] = {
+                            createdAt: fileStat.ctimeMs,
+                            acl      : {
+                                owner:       (this.defaultNewAcl && this.defaultNewAcl.owner)      || utils.CONSTS.SYSTEM_ADMIN_USER,
+                                ownerGroup:  (this.defaultNewAcl && this.defaultNewAcl.ownerGroup) || utils.CONSTS.SYSTEM_ADMIN_GROUP,
+                                permissions: (this.defaultNewAcl && this.defaultNewAcl.file)       || (utils.CONSTS.ACCESS_USER_RW | utils.CONSTS.ACCESS_GROUP_READ | utils.CONSTS.ACCESS_EVERY_READ)// 0x644
+                            },
+                            mimeType  : _mimeType,
+                            binary    : isBinary,
+                            modifiedAt: fileStat.mtimeMs
+                        };
+                        dirSynced++;
+                    }
+                });
+                this._saveFileSettings(dir);
+                resSynced += dirSynced;
+                dirSynced && resNotifies.push('Added ' + dirSynced + ' Files in Directory "' + dir + '"');
+            });
+        } catch (e) {
+            typeof callback === 'function' && callback(e, resSynced, resNotifies);
+            return;
+        }
+        typeof callback === 'function' && callback(null, resSynced, resNotifies);
     }
 
     // needed by server
-    async _writeFile(id, name, data, options, callback) {
-        if (typeof options === 'function') {
-            callback = options;
-            options = null;
-        }
+    _writeFile(id, name, data, options) {
         if (typeof options === 'string') {
             options = {mimeType: options};
         }
@@ -269,89 +266,74 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
             options.acl = null;
         }
 
-        const _path = utils.sanitizePath(id, name, callback);
-        if (!_path) {
-            return;
-        }
+        const _path = utils.sanitizePath(id, name);
         id = _path.id;
         name = _path.name;
 
         options = options || {};
 
+        this._loadFileSettings(id);
+
+        this.files[id] = this.files[id] || {};
+
         try {
-            this._loadFileSettings(id);
-
-            this.files[id] = this.files[id] || {};
-
-            try {
-                if (!fs.existsSync(this.objectsDir)) {
-                    fs.mkdirSync(this.objectsDir);
-                }
-                if (!fs.existsSync(path.join(this.objectsDir, id))) {
-                    fs.mkdirSync(path.join(this.objectsDir, id));
-                }
-            } catch (e) {
-                this.log.error(this.namespace + ' Cannot create directories: ' + path.join(this.objectsDir, id) + ': ' + e.message);
-                this.log.error(this.namespace + ' Check the permissions! Or run installation fixer or "iobroker fix" command!');
-                return tools.maybeCallbackWithError(callback, e);
+            if (!fs.existsSync(this.objectsDir)) {
+                fs.mkdirSync(this.objectsDir);
             }
-
-            const ext         = path.extname(name);
-            const mime        = utils.getMimeType(ext);
-            const _mimeType   = mime.mimeType;
-            const isBinary    = mime.isBinary;
-
-            this.fileOptions[id][name]                = this.fileOptions[id][name] || {createdAt: Date.now()};
-            this.fileOptions[id][name].acl            = this.fileOptions[id][name].acl || {
-                owner:       options.user  || (this.defaultNewAcl && this.defaultNewAcl.owner)      || utils.CONSTS.SYSTEM_ADMIN_USER,
-                ownerGroup:  options.group || (this.defaultNewAcl && this.defaultNewAcl.ownerGroup) || utils.CONSTS.SYSTEM_ADMIN_GROUP,
-                permissions: options.mode  || (this.defaultNewAcl && this.defaultNewAcl.file)       || (utils.CONSTS.ACCESS_USER_RW | utils.CONSTS.ACCESS_GROUP_READ | utils.CONSTS.ACCESS_EVERY_READ)// 0x644
-            };
-
-            this.fileOptions[id][name].mimeType       = options.mimeType || _mimeType;
-            this.fileOptions[id][name].binary         = isBinary;
-            this.fileOptions[id][name].acl.ownerGroup = this.fileOptions[id][name].acl.ownerGroup || (this.defaultNewAcl && this.defaultNewAcl.ownerGroup) || utils.CONSTS.SYSTEM_ADMIN_GROUP;
-            this.fileOptions[id][name].modifiedAt     = Date.now();
-
-            try {
-                // Create directories if complex structure
-                fs.ensureDirSync(path.join(this.objectsDir, id, path.dirname(name)));
-                // Store file
-                fs.writeFileSync(path.join(this.objectsDir, id, name), data, {'flag': 'w', 'encoding': isBinary ? 'binary' : 'utf8'});
-
-                if (isBinary) {
-                    // Reload by read
-                    delete this.files[id][name];
-                } else {
-                    this.files[id][name] = data;
-                }
-
-                // Store dir description
-                this._saveFileSettings(id);
-            } catch (e) {
-                this.log.error(this.namespace + ' Cannot write files: ' + path.join(this.objectsDir, id, name) + ': ' + e.message);
-                return tools.maybeCallbackWithError(callback, e);
+            if (!fs.existsSync(path.join(this.objectsDir, id))) {
+                fs.mkdirSync(path.join(this.objectsDir, id));
             }
-            return tools.maybeCallback(callback);
         } catch (e) {
-            return tools.maybeCallbackWithError(callback, e);
+            this.log.error(this.namespace + ' Cannot create directories: ' + path.join(this.objectsDir, id) + ': ' + e.message);
+            this.log.error(this.namespace + ' Check the permissions! Or run installation fixer or "iobroker fix" command!');
+            throw e;
+        }
+
+        const ext         = path.extname(name);
+        const mime        = utils.getMimeType(ext);
+        const _mimeType   = mime.mimeType;
+        const isBinary    = mime.isBinary;
+
+        this.fileOptions[id][name]                = this.fileOptions[id][name] || {createdAt: Date.now()};
+        this.fileOptions[id][name].acl            = this.fileOptions[id][name].acl || {
+            owner:       options.user  || (this.defaultNewAcl && this.defaultNewAcl.owner)      || utils.CONSTS.SYSTEM_ADMIN_USER,
+            ownerGroup:  options.group || (this.defaultNewAcl && this.defaultNewAcl.ownerGroup) || utils.CONSTS.SYSTEM_ADMIN_GROUP,
+            permissions: options.mode  || (this.defaultNewAcl && this.defaultNewAcl.file)       || (utils.CONSTS.ACCESS_USER_RW | utils.CONSTS.ACCESS_GROUP_READ | utils.CONSTS.ACCESS_EVERY_READ)// 0x644
+        };
+
+        this.fileOptions[id][name].mimeType       = options.mimeType || _mimeType;
+        this.fileOptions[id][name].binary         = isBinary;
+        this.fileOptions[id][name].acl.ownerGroup = this.fileOptions[id][name].acl.ownerGroup || (this.defaultNewAcl && this.defaultNewAcl.ownerGroup) || utils.CONSTS.SYSTEM_ADMIN_GROUP;
+        this.fileOptions[id][name].modifiedAt     = Date.now();
+
+        try {
+            // Create directories if complex structure
+            fs.ensureDirSync(path.join(this.objectsDir, id, path.dirname(name)));
+            // Store file
+            fs.writeFileSync(path.join(this.objectsDir, id, name), data, {'flag': 'w', 'encoding': isBinary ? 'binary' : 'utf8'});
+
+            if (isBinary) {
+                // Reload by read
+                delete this.files[id][name];
+            } else {
+                this.files[id][name] = data;
+            }
+
+            // Store dir description
+            this._saveFileSettings(id);
+        } catch (e) {
+            this.log.error(this.namespace + ' Cannot write files: ' + path.join(this.objectsDir, id, name) + ': ' + e.message);
+            throw e;
         }
     }
 
     // needed by server
-    async _readFile(id, name, options, callback) {
-        if (typeof options === 'function') {
-            callback = options;
-            options  = null;
-        }
+    _readFile(id, name, options) {
         if (options && options.acl) {
             options.acl = null;
         }
 
-        const _path = utils.sanitizePath(id, name, callback);
-        if (!_path) {
-            return;
-        }
+        const _path = utils.sanitizePath(id, name);
         id = _path.id;
         name = _path.name;
 
@@ -416,23 +398,22 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
                 };
             }
 
-            if (typeof callback !== 'function') { // no need to do anything if no callback is there to return it
-                return;
-            }
             if (this.fileOptions[id][name] !== null && this.fileOptions[id][name] !== undefined) {
                 if (!this.fileOptions[id][name].mimeType) {
                     const _ext = path.extname(name);
                     const _mimeType = utils.getMimeType(_ext);
                     this.fileOptions[id][name].mimeType = _mimeType.mimeType;
                 }
-                setImmediate((fileContent, fileMime) => callback(null, fileContent, fileMime), this.files[id][name], this.fileOptions[id][name].mimeType);
-            } else {
-                return tools.maybeCallbackWithError(callback, utils.ERRORS.ERROR_NOT_FOUND);
+                return {
+                    fileContent: this.files[id][name],
+                    fileMime: this.fileOptions[id][name].mimeType
+                };
             }
         } catch (e) {
             this.log.warn(`Cannot read file ${id} / ${name}: ${JSON.stringify(e)}`);
-            return tools.maybeCallbackWithError(callback, e);
+            throw e;
         }
+        throw new Error (utils.ERRORS.ERROR_NOT_FOUND);
     }
 
     /**
@@ -440,12 +421,12 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
      *
      * @param {string} id id of the object
      * @param {object} [_options] optional user context
-     * @return {Promise<boolean>}
+     * @return {boolean}
      */
     // needed by server
-    async _objectExists(id, _options) {
+    _objectExists(id, _options) {
         if (!id || typeof id !== 'string') {
-            return Promise.reject(new Error(`invalid id ${JSON.stringify(id)}`));
+            throw new Error(`invalid id ${JSON.stringify(id)}`);
         }
 
         try {
@@ -453,7 +434,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
             return Object.prototype.hasOwnProperty.call(this.dataset, id);
         } catch (e) {
             this.log.error(`Cannot check object existence of "${id}": ${e}`);
-            return Promise.reject(new Error(`Cannot check object existence of "${id}": ${e}`));
+            throw new Error(`Cannot check object existence of "${id}": ${e}`);
         }
     }
 
@@ -462,11 +443,10 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
      *
      * @param {string} id id of the namespace
      * @param {string} [name] name of the file
-     * @param {object} [_options] optional user context
-     * @returns {Promise<boolean>}
+     * @returns {boolean}
      */
     // needed by server
-    async _fileExists(id, name, _options) {
+    _fileExists(id, name) {
         if (typeof name !== 'string') {
             name = '';
         }
@@ -474,14 +454,14 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
         const location = path.join(this.objectsDir, id, name);
 
         try {
-            const stat = await fs.promises.lstat(location);
-            return Promise.resolve(stat.isFile());
+            const stat = fs.lstatSync(location);
+            return stat.isFile();
         } catch (e) {
             if (e.code !== 'ENOENT') {
                 this.log.error(`Cannot check file existence of "${location}": ${e}`);
-                return Promise.reject(new Error(`Cannot check file existence of "${location}": ${e}`));
+                throw new Error(`Cannot check file existence of "${location}": ${e}`);
             }
-            return Promise.resolve(false);
+            return false;
         }
     }
 
@@ -514,104 +494,66 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
     }
 
     // needed by server
-    _unlink(id, name, options, callback) {
-        if (typeof options === 'function') {
-            callback = options;
-            options  = null;
-        }
-        const _path = utils.sanitizePath(id, name, callback);
-        if (!_path) {
-            return;
-        }
+    _unlink(id, name) {
+        const _path = utils.sanitizePath(id, name);
         id   = _path.id;
         name = _path.name;
 
-        try {
-            let changed = false;
+        let changed = false;
 
-            this._loadFileSettings(id);
+        this._loadFileSettings(id);
 
-            if (this.fileOptions[id][name]) {
-                changed = true;
-                delete this.fileOptions[id][name];
-            }
-            if (this.files[id] && this.files[id][name]) {
-                delete this.files[id][name];
-            }
-            const location = path.join(this.objectsDir, id, name);
-            if (fs.existsSync(location)) {
-                const stat = fs.statSync(location);
+        if (this.fileOptions[id][name]) {
+            changed = true;
+            delete this.fileOptions[id][name];
+        }
+        if (this.files[id] && this.files[id][name]) {
+            delete this.files[id][name];
+        }
+        const location = path.join(this.objectsDir, id, name);
+        if (fs.existsSync(location)) {
+            const stat = fs.statSync(location);
 
-                if (stat.isDirectory()) {
-                    // read all entries and delete every one
-                    const fdir = fs.readdirSync(location);
-                    let cnt = 0;
-                    for (let f = 0; f < fdir.length; f++) {
-                        cnt++;
-                        this._unlink(id, name + '/' + fdir[f], options, err => {
-                            if (!--cnt) {
-                                this.log.debug('Delete directory ' + path.join(id, name));
-                                try {
-                                    fs.rmdirSync(location);
-                                } catch (e) {
-                                    this.log.error('Cannot delete directory "' + path.join(id, name) + '": ' + e);
-                                }
-                                typeof callback === 'function' && setImmediate(() => callback(err));
-                            }
-                        });
-                    }
-                    if (!cnt) {
-                        this.log.debug('Delete directory ' + path.join(id, name));
-                        try {
-                            fs.rmdirSync(location);
-                        } catch (e) {
-                            this.log.error('Cannot delete directory "' + path.join(id, name) + '": ' + e);
-                        }
-                        typeof callback === 'function' && setImmediate(() => callback());
-                    }
-                } else {
-                    this.log.debug('Delete file ' + path.join(id, name));
-                    try {
-                        fs.unlinkSync(location);
-                    } catch (e) {
-                        this.log.error('Cannot delete file "' + path.join(id, name) + '": ' + e);
-                    }
-                    typeof callback === 'function' && setImmediate(() => callback());
+            if (stat.isDirectory()) {
+                // read all entries and delete every one
+                fs.readdirSync(location).forEach(dir => this._unlink(id, name + '/' + dir));
+
+                this.log.debug('Delete directory ' + path.join(id, name));
+                try {
+                    fs.rmdirSync(location);
+                } catch (e) {
+                    this.log.error('Cannot delete directory "' + path.join(id, name) + '": ' + e);
+                    throw e;
                 }
             } else {
-                return tools.maybeCallbackWithError(callback, utils.ERRORS.ERROR_NOT_FOUND);
+                this.log.debug('Delete file ' + path.join(id, name));
+                try {
+                    fs.unlinkSync(location);
+                } catch (e) {
+                    this.log.error('Cannot delete file "' + path.join(id, name) + '": ' + e);
+                    throw e;
+                }
             }
-            // Store dir description
-            if (changed) {
-                this._saveFileSettings(id);
-            }
-        } catch (e) {
-            return tools.maybeCallbackWithError(callback, e);
+        } else {
+            throw new Error(utils.ERRORS.ERROR_NOT_FOUND);
+        }
+        // Store dir description
+        if (changed) {
+            setImmediate(() => this._saveFileSettings(id));
         }
     }
 
     // needed by server
-    async _readDir(id, name, options, callback) {
-        if (typeof options === 'function') {
-            callback = options;
-            options = null;
-        }
+    _readDir(id, name, options) {
         if (options && options.acl) {
             options.acl = null;
         }
         if ((id === '' || id === '/' || id === '*') && (name === '' || name === '*')) {
             // read root of xxx-data/files
         } else {
-            const _path = utils.sanitizePath(id, name, callback);
-            if (!_path) {
-                return;
-            }
+            const _path = utils.sanitizePath(id, name);
             id = _path.id;
             name = _path.name;
-        }
-
-        if (typeof callback !== 'function') { // no need to do anything if no callback is there to return it
-            return;
         }
 
         options = options || {};
@@ -641,23 +583,17 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
 
         const location = path.join(this.objectsDir, id, name);
         if (fs.existsSync(location)) {
-            try {
-                const dirFiles = fs.readdirSync(location);
-                for (let i = 0; i < dirFiles.length; i++) {
-                    if (dirFiles[i] === '..' || dirFiles[i] === '.') {
-                        continue;
-                    }
-                    if (dirFiles[i] !== '_data.json' && _files.indexOf(dirFiles[i]) === -1) {
-                        _files.push(dirFiles[i]);
-                    }
+            const dirFiles = fs.readdirSync(location);
+            for (let i = 0; i < dirFiles.length; i++) {
+                if (dirFiles[i] === '..' || dirFiles[i] === '.') {
+                    continue;
                 }
-            } catch (e) {
-                typeof callback === 'function' && setImmediate(() => callback(e, []));
-                return;
+                if (dirFiles[i] !== '_data.json' && _files.indexOf(dirFiles[i]) === -1) {
+                    _files.push(dirFiles[i]);
+                }
             }
         } else {
-            typeof callback === 'function' && setImmediate(() => callback(utils.ERRORS.ERROR_NOT_FOUND, []));
-            return;
+            throw new Error(utils.ERRORS.ERROR_NOT_FOUND);
         }
 
         _files.sort();
@@ -737,53 +673,41 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
             }
         }
 
-        typeof callback === 'function' && setImmediate(() => callback(null, res));
+        return res;
     }
 
     // needed by server
-    _rename(id, oldName, newName, options, callback) {
-        if (typeof options === 'function') {
-            callback = options;
-            options = null;
-        }
-        const _path = utils.sanitizePath(id, oldName, callback);
-        if (!_path) {
-            return;
-        }
+    _rename(id, oldName, newName) {
+        const _path = utils.sanitizePath(id, oldName);
         id = _path.id;
         oldName = _path.name;
         if (newName[0] === '/') {
             newName = newName.substring(1);
         }
 
-        try {
-            this._loadFileSettings(id);
+        this._loadFileSettings(id);
 
-            const location = path.join(this.objectsDir, id, '_data.json');
-            Object.keys(this.fileOptions[id]).forEach(name => {
-                const type = this.fileOptions[id][name];
-                if (name.startsWith(oldName)) {
-                    delete this.fileOptions[id][name];
-                    this.fileOptions[id][name.replace(oldName, newName)] = type;
-                }
-            });
-            fs.writeFileSync(location, JSON.stringify(this.fileOptions[id]));
-            Object.keys(this.files[id]).forEach(name => {
-                const data = this.fileOptions[id][name];
-                if (name.startsWith(oldName)) {
-                    delete this.files[id][name];
-                    this.files[id][name.replace(oldName, newName)] = data;
-                }
-            });
-            if (fs.existsSync(path.join(this.objectsDir, id, oldName))) {
-                fs.renameSync(path.join(this.objectsDir, id, oldName), path.join(this.objectsDir, id, newName));
-                typeof callback === 'function' && setImmediate(() => callback());
-            } else {
-                typeof callback === 'function' && setImmediate(() => callback(utils.ERRORS.ERROR_NOT_FOUND));
-            }
-        } catch (e) {
-            typeof callback === 'function' && setImmediate(() => callback(e.message));
+        if (fs.existsSync(path.join(this.objectsDir, id, oldName))) {
+            fs.renameSync(path.join(this.objectsDir, id, oldName), path.join(this.objectsDir, id, newName));
+        } else {
+            throw new Error(utils.ERRORS.ERROR_NOT_FOUND);
         }
+
+        Object.keys(this.fileOptions[id]).forEach(name => {
+            const type = this.fileOptions[id][name];
+            if (name.startsWith(oldName)) {
+                delete this.fileOptions[id][name];
+                this.fileOptions[id][name.replace(oldName, newName)] = type;
+            }
+        });
+        Object.keys(this.files[id]).forEach(name => {
+            const data = this.files[id][name];
+            if (name.startsWith(oldName)) {
+                delete this.files[id][name];
+                this.files[id][name.replace(oldName, newName)] = data;
+            }
+        });
+        this._saveFileSettings(id);
     }
 
     // internal functionality
@@ -801,90 +725,39 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
     }
 
     // needed by server
-    _subscribeConfigForClient(client, pattern, options, callback) {
-        if (typeof options === 'function') {
-            callback = options;
-            options = null;
-        }
-
-        this.handleSubscribe(client, 'objects', pattern, options);
-
-        typeof callback === 'function' && setImmediate(() => callback());
+    _subscribeConfigForClient(client, pattern) {
+        this.handleSubscribe(client, 'objects', pattern);
     }
 
     // needed by server
-    _unsubscribeConfigForClient(client, pattern, options, callback) {
-        if (typeof options === 'function') {
-            callback = options;
-            options = null;
-        }
-
+    _unsubscribeConfigForClient(client, pattern) {
         this.handleUnsubscribe(client, 'objects', pattern); // ignore options => unsubscribe may everyone
-
-        typeof callback === 'function' && setImmediate(() => callback());
     }
 
     // needed by server
-    _getObject(id, options, callback) {
-        if (typeof options === 'function') {
-            callback = options;
-            options = null;
-        }
-
-        typeof callback === 'function' && setImmediate(() => callback(null, this.dataset[id]));
+    _getObject(id) {
+        return this.dataset[id];
     }
 
     // needed by server
-    _getKeys(pattern, options, callback, _dontModify) {
-        if (typeof options === 'function') {
-            callback = options;
-            options = null;
-        }
-
-        if (typeof callback !== 'function') { // no need to do anything if no callback is there to return it
-            return;
-        }
-
+    _getKeys(pattern) {
         const r = new RegExp(tools.pattern2RegEx(pattern));
-        const result = [];
-        for (const id of Object.keys(this.dataset)) {
-            if (r.test(id)) {
-                result.push(id);
-            }
-        }
+        const result = Object.keys(this.dataset).filter(id => r.test(id));
         result.sort();
-        setImmediate(() => callback(null, result));
+        return result;
     }
 
     // needed by server
-    _getObjects(keys, options, callback, _dontModify) {
-        if (typeof options === 'function') {
-            callback = options;
-            options = null;
-        }
-
-        if (typeof callback !== 'function') { // no need to do anything if no callback is there to return it
-            return;
-        }
-
+    _getObjects(keys) {
         if (!keys) {
-            setImmediate(() => callback('no keys', null));
-            return;
-        }
-        if (!keys.length) {
-            setImmediate(() => callback(null, []));
-            return;
+            throw new Error('no keys');
         }
 
-        const result = [];
-        for (let i = 0; i < keys.length; i++) {
-            result.push(this.dataset[keys[i]]);
-        }
-        setImmediate(() => callback(null, result));
+        return keys.map(id => this.dataset[id]);
     }
 
     // needed by server
-    _setObjectDirect(id, obj, callback) {
+    _setObjectDirect(id, obj) {
         this.dataset[id] = obj;
 
         // object updated -> if type changed to meta -> cache
@@ -892,26 +765,19 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
             this.existingMetaObjects[id] = true;
         }
 
-        typeof callback === 'function' && setImmediate(() => callback(null, {id: id}));
-
         setImmediate(() => this.publishAll('objects', id, obj));
 
         this.stateTimer = this.stateTimer || setTimeout(() => this.saveState(), this.writeFileInterval);
     }
 
     // needed by server
-    _delObject(id, options, callback) {
-        if (typeof options === 'function') {
-            callback = options;
-            options = null;
-        }
+    _delObject(id) {
         if (!this.dataset[id]) {
-            return tools.maybeCallbackWithError(callback, utils.ERRORS.ERROR_NOT_FOUND);
+            throw new Error (utils.ERRORS.ERROR_NOT_FOUND);
         }
 
         if (this.dataset[id].common && this.dataset[id].common.dontDelete) {
-            typeof callback === 'function' && setImmediate(() => callback('Object is marked as non deletable'));
-            return;
+            throw new Error('Object is marked as non deletable');
         }
 
         delete this.dataset[id];
@@ -921,8 +787,6 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
             this.existingMetaObjects[id] = false;
         }
 
-        typeof callback === 'function' && setImmediate(() => callback(null));
-
         setImmediate(() => this.publishAll('objects', id, null));
 
         if (!this.stateTimer) {
@@ -931,16 +795,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
     }
 
     // internal functionality
-    _applyView(func, params, options, callback) {
-        if (typeof options === 'function') {
-            callback = options;
-            options = null;
-        }
-
-        if (typeof callback !== 'function') { // no need to do anything if no callback is there to return it
-            return;
-        }
-
+    _applyView(func, params) {
         const result = {
             rows: []
         };
@@ -984,31 +839,20 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
             }
         }
 
-        setImmediate(() => callback(null, result));
+        return result;
     }
 
     // needed by server
-    _getObjectView(design, search, params, options, callback) {
-        if (typeof options === 'function') {
-            callback = options;
-            options = null;
-        }
-
-        if (typeof callback !== 'function') { // no need to do anything if no callback is there to return it
-            return;
-        }
-
-        if (this.dataset['_design/' + design]) {
-            if (this.dataset[`_design/${design}`].views && this.dataset['_design/' + design].views[search]) {
-                this._applyView(this.dataset[`_design/${design}`].views[search], params, options, callback);
-            } else {
-                this.log.warn(`Cannot find search "${search}" in "${design}"`);
-                setImmediate(() => callback(new Error(`Cannot find search "${search}" in "${design}"`)));
-            }
-        } else {
+    _getObjectView(design, search, params) {
+        if (!this.dataset['_design/' + design]) {
             this.log.error(`Cannot find view "${design}"`);
-            setImmediate(() => callback(new Error(`Cannot find view "${design}"`)));
+            throw new Error(`Cannot find view "${design}"`);
         }
+        if (!this.dataset[`_design/${design}`].views && this.dataset['_design/' + design].views[search]) {
+            this.log.warn(`Cannot find search "${search}" in "${design}"`);
+            throw new Error(`Cannot find search "${search}" in "${design}"`);
+        }
+        return this._applyView(this.dataset[`_design/${design}`].views[search], params);
     }
 
     // special functionality

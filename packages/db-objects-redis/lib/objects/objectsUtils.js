@@ -476,7 +476,7 @@ function getUserGroup(objects, user, callback) {
     });
 }
 
-function sanitizePath(id, name, callback) {
+function sanitizePath(id, name) {
     if (!name) {
         name = '';
     }
@@ -485,7 +485,7 @@ function sanitizePath(id, name, callback) {
     }
 
     if (!id) {
-        return tools.maybeCallbackWithError(callback, 'Empty ID');
+        throw new Error('Empty ID');
     }
 
     id = id.replace(/[\][*,;'"`<>\\?/]/g, ''); // remove all invalid characters from states plus slashes

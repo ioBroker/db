@@ -177,8 +177,7 @@ class StatesInMemoryServer extends StatesInMemoryFileDB {
         handler.on('publish', (data, responseId) => {
             const {id, namespace} = this._normalizeId(data[0]);
             if (namespace === this.namespaceStates) { // a "set" always comes afterwards, so do not publish
-                handler.sendInteger(responseId, 0);
-                return; // do not publish for now
+                return void handler.sendInteger(responseId, 0); // do not publish for now
             }
             const publishCount = this.publishAll(namespace.substr(0, namespace.length - 1), id, JSON.parse(data[1]));
             handler.sendInteger(responseId, publishCount);
@@ -187,8 +186,7 @@ class StatesInMemoryServer extends StatesInMemoryFileDB {
         // Handle Redis "MGET" request for state namespace
         handler.on('mget', (data, responseId) => {
             if (!data || !data[0]) {
-                handler.sendArray(responseId, []);
-                return;
+                return void handler.sendArray(responseId, []);
             }
             const {id, namespace} = this._normalizeId(data);
 
@@ -196,9 +194,9 @@ class StatesInMemoryServer extends StatesInMemoryFileDB {
                 try {
                     const states = this._getStates(id);
                     const result = states.map(el => el ? JSON.stringify(el) : null);
-                    handler && handler.sendArray(responseId, result);
+                    handler.sendArray(responseId, result);
                 } catch (err) {
-                    handler && handler.sendError(responseId, new Error('ERROR _getStates: ' + err));
+                    handler.sendError(responseId, new Error('ERROR _getStates: ' + err));
                 }
             } else {
                 handler.sendError(responseId, new Error('MGET-UNSUPPORTED for namespace ' + namespace + ': Data=' + JSON.stringify(data)));
@@ -210,21 +208,21 @@ class StatesInMemoryServer extends StatesInMemoryFileDB {
             const {id, namespace} = this._normalizeId(data[0]);
             if (namespace === this.namespaceStates) {
                 const result = this._getState(id);
-                if (result === null) {
-                    handler && handler.sendNull(responseId);
+                if (!result) {
+                    handler.sendNull(responseId);
                 } else {
                     if (Buffer.isBuffer(result)) {
-                        handler && handler.sendBufBulk(responseId, result);
+                        handler.sendBufBulk(responseId, result);
                     } else {
-                        handler && handler.sendBulk(responseId, JSON.stringify(result));
+                        handler.sendBulk(responseId, JSON.stringify(result));
                     }
                 }
             } else if (namespace === this.namespaceSession) {
                 const result = this._getSession(id);
                 if (result === null) {
-                    handler && handler.sendNull(responseId);
+                    handler.sendNull(responseId);
                 } else {
-                    handler && handler.sendBulk(responseId, JSON.stringify(result));
+                    handler.sendBulk(responseId, JSON.stringify(result));
                 }
             } else {
                 handler.sendError(responseId, new Error('GET-UNSUPPORTED for namespace ' + namespace + ': Data=' + JSON.stringify(data)));
@@ -241,11 +239,10 @@ class StatesInMemoryServer extends StatesInMemoryFileDB {
                         state = JSON.parse(data[1].toString('utf-8'));
                     } catch (e) { // No JSON, so handle as binary data and set as Buffer
                         this._setBinaryState(id, data[1]);
-                        handler && handler.sendString(responseId, 'OK');
-                        return;
+                        return void handler.sendString(responseId, 'OK');
                     }
                     this._setStateDirect(id, state);
-                    handler && handler.sendString(responseId, 'OK');
+                    handler.sendString(responseId, 'OK');
                 } catch (err) {
                     handler.sendError(responseId, new Error('ERROR setState id=' + id + ': ' + err));
                 }
@@ -267,11 +264,10 @@ class StatesInMemoryServer extends StatesInMemoryFileDB {
                     }
                     const expire = parseInt(data[1].toString('utf-8'), 10);
                     if (isNaN(expire)) {
-                        handler.sendError(responseId, new Error('ERROR parsing expire value ' + data[1].toString('utf-8')));
-                        return;
+                        return void handler.sendError(responseId, new Error('ERROR parsing expire value ' + data[1].toString('utf-8')));
                     }
                     this._setStateDirect(id, state, expire);
-                    handler && handler.sendString(responseId, 'OK');
+                    handler.sendString(responseId, 'OK');
                 } catch (err) {
                     handler.sendError(responseId, new Error('ERROR setStateEx id=' + id + ': ' + err));
                 }
@@ -280,11 +276,10 @@ class StatesInMemoryServer extends StatesInMemoryFileDB {
                     const state = JSON.parse(data[2].toString('utf-8'));
                     const expire = parseInt(data[1].toString('utf-8'), 10);
                     if (isNaN(expire)) {
-                        handler.sendError(responseId, new Error('ERROR parsing expire value ' + data[1].toString('utf-8')));
-                        return;
+                        return void handler.sendError(responseId, new Error('ERROR parsing expire value ' + data[1].toString('utf-8')));
                     }
                     this._setSession(id, expire, state);
-                    handler && handler.sendString(responseId, 'OK');
+                    handler.sendString(responseId, 'OK');
                 } catch (err) {
                     handler.sendError(responseId, new Error('ERROR _setSession ' + id + ': ' + err));
                 }
@@ -298,10 +293,10 @@ class StatesInMemoryServer extends StatesInMemoryFileDB {
             const {id, namespace} = this._normalizeId(data[0]);
             if (namespace === this.namespaceStates) {
                 this._delState(id);
-                handler && handler.sendInteger(responseId, 1);
+                handler.sendInteger(responseId, 1);
             } else if (namespace === this.namespaceSession) {
                 this._destroySession(id);
-                handler && handler.sendInteger(responseId, 1);
+                handler.sendInteger(responseId, 1);
             } else {
                 handler.sendError(responseId, new Error('DEL-UNSUPPORTED for namespace ' + namespace + ': Data=' + JSON.stringify(data)));
             }
@@ -310,8 +305,7 @@ class StatesInMemoryServer extends StatesInMemoryFileDB {
         // Handle Redis "KEYS" request for state namespace
         handler.on('keys', (data, responseId) => {
             if (!data || !data.length) {
-                handler.sendArray(responseId, []);
-                return;
+                return void handler.sendArray(responseId, []);
             }
             const {id, namespace} = this._normalizeId(data[0]);
             if (namespace === this.namespaceStates) {
@@ -322,7 +316,7 @@ class StatesInMemoryServer extends StatesInMemoryFileDB {
                 }
                 const keys = this._getKeys(pattern);
                 const result = keys.map(id => this.namespaceStates + id);
-                handler && handler.sendArray(responseId, result);
+                handler.sendArray(responseId, result);
             } else {
                 handler.sendError(responseId, new Error('KEYS-UNSUPPORTED for namespace ' + namespace + ': Data=' + JSON.stringify(data)));
             }
@@ -333,13 +327,13 @@ class StatesInMemoryServer extends StatesInMemoryFileDB {
             const {id, namespace} = this._normalizeId(data[0]);
             if (namespace === this.namespaceMsg) {
                 this._subscribeMessageForClient(handler, id.substr(this.namespaceMsgLen));
-                handler && handler.sendArray(responseId, ['psubscribe', data[0], 1]);
+                handler.sendArray(responseId, ['psubscribe', data[0], 1]);
             } else if (namespace === this.namespaceLog) {
                 this._subscribeLogForClient(handler, id.substr(this.namespaceLogLen));
-                handler && handler.sendArray(responseId, ['psubscribe', data[0], 1]);
+                handler.sendArray(responseId, ['psubscribe', data[0], 1]);
             } else if (namespace === this.namespaceStates) {
                 this._subscribeForClient(handler, id);
-                handler && handler.sendArray(responseId, ['psubscribe', data[0], 1]);
+                handler.sendArray(responseId, ['psubscribe', data[0], 1]);
             } else {
                 handler.sendError(responseId, new Error('PSUBSCRIBE-UNSUPPORTED for namespace ' + namespace + ': Data=' + JSON.stringify(data)));
             }
@@ -350,13 +344,13 @@ class StatesInMemoryServer extends StatesInMemoryFileDB {
             const {id, namespace} = this._normalizeId(data[0]);
             if (namespace === this.namespaceMsg) {
                 this._unsubscribeMessageForClient(handler, id.substr(this.namespaceMsgLen));
-                handler && handler.sendArray(responseId, ['punsubscribe', data[0], 1]);
+                handler.sendArray(responseId, ['punsubscribe', data[0], 1]);
             } else if (namespace === this.namespaceLog) {
                 this._unsubscribeLogForClient(handler, id.substr(this.namespaceLogLen));
-                handler && handler.sendArray(responseId, ['punsubscribe', data[0], 1]);
+                handler.sendArray(responseId, ['punsubscribe', data[0], 1]);
             } else if (namespace === this.namespaceStates) {
                 this._unsubscribeForClient(handler, id);
-                handler && handler.sendArray(responseId, ['punsubscribe', data[0], 1]);
+                handler.sendArray(responseId, ['punsubscribe', data[0], 1]);
             } else {
                 handler.sendError(responseId, new Error('PUNSUBSCRIBE-UNSUPPORTED for namespace ' + namespace + ': Data=' + JSON.stringify(data)));
             }

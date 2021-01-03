@@ -530,7 +530,12 @@ class ObjectsInRedisClient {
                 name = name.replace(/^iobroker.[-\d\w]\/admin\//i, '');
             }
         }
-        const normalized = utils.sanitizePath(id, name);
+        let normalized;
+        try {
+            normalized = utils.sanitizePath(id, name);
+        } catch {
+            // ignore
+        }
         if (!normalized) {
             this.log.debug(this.namespace + ' Invalid file path ' + id + '/' + name);
             return '';

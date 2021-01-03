@@ -142,7 +142,7 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
 
     // needed by Server
     _getState(id) {
-        return this.dataset[id] !== undefined ? this.dataset[id] : null;
+        return this.dataset[id];
     }
 
     // needed by Server
@@ -230,7 +230,7 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
 
     // needed by Server
     _getSession(id) {
-        return this.session[id] !== undefined ? this.session[id] : null;
+        return this.session[id];
     }
 
     // internal functionality
