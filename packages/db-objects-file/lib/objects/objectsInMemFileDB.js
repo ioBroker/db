@@ -499,8 +499,6 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
         id   = _path.id;
         name = _path.name;
 
-        let changed = false;
-
         this._loadFileSettings(id);
 
         const location = path.join(this.objectsDir, id, name);
