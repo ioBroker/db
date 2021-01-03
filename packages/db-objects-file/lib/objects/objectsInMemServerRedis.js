@@ -704,8 +704,8 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
         const {id, namespace, name, isMeta} = this._normalizeId(pattern);
 
         if (namespace === this.namespaceObj) {
-            const result = this._getKeys(id);
-            result.map(val => this.namespaceObj + val);
+            let result = this._getKeys(id);
+            result = result.map(val => this.namespaceObj + val);
             // if scan, we send the cursor as first argument
             handler.sendArray(responseId, isScan ? ['0', result] : result);
         } else if (namespace === this.namespaceFile) {
