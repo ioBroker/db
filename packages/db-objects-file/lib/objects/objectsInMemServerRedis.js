@@ -714,20 +714,20 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
                 let res;
                 try {
                     res = this._readDir(id, name);
+                    if (!res || !res.length) {
+                        res = [{
+                            file: '_data.json',
+                            stats: {},
+                            isDir: false,
+                            virtualFile: true,
+                            notExists: true
+                        }];
+                    }
                 } catch (err) {
                     if (!err.toString().endsWith(utils.ERRORS.ERROR_NOT_FOUND)) {
                         return void handler.sendError(responseId, new Error(`ERROR readDir id=${id}: ${err.message}`));
                     }
                     res = [];
-                }
-                if (!res || !res.length) {
-                    res = [{
-                        file: '_data.json',
-                        stats: {},
-                        isDir: false,
-                        virtualFile: true,
-                        notExists: true
-                    }];
                 }
                 const response = [];
                 const baseName = (name || '') + ((!name || !name.length || name.endsWith('/')) ? '' : '/');

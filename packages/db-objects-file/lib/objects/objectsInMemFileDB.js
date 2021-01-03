@@ -577,7 +577,6 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
                 }
             }
         }
-        this.log.debug('fileOptions: ' + JSON.stringify(_files));
 
         const location = path.join(this.objectsDir, id, name);
         if (fs.existsSync(location)) {
@@ -588,7 +587,6 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
                 }
                 if (dirFiles[i] !== '_data.json' && _files.indexOf(dirFiles[i]) === -1) {
                     _files.push(dirFiles[i]);
-                    this.log.debug('Add: ' + dirFiles[i]);
                 }
             }
         } else {
