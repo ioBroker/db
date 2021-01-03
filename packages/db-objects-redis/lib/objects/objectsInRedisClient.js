@@ -534,9 +534,6 @@ class ObjectsInRedisClient {
         try {
             normalized = utils.sanitizePath(id, name);
         } catch {
-            // ignore
-        }
-        if (!normalized) {
             this.log.debug(this.namespace + ' Invalid file path ' + id + '/' + name);
             return '';
         }
