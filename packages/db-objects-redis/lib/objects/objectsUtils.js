@@ -476,7 +476,7 @@ function getUserGroup(objects, user, callback) {
     });
 }
 
-function sanitizePath(id, name, callback) {
+function sanitizePath(id, name) {
     if (!name) {
         name = '';
     }
@@ -485,7 +485,7 @@ function sanitizePath(id, name, callback) {
     }
 
     if (!id) {
-        return tools.maybeCallbackWithError(callback, 'Empty ID');
+        throw new Error('Empty ID');
     }
 
     id = id.replace(/[\][*,;'"`<>\\?/]/g, ''); // remove all invalid characters from states plus slashes
@@ -643,25 +643,6 @@ function checkObjectRights(objects, id, object, options, flag, callback) {
     }
 }
 
-function getLogger(log) {
-    if (!log) {
-        log = {
-            silly: function (_msg) {/*console.log(msg);*/},
-            debug: function (_msg) {/*console.log(msg);*/},
-            info:  function (_msg) {/*console.log(msg);*/},
-            warn:  function (msg) {
-                console.log(msg);
-            },
-            error: function (msg) {
-                console.log(msg);
-            }
-        };
-    } else if (!log.silly) {
-        log.silly = log.debug;
-    }
-    return log;
-}
-
 // For objects
 const defaultAcl = {
     groups: [],
@@ -706,7 +687,6 @@ module.exports = {
     sanitizePath,
     checkObject,
     checkObjectRights,
-    getLogger,
 
     regCheckId,
 

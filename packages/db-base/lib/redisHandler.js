@@ -167,7 +167,7 @@ class RedisHandler extends EventEmitter {
         if (responseId === null) {
             if (this.options.enhancedLogging) {
                 this.log.silly(this.socketId + ' Redis response DIRECT: ' + data.toString().replace(/[\r\n]+/g, ''));
-            } // TODO remove data logging (performance)
+            }
             return this._write(data);
         }
         if (!responseId) {

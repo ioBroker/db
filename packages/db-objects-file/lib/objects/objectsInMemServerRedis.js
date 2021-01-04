@@ -18,6 +18,7 @@ const fs     = require('fs-extra');
 const path   = require('path');
 const crypto = require('crypto');
 const utils  = require('@iobroker/db-objects-redis').objectsUtils;
+const tools  = require('@iobroker/db-base').tools;
 
 const RedisHandler          = require('@iobroker/db-base').redisHandler;
 const ObjectsInMemoryFileDB = require('./objectsInMemFileDB');
@@ -55,12 +56,6 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
     constructor(settings) {
         super(settings);
 
-        this.server = {
-            app: null,
-            server: null,
-            io: null,
-            settings: this.settings
-        };
         this.serverConnections = {};
         this.namespaceObjects    = (this.settings.redisNamespace || (settings.connection && settings.connection.redisNamespace) || 'cfg') + '.';
         this.namespaceFile       = this.namespaceObjects + 'f.';
@@ -74,16 +69,18 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
         this.normalizeFileRegex1 = new RegExp('^(.*)\\$%\\$(.*)\\$%\\$(meta|data)$');
         this.normalizeFileRegex2 = new RegExp('^(.*)\\$%\\$(.*)\\/?\\*$');
 
-        this._initRedisServer(this.settings.connection, this.server);
+        this._initRedisServer(this.settings.connection).then(() => {
+            this.log.debug(this.namespace + ' ' + (settings.secure ? 'Secure ' : '') + ' Redis inMem-objects listening on port ' + (settings.port || 9001));
 
-        if (this.settings.connected) {
-            setImmediate(() => this.settings.connected(this));
-        }
+            if (typeof this.settings.connected === 'function') {
+                setImmediate(() => this.settings.connected());
+            }
+        }).catch(e => {
+            this.log.error(this.namespace + ' Cannot start inMem-objects on port ' + (settings.port || 9001) + ': ' + e.message);
+            process.exit(24); // todo: replace it with exitcode
+        });
     }
 
-    addPreserveSettings(_settings) {
-        // when Redis is used this is done by objectsInRedis already
-    }
     /**
      * Separate Namespace from ID and return both
      * @param idWithNamespace ID or Array of IDs containing a redis namespace and the real ID
@@ -93,8 +90,8 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
      */
     _normalizeId(idWithNamespace) {
         let ns = this.namespaceObjects;
-        let id;
-        let name;
+        let id = null;
+        let name = '';
         let isMeta;
         if (Array.isArray(idWithNamespace)) {
             const ids = [];
@@ -127,7 +124,7 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
                         fileIdDetails = id.match(this.normalizeFileRegex2);
                         if (fileIdDetails) {
                             id = fileIdDetails[1];
-                            name = fileIdDetails[2]|| '';
+                            name = fileIdDetails[2] || '';
                             isMeta = undefined;
                         } else {
                             name = '';
@@ -266,8 +263,7 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
         // Handle Redis "EVALSHA" request
         handler.on('evalsha', (data, responseId) => {
             if (!this.knownScripts[data[0]]) {
-                handler.sendError(responseId, new Error('Unknown Script ' + data[0]));
-                return;
+                return void handler.sendError(responseId, new Error('Unknown Script ' + data[0]));
             }
             if (this.knownScripts[data[0]].design) {
                 const scriptDesign = this.knownScripts[data[0]].design;
@@ -282,48 +278,35 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
                     if (this.settings.connection.enhancedLogging) {
                         this.log.silly(`${namespaceLog} Script transformed into getObjectView: design=${scriptDesign}, search=${scriptSearch}`);
                     }
-                    this.getObjectView(scriptDesign, scriptSearch, {
-                        startkey: data[3],
-                        endkey: data[4],
-                        include_docs: true
-                    }, (err, objs) => {
-                        if (err) {
-                            handler && handler.sendError(responseId, new Error('getObjectView Error for ' + scriptDesign + '/' + scriptSearch + ': ' + err));
-                            return;
-                        }
-                        const res = [];
-
-                        objs.rows.forEach(obj =>
-                            res.push(JSON.stringify(this.dataset[obj.value._id || obj.id])));
-
-                        handler && handler.sendArray(responseId, res);
-                    });
-                    return;
+                    let objs;
+                    try {
+                        objs = this._getObjectView(scriptDesign, scriptSearch, {
+                            startkey: data[3],
+                            endkey: data[4],
+                            include_docs: true
+                        });
+                    } catch (err) {
+                        return void handler.sendError(responseId, new Error('_getObjectView Error for ' + scriptDesign + '/' + scriptSearch + ': ' + err));
+                    }
+                    const res = objs.rows.map(obj => JSON.stringify(this.dataset[obj.value._id || obj.id]));
+                    handler.sendArray(responseId, res);
                 }
             } else if (this.knownScripts[data[0]].func && data.length > 4) {
                 const scriptFunc = {map: this.knownScripts[data[0]].func.replace('%1', data[5])};
                 if (this.settings.connection.enhancedLogging) {
                     this.log.silly(`${namespaceLog} Script transformed into _applyView: func=${scriptFunc.map}`);
                 }
-                this._applyView(scriptFunc, {
+                const objs = this._applyView(scriptFunc, {
                     startkey: data[3],
                     endkey: data[4],
                     include_docs: true
-                }, (err, objs) => {
-                    if (err) {
-                        handler && handler.sendError(responseId, new Error('getObjectView Error ' + err));
-                        return;
-                    }
-                    const res = [];
-
-                    objs.rows.forEach(obj =>
-                        res.push(JSON.stringify(this.dataset[obj.value._id || obj.id])));
-
-                    handler && handler.sendArray(responseId, res);
                 });
-                return;
+                const res = objs.rows.map(obj => JSON.stringify(this.dataset[obj.value._id || obj.id]));
+
+                return void handler.sendArray(responseId, res);
+            } else {
+                handler.sendError(responseId, new Error('Unknown LUA script eval call ' + JSON.stringify(data)));
             }
-            handler.sendError(responseId, new Error('Unknown LUA script eval call ' + JSON.stringify(data)));
         });
 
         // Handle Redis "PUBLISH" request
@@ -331,8 +314,7 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
             const {id, namespace} = this._normalizeId(data[0]);
 
             if (namespace === this.namespaceObj) { // a "set" always comes afterwards, so do not publish
-                handler.sendInteger(responseId, 0);
-                return; // do not publish for now
+                return void handler.sendInteger(responseId, 0); // do not publish for now
             }
             const publishCount = this.publishAll(namespace.substr(0, namespace.length - 1), id, JSON.parse(data[1]));
             handler.sendInteger(responseId, publishCount);
@@ -341,8 +323,7 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
         // Handle Redis "MGET" requests
         handler.on('mget', (data, responseId) => {
             if (!data || !data.length) {
-                handler.sendArray(responseId, []);
-                return;
+                return void handler.sendArray(responseId, []);
             }
             const {namespace, isMeta} = this._normalizeId(data[0]);
 
@@ -357,16 +338,14 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
                     }
                     keys.push(id);
                 });
-                this.getObjects(keys, (err, result) => {
-                    if (err || !result) {
-                        handler && handler.sendError(responseId, new Error('ERROR getObjects: ' + err)); // TODO
-                        return;
-                    }
-                    for (let i = 0; i < result.length; i++) {
-                        result[i] = result[i] ? JSON.stringify(result[i]) : null;
-                    }
-                    handler && handler.sendArray(responseId, result);
-                });
+                let result;
+                try {
+                    result = this._getObjects(keys);
+                } catch (err) {
+                    return void handler.sendError(responseId, new Error('ERROR _getObjects: ' + err.message));
+                }
+                result = result.map(el => el ? JSON.stringify(el) : null);
+                handler.sendArray(responseId, result);
             } else if (namespace === this.namespaceFile) {
                 // Handle request for Meta data for files
                 if (isMeta) {
@@ -378,12 +357,12 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
                             this.log.warn(`${namespaceLog} Got MGET request for non File ID in File-ID chunk for ${dataId}`);
                             return;
                         }
-                        this.loadFileSettings(id);
+                        this._loadFileSettings(id);
                         if (!this.fileOptions[id] || !this.fileOptions[id][name]) {
                             response.push(null);
                             return;
                         }
-                        const obj = this.clone(this.fileOptions[id][name]);
+                        const obj = this._clone(this.fileOptions[id][name]);
                         try {
                             // @ts-ignore
                             obj.stats = fs.statSync(path.join(this.objectsDir, id, name));
@@ -411,13 +390,12 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
             const {id, namespace, name, isMeta} = this._normalizeId(data[0]);
 
             if (namespace === this.namespaceObj) {
-                this.getObject(id, (err, result) => {
-                    if (err || !result) {
-                        handler && handler.sendNull(responseId);
-                    } else {
-                        handler && handler.sendBulk(responseId, JSON.stringify(result));
-                    }
-                });
+                const result = this._getObject(id);
+                if (!result) {
+                    handler.sendNull(responseId);
+                } else {
+                    handler.sendBulk(responseId, JSON.stringify(result));
+                }
             } else if (namespace === this.namespaceFile) {
                 // Handle request for Meta data for files
                 if (isMeta) {
@@ -425,24 +403,21 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
                     try {
                         stats = fs.statSync(path.join(this.objectsDir, id, name));
                     } catch (err) {
-                        handler.sendNull(responseId);
-                        return;
+                        return void handler.sendNull(responseId);
                     }
                     if (stats.isDirectory()) {
-                        handler.sendBulk(responseId, JSON.stringify({
+                        return void handler.sendBulk(responseId, JSON.stringify({
                             file: name,
                             stats: {},
                             isDir: true
                         }));
-                        return;
                     }
-                    this.loadFileSettings(id);
+                    this._loadFileSettings(id);
                     if (!this.fileOptions[id] || !this.fileOptions[id][name]) {
-                        handler.sendNull(responseId);
-                        return;
+                        return void handler.sendNull(responseId);
                     }
 
-                    let obj = this.clone(this.fileOptions[id][name]);
+                    let obj = this._clone(this.fileOptions[id][name]);
                     if (typeof obj !== 'object') {
                         obj = {
                             mimeType: obj,
@@ -457,18 +432,22 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
                     handler.sendBulk(responseId, JSON.stringify(obj));
                 } else {
                     // Handle request for File data
-                    this.readFile(id, name, (err, data, _mimeType) => {
-                        if (err || data === undefined || data === null) {
-                            handler && handler.sendNull(responseId);
-                        } else {
-                            if (!Buffer.isBuffer(data) && typeof data === 'object') {
-                                // if its an invalid object, stringify it and log warning
-                                data = JSON.stringify(data);
-                                this.log.warn(`${namespaceLog} Data of "${id}/${name}" has invalid structure at file data request: ${data}`);
-                            }
-                            handler && handler.sendBufBulk(responseId, Buffer.from(data));
-                        }
-                    });
+                    let data;
+                    try {
+                        data = this._readFile(id, name);
+                    } catch (err) {
+                        return void handler.sendNull(responseId);
+                    }
+                    if (data.fileContent === undefined || data.fileContent === null) {
+                        return void handler.sendNull(responseId);
+                    }
+                    let fileData = data.fileContent;
+                    if (!Buffer.isBuffer(fileData) && tools.isObject(fileData)) {
+                        // if its an invalid object, stringify it and log warning
+                        fileData = JSON.stringify(fileData);
+                        this.log.warn(`${namespaceLog} Data of "${id}/${name}" has invalid structure at file data request: ${fileData}`);
+                    }
+                    handler.sendBufBulk(responseId, Buffer.from(fileData));
                 }
             } else {
                 handler.sendError(responseId, new Error('GET-UNSUPPORTED for namespace ' + namespace + ': Data=' + JSON.stringify(data)));
@@ -482,21 +461,16 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
             if (namespace === this.namespaceObj) {
                 try {
                     const obj = JSON.parse(data[1].toString('utf-8'));
-                    this._setObjectDirect(id, obj, (err, id) => {
-                        if (err || !id) {
-                            handler && handler.sendError(responseId, new Error(`ERROR setObject id=${id}: ${err}`));
-                        } else {
-                            handler && handler.sendString(responseId, 'OK');
-                        }
-                    });
+                    this._setObjectDirect(id, obj);
                 } catch (err) {
-                    handler.sendError(responseId, new Error(`ERROR setObject id=${id}: ${err}`));
+                    return void handler.sendError(responseId, new Error(`ERROR setObject id=${id}: ${err}`));
                 }
+                handler.sendString(responseId, 'OK');
             } else if (namespace === this.namespaceFile) {
                 // Handle request to set meta data, we ignore it because
                 // will be set when data are written
                 if (isMeta) {
-                    this.loadFileSettings(id);
+                    this._loadFileSettings(id);
 
                     try {
                         fs.ensureDirSync(path.join(this.objectsDir, id, path.dirname(name)));
@@ -507,19 +481,17 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
                             fs.writeFileSync(path.join(this.objectsDir, id, '_data.json'), JSON.stringify(this.fileOptions[id]));
                         }
                     } catch (err) {
-                        handler.sendError(responseId, new Error(`ERROR writeFile-Meta id=${id}: ${err.message}`));
-                        return;
+                        return void handler.sendError(responseId, new Error(`ERROR writeFile-Meta id=${id}: ${err.message}`));
                     }
                     handler.sendString(responseId, 'OK');
                 } else {
                     // Handle request to write the file
-                    this.writeFile(id, name, data[1], err => {
-                        if (err) {
-                            handler && handler.sendError(responseId, new Error(`ERROR writeFile id=${id}: ${err.message}`));
-                        } else {
-                            handler && handler.sendString(responseId, 'OK');
-                        }
-                    });
+                    try {
+                        this._writeFile(id, name, data[1]);
+                    } catch (err) {
+                        return void handler.sendError(responseId, new Error(`ERROR writeFile id=${id}: ${err.message}`));
+                    }
+                    handler.sendString(responseId, 'OK');
                 }
             } else {
                 handler.sendError(responseId, new Error(`SET-UNSUPPORTED for namespace ${namespace}: Data=${JSON.stringify(data)}`));
@@ -533,7 +505,7 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
 
             if (oldDetails.namespace === this.namespaceFile) {
                 if (oldDetails.id !== newDetails.id) {
-                    return handler.sendError(responseId, new Error('ERROR renameObject: id needs to stay the same'));
+                    return void handler.sendError(responseId, new Error('ERROR renameObject: id needs to stay the same'));
                 }
 
                 // Handle request for Meta data for files
@@ -541,13 +513,12 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
                     handler.sendString(responseId, 'OK');
                 } else {
                     // Handle request for File data
-                    this.rename(oldDetails.id, oldDetails.name, newDetails.name, err => {
-                        if (err) {
-                            handler && handler.sendNull(responseId);
-                        } else {
-                            handler && handler.sendString(responseId, 'OK');
-                        }
-                    });
+                    try {
+                        this._rename(oldDetails.id, oldDetails.name, newDetails.name);
+                    } catch (err) {
+                        return void handler.sendNull(responseId);
+                    }
+                    handler.sendString(responseId, 'OK');
                 }
             } else {
                 handler.sendError(responseId, new Error(`RENAME-UNSUPPORTED for namespace ${oldDetails.namespace}: Data=${JSON.stringify(data)}`));
@@ -559,13 +530,12 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
             const {id, namespace, name, isMeta} = this._normalizeId(data[0]);
 
             if (namespace === this.namespaceObj) {
-                this.delObject(id, err => {
-                    if (err) {
-                        handler && handler.sendError(responseId, new Error('ERROR delObject ' + id + ': ' + err));
-                    } else {
-                        handler && handler.sendInteger(responseId, 1);
-                    }
-                });
+                try {
+                    this._delObject(id);
+                } catch (err) {
+                    return void handler.sendError(responseId, err);
+                }
+                handler.sendInteger(responseId, 1);
             } else if (namespace === this.namespaceFile) {
                 // Handle request to delete meta data, we ignore it because
                 // will be removed when data are deleted
@@ -573,13 +543,12 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
                     handler.sendString(responseId, 'OK');
                 } else {
                     // Handle request to remove the file
-                    this.unlink(id, name, err => {
-                        if (err) {
-                            handler && handler.sendError(responseId, new Error(`ERROR unlink id=${id}: ${err}`));
-                        } else {
-                            handler && handler.sendString(responseId, 'OK');
-                        }
-                    });
+                    try {
+                        this._unlink(id, name);
+                    } catch (err) {
+                        return void handler.sendError(responseId, err);
+                    }
+                    handler.sendString(responseId, 'OK');
                 }
             } else {
                 handler.sendError(responseId, new Error(`DEL-UNSUPPORTED for namespace ${namespace}: Data=${JSON.stringify(data)}`));
@@ -588,31 +557,37 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
 
         handler.on('exists', async (data, responseId) => {
             if (!data || !data.length) {
-                handler.sendInteger(responseId, 0);
+                return void handler.sendInteger(responseId, 0);
             }
 
             // Note: we only simulate single key existence check
             const {id, namespace, name} = this._normalizeId(data[0]);
 
             if (namespace === this.namespaceObj) {
+                let exists;
                 try {
-                    const exists = await this.objectExists(id);
-                    handler.sendInteger(responseId, +exists);
+                    exists = this._objectExists(id);
                 } catch (e) {
-                    return handler.sendError(responseId, e);
+                    return void handler.sendError(responseId, e);
                 }
+                handler.sendInteger(responseId, exists ? 1 : 0);
             } else if (namespace === this.namespaceFile) {
-                // @ts-ignore
-                handler.sendInteger(responseId, +await this.fileExists(id, name));
+                let exists;
+                try {
+                    exists = this._fileExists(id, name);
+                } catch (e) {
+                    return void handler.sendError(responseId, e);
+                }
+                handler.sendInteger(responseId, exists ? 1 : 0);
             } else {
                 handler.sendError(responseId, new Error(`EXISTS-UNSUPPORTED for namespace ${namespace}`));
             }
         });
 
-        // handle Redis "SCAN" request for state namespace
+        // handle Redis "SCAN" request for objects namespace
         handler.on('scan', (data, responseId) => {
             if (!data || data.length < 3) {
-                return handler.sendArray(responseId, ['0', []]);
+                return void handler.sendArray(responseId, ['0', []]);
             }
 
             return this._handleScanOrKeys(handler, data[2], responseId, true);
@@ -621,7 +596,7 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
         // Handle Redis "KEYS" request for state namespace
         handler.on('keys', (data, responseId) => {
             if (!data || !data.length) {
-                return handler.sendArray(responseId, []);
+                return void handler.sendArray(responseId, []);
             }
 
             return this._handleScanOrKeys(handler, data[0], responseId);
@@ -632,8 +607,8 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
             const {id, namespace} = this._normalizeId(data[0]);
 
             if (namespace === this.namespaceObj) {
-                this.subscribeConfigForClient(handler, id, () =>
-                    handler && handler.sendArray(responseId, ['psubscribe', data[0], 1]));
+                this._subscribeConfigForClient(handler, id);
+                handler.sendArray(responseId, ['psubscribe', data[0], 1]);
             } else {
                 handler.sendError(responseId, new Error('PSUBSCRIBE-UNSUPPORTED for namespace ' + namespace + ': Data=' + JSON.stringify(data)));
             }
@@ -644,8 +619,8 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
             const {id, namespace} = this._normalizeId(data[0]);
 
             if (namespace === this.namespaceObj) {
-                this.unsubscribeConfigForClient(handler, id, () =>
-                    handler && handler.sendArray(responseId, ['punsubscribe', data[0], 1]));
+                this._unsubscribeConfigForClient(handler, id);
+                handler.sendArray(responseId, ['punsubscribe', data[0], 1]);
             } else {
                 handler.sendError(responseId, new Error('PUNSUBSCRIBE-UNSUPPORTED for namespace ' + namespace + ': Data=' + JSON.stringify(data)));
             }
@@ -698,20 +673,26 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
     /**
      * Destructor of the class. Called by shutting down.
      */
-    destroy() {
-        super.destroy();
+    async destroy() {
+        await super.destroy();
 
-        if (this.server.server) {
+        if (this.server) {
             Object.keys(this.serverConnections).forEach(s => {
                 this.serverConnections[s].close();
                 delete this.serverConnections[s];
             });
 
-            try {
-                this.server.server.close();
-            } catch (e) {
-                console.log(e.message);
-            }
+            return /** @type {Promise<void>} */ (new Promise(resolve => {
+                if (!this.server) {
+                    return void resolve();
+                }
+                try {
+                    this.server.close(() => resolve());
+                } catch (e) {
+                    console.log(e.message);
+                    resolve();
+                }
+            }));
         }
     }
 
@@ -727,28 +708,21 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
     _handleScanOrKeys(handler, pattern, responseId, isScan = false) {
         const {id, namespace, name, isMeta} = this._normalizeId(pattern);
 
-        if (namespace === this.namespaceObj) {
-            this.getKeys(id, (err, result) => {
-                if (err || !result) {
-                    return handler && handler.sendError(responseId, new Error(`ERROR getKeys: ${err}`));
-                }
-                for (let i = 0; i < result.length; i++) {
-                    result[i] = this.namespaceObj + result[i];
-                }
-                // if scan, we send the cursor as first argument
-                handler && handler.sendArray(responseId, isScan ? ['0', result] : result);
-            });
-        } else if (namespace === this.namespaceFile) {
+        let response = [];
+        if (namespace === this.namespaceObj || namespace === this.namespaceObjects) {
+            response =  this._getKeys(id).map(val => this.namespaceObj + val);
+            // if scan, we send the cursor as first argument
+            if (namespace !== this.namespaceObjects) { // When it was not the full DB namespace send out response
+                return void handler.sendArray(responseId, isScan ? ['0', response] : response);
+            }
+        }
+        if (namespace === this.namespaceFile || namespace === this.namespaceObjects) {
             // Handle request to get meta data keys
             if (isMeta === undefined) {
-                this.readDir(id, name, (err, res) => {
-                    if (err && err.toString().endsWith(utils.ERRORS.ERROR_NOT_FOUND)) {
-                        res = [];
-                        err = null;
-                    } else if (err) {
-                        handler && handler.sendError(responseId, new Error(`ERROR readDir id=${id}: ${err.message}`));
-                        return;
-                    } else if (!res || !res.length) {
+                let res;
+                try {
+                    res = this._readDir(id, name);
+                    if (!res || !res.length) {
                         res = [{
                             file: '_data.json',
                             stats: {},
@@ -757,24 +731,33 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
                             notExists: true
                         }];
                     }
-                    const response = [];
-                    const baseName = name + ((!name.length || name.endsWith('/')) ? '' : '/');
-                    res.forEach(arr => {
-                        let entryId = id;
-                        if (arr.isDir) {
-                            if (entryId === '' || entryId === '*') {
-                                entryId = arr.file;
-                                arr.file = '_data.json'; // We return a "virtual file" to mark the directory as existing
-                            } else {
-                                arr.file += '/_data.json'; // We return a "virtual file" to mark the directory as existing
-                            }
+                } catch (err) {
+                    if (!err.message.endsWith(utils.ERRORS.ERROR_NOT_FOUND)) {
+                        return void handler.sendError(responseId, new Error(`ERROR readDir id=${id}: ${err.message}`));
+                    }
+                    res = [];
+                }
+                let baseName = name;
+                if (!baseName.endsWith('/')) {
+                    baseName += '/';
+                }
+                res.forEach(arr => {
+                    let entryId = id;
+                    if (arr.isDir) {
+                        if (entryId === '' || entryId === '*') {
+                            entryId = arr.file;
+                            arr.file = '_data.json'; // We return a "virtual file" to mark the directory as existing
+                        } else {
+                            arr.file += '/_data.json'; // We return a "virtual file" to mark the directory as existing
                         }
-                        // We need to simulate the Meta data here, so return both
-                        response.push(this.getFileId(entryId, baseName + arr.file, true));
-                        response.push(this.getFileId(entryId, baseName + arr.file, false));
-                    });
-                    handler && handler.sendArray(responseId, isScan ? ['0', response] : response);
+                    }
+                    // We need to simulate the Meta data here, so return both
+                    response.push(this.getFileId(entryId, baseName + arr.file, true));
+                    response.push(this.getFileId(entryId, baseName + arr.file, false));
                 });
+                handler.sendArray(responseId, isScan ? ['0', response] : response); // send out file or full db response
+            } else { // such a request should never happen
+                handler.sendArray(responseId, isScan ? ['0', []] : []); // send out file or full db response
             }
         } else {
             handler.sendError(responseId, new Error(`${isScan ? 'SCAN' : 'KEYS'}-UNSUPPORTED for namespace ${namespace}: Pattern=${pattern}`));
@@ -810,26 +793,29 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
     /**
      * Initialize Redis Server
      * @param settings Settings object
-     * @param server Network server to use
      * @private
+     * @return {Promise<void>}
      */
-    _initRedisServer(settings, server) {
-        try {
+    _initRedisServer(settings) {
+        return new Promise((resolve, reject) => {
             if (settings.secure) {
-                throw Error('Secure Redis unsupported');
-            } else {
-                this.server.server = net.createServer();
+                reject(new Error('Secure Redis unsupported for File-DB'));
             }
-            this.server.server.on('error', err => this.log.info(this.namespace + ' ' + (settings.secure ? 'Secure ' : '') + ' Error inMem-objects listening on port ' + (settings.port || 9001)) + ': ' + err);
-            server.server.listen(settings.port || 9001, (settings.host && settings.host !== 'localhost') ? settings.host : ((settings.host === 'localhost') ? '127.0.0.1' : undefined));
-        } catch (e) {
-            this.log.error(this.namespace + ' Cannot start inMem-objects on port ' + (settings.port || 9001) + ': ' + e.message);
-            process.exit(24);
-        }
+            try {
+                this.server = net.createServer();
+                this.server.on('error', err =>
+                    this.log.info(`${this.namespace} ${settings.secure ? 'Secure ' : ''} Error inMem-objects listening on port ${settings.port || 9001}: ${err}`));
+                this.server.on('connection', socket => this._initSocket(socket));
 
-        this.server.server.on('connection', socket => this._initSocket(socket));
-
-        this.log.debug(this.namespace + ' ' + (settings.secure ? 'Secure ' : '') + ' Redis inMem-objects listening on port ' + (settings.port || 9001));
+                this.server.listen(
+                    settings.port || 9001,
+                    settings.host === 'localhost' ? '127.0.0.1' : settings.host ? settings.host : undefined,
+                    () => resolve()
+                );
+            } catch (err) {
+                reject(err);
+            }
+        });
     }
 }
 

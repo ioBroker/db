@@ -24,7 +24,6 @@ const path                  = require('path');
 const crypto                = require('crypto');
 const { isDeepStrictEqual } = require('util');
 const deepClone             = require('deep-clone');
-
 const utils                 = require('./objectsUtils.js');
 
 function initScriptFiles() {
@@ -39,20 +38,15 @@ function initScriptFiles() {
 }
 const scriptFiles = initScriptFiles();
 
-class ObjectsInRedis {
+class ObjectsInRedisClient {
 
     constructor(settings) {
-        // const originalSettings = settings;
         this.settings = settings || {};
         this.redisNamespace = (this.settings.redisNamespace || (this.settings.connection && this.settings.connection.redisNamespace) || 'cfg') + '.';
         this.fileNamespace = this.redisNamespace + 'f.';
         this.fileNamespaceL = this.fileNamespace.length;
         this.objNamespace = this.redisNamespace + 'o.';
         this.objNamespaceL = this.objNamespace.length;
-        const ioRegExp = new RegExp('^' + this.objNamespace.replace(/\./g, '\\.') + '[_A-Za-z0-9ÄÖÜäöüа-яА-Я]+'); // cfg.o.[_A-Za-z0-9]+
-
-        const onChange = this.settings.change; // on change handler
-        const onChangeUser = this.settings.changeUser; // on change handler for User events
 
         this.stop = false;
         this.client = null;
@@ -66,9 +60,20 @@ class ObjectsInRedis {
         // cached meta objects for file operations
         this.existingMetaObjects = {};
 
-        this.log = utils.getLogger(this.settings.logger);
+        this.log = tools.getLogger(this.settings.logger);
 
+        if (this.settings.autoConnect !== false) {
+            this.connectDb();
+        }
+    }
+
+    connectDb() {
         this.settings.connection = this.settings.connection || {};
+
+        const ioRegExp = new RegExp('^' + this.objNamespace.replace(/\./g, '\\.') + '[_A-Za-z0-9ÄÖÜäöüа-яА-Я]+'); // cfg.o.[_A-Za-z0-9]+
+
+        const onChange = this.settings.change; // on change handler
+        const onChangeUser = this.settings.changeUser; // on change handler for User events
 
         // limit max number of log entries in the list
         this.settings.connection.maxQueue = this.settings.connection.maxQueue || 1000;
@@ -76,6 +81,13 @@ class ObjectsInRedis {
         this.settings.connection.options = this.settings.connection.options || {};
         const retry_max_delay = this.settings.connection.options.retry_max_delay || 5000;
         const retry_max_count = this.settings.connection.options.retry_max_count || 19;
+
+        let ready = false;
+        let initError = false;
+        let ignoreErrors = false;
+        let connected = false;
+        let reconnectCounter = 0;
+        let errorLogged = false;
 
         this.settings.connection.options.retryStrategy = reconnectCount => {
             if (!ready && initError && ignoreErrors) {
@@ -118,13 +130,6 @@ class ObjectsInRedis {
 
         delete this.settings.connection.options.retry_max_delay;
         this.settings.connection.options.enableReadyCheck = true;
-
-        let ready = false;
-        let initError = false;
-        let ignoreErrors = false;
-        let connected = false;
-        let reconnectCounter = 0;
-        let errorLogged = false;
 
         if (this.settings.connection.port === 0) { // Port = 0 means unix socket
             // initiate a unix socket connection
@@ -237,11 +242,11 @@ class ObjectsInRedis {
                                         const obj = message ? JSON.parse(message) : null;
 
                                         if (this.settings.controller &&
-                                                id === 'system.config' &&
-                                                obj &&
-                                                obj.common &&
-                                                obj.common.defaultNewAcl &&
-                                                !isDeepStrictEqual(obj.common.defaultNewAcl, this.defaultNewAcl)) {
+                                            id === 'system.config' &&
+                                            obj &&
+                                            obj.common &&
+                                            obj.common.defaultNewAcl &&
+                                            !isDeepStrictEqual(obj.common.defaultNewAcl, this.defaultNewAcl)) {
                                             this.defaultNewAcl = JSON.parse(JSON.stringify(obj.common.defaultNewAcl));
                                             this.setDefaultAcl(this.defaultNewAcl);
                                         }
@@ -291,7 +296,7 @@ class ObjectsInRedis {
                         } else {
                             this.log.debug(this.namespace + ' Objects ' + (ready ? 'system re' : '') + 'connected to redis: ' + this.settings.connection.host + ':' + this.settings.connection.port);
                         }
-                        !ready && typeof this.settings.connected === 'function' && this.settings.connected(this);
+                        !ready && typeof this.settings.connected === 'function' && this.settings.connected();
                         ready = true;
                     }
                     // subscribe on system.config only if js-controller
@@ -372,7 +377,7 @@ class ObjectsInRedis {
                         } else {
                             this.log.debug(this.namespace + ' Objects ' + (ready ? 'user re' : '') + 'connected to redis: ' + this.settings.connection.host + ':' + this.settings.connection.port);
                         }
-                        !ready && typeof this.settings.connected === 'function' && this.settings.connected(this);
+                        !ready && typeof this.settings.connected === 'function' && this.settings.connected();
                         ready = true;
                     }
 
@@ -419,7 +424,7 @@ class ObjectsInRedis {
                     } else {
                         this.log.debug(this.namespace + ' Objects ' + (ready ? 'client re' : '') + 'connected to redis: ' + this.settings.connection.host + ':' + this.settings.connection.port);
                     }
-                    !ready && typeof this.settings.connected === 'function' && this.settings.connected(this);
+                    !ready && typeof this.settings.connected === 'function' && this.settings.connected();
                     ready = true;
                 }
             });
@@ -525,8 +530,10 @@ class ObjectsInRedis {
                 name = name.replace(/^iobroker.[-\d\w]\/admin\//i, '');
             }
         }
-        const normalized = utils.sanitizePath(id, name);
-        if (!normalized) {
+        let normalized;
+        try {
+            normalized = utils.sanitizePath(id, name);
+        } catch {
             this.log.debug(this.namespace + ' Invalid file path ' + id + '/' + name);
             return '';
         }
@@ -686,9 +693,9 @@ class ObjectsInRedis {
         }
 
         if (!callback) {
-            return new Promise((resolve, reject) =>
+            return /** @type {Promise<void>} */ (new Promise((resolve, reject) =>
                 this.writeFile(id, name, data, options, err =>
-                    err ? reject(err) : resolve()));
+                    err ? reject(err) : resolve())));
         }
 
         try {
@@ -721,9 +728,9 @@ class ObjectsInRedis {
     }
 
     writeFileAsync(id, name, data, options) {
-        return new Promise((resolve, reject) =>
+        return /** @type {Promise<void>} */ (new Promise((resolve, reject) =>
             this.writeFile(id, name, data, options, err =>
-                err ? reject(err) : resolve()));
+                err ? reject(err) : resolve())));
     }
 
     async _readFile(id, name, options, callback, meta) {
@@ -802,7 +809,7 @@ class ObjectsInRedis {
         }
 
         try {
-            await new Promise((resolve, reject) => {
+            await /** @type {Promise<void>} */ (new Promise((resolve, reject) => {
                 utils.checkObjectRights(this, null, null, options, utils.CONSTS.ACCESS_LIST, err => {
                     if (err) {
                         reject(err);
@@ -810,7 +817,7 @@ class ObjectsInRedis {
                         resolve();
                     }
                 });
-            });
+            }));
             const exists = await this.client.exists(this.objNamespace + id);
             return !!exists;
         } catch (e) {
@@ -837,7 +844,7 @@ class ObjectsInRedis {
         }
 
         try {
-            await new Promise((resolve, reject) => {
+            await /** @type {Promise<void>} */ (new Promise((resolve, reject) => {
                 this.checkFileRights(id, name, options, utils.CONSTS.ACCESS_READ, err => {
                     if (err) {
                         reject(err);
@@ -845,7 +852,7 @@ class ObjectsInRedis {
                         resolve();
                     }
                 });
-            });
+            }));
             id = this.getFileId(id, name, false);
             const exists = await this.client.exists(id);
             return !!exists;
@@ -906,9 +913,9 @@ class ObjectsInRedis {
     }
 
     unlinkAsync(id, name, options) {
-        return new Promise((resolve, reject) =>
+        return /** @type {Promise<void>} */ (new Promise((resolve, reject) =>
             this.unlink(id, name, options, err =>
-                err ? reject(err) : resolve()));
+                err ? reject(err) : resolve())));
     }
 
     delFile(id, name, options, callback) {
@@ -1257,9 +1264,9 @@ class ObjectsInRedis {
     }
 
     renameAsync(id, oldName, newName, options) {
-        return new Promise((resolve, reject) =>
+        return /** @type {Promise<void>} */ (new Promise((resolve, reject) =>
             this.rename(id, oldName, newName, options, err =>
-                err ? reject(err) : resolve()));
+                err ? reject(err) : resolve())));
     }
 
     async _touch(id, name, options, callback, meta) {
@@ -1306,9 +1313,9 @@ class ObjectsInRedis {
     }
 
     touchAsync(id, name, options) {
-        return new Promise((resolve, reject) =>
+        return /** @type {Promise<void>} */ (new Promise((resolve, reject) =>
             this.touch(id, name, options, err =>
-                err ? reject(err) : resolve()));
+                err ? reject(err) : resolve())));
     }
 
     async _rmHelper(keys, callback) {
@@ -1478,9 +1485,9 @@ class ObjectsInRedis {
     }
 
     mkdirAsync(id, dirName, options) {
-        return new Promise((resolve, reject) =>
+        return /** @type {Promise<void>} */ (new Promise((resolve, reject) =>
             this.mkdir(id, dirName, options, err =>
-                err ? reject(err) : resolve()));
+                err ? reject(err) : resolve())));
     }
 
     async _chownFileHelper(keys, metas, options, callback) {
@@ -1670,31 +1677,30 @@ class ObjectsInRedis {
     }
 
     chownFileAsync(id, name, options) {
-        return new Promise((resolve, reject) =>
+        return /** @type {Promise<void>} */ (new Promise((resolve, reject) =>
             this.chownFile(id, name, options, err =>
-                err ? reject(err) : resolve()));
+                err ? reject(err) : resolve())));
     }
 
     async _chmodFileHelper(keys, metas, options, callback) {
         if (!keys || !keys.length) {
             return tools.maybeCallback(callback);
-        } else {
-            if (!this.client) {
-                return tools.maybeCallbackWithError(callback, utils.ERRORS.ERROR_DB_CLOSED);
-            }
+        }
+        if (!this.client) {
+            return tools.maybeCallbackWithError(callback, utils.ERRORS.ERROR_DB_CLOSED);
+        }
 
-            for (const i in keys) {
-                const id = keys[i];
-                const meta = metas[i];
-                meta.acl.permissions = options.mode;
-                try {
-                    await this.client.set(id, JSON.stringify(meta));
-                    return tools.maybeCallback(callback);
-                } catch (e) {
-                    return tools.maybeCallbackWithError(callback, e);
-                }
+        for (const i in keys) {
+            const id = keys[i];
+            const meta = metas[i];
+            meta.acl.permissions = options.mode;
+            try {
+                await this.client.set(id, JSON.stringify(meta));
+            } catch (e) {
+                return tools.maybeCallbackWithError(callback, e);
             }
         }
+        return tools.maybeCallback(callback);
     }
 
     async _chmodFile(id, name, options, callback, meta) {
@@ -1848,9 +1854,9 @@ class ObjectsInRedis {
     }
 
     chmodFileAsync(id, name, options) {
-        return new Promise((resolve, reject) =>
+        return /** @type {Promise<void>} */ (new Promise((resolve, reject) =>
             this.chmodFile(id, name, options, err =>
-                err ? reject(err) : resolve()));
+                err ? reject(err) : resolve())));
     }
 
     enableFileCache(enabled, options, callback) {
@@ -1928,9 +1934,9 @@ class ObjectsInRedis {
     }
 
     subscribeAsync(pattern, options) {
-        return new Promise((resolve, reject) =>
+        return /** @type {Promise<void>} */ (new Promise((resolve, reject) =>
             this.subscribe(pattern, options, err =>
-                err ? reject(err) : resolve()));
+                err ? reject(err) : resolve())));
     }
 
     subscribeUser(pattern, options, callback) {
@@ -1948,9 +1954,9 @@ class ObjectsInRedis {
     }
 
     subscribeUserAsync(pattern, options) {
-        return new Promise((resolve, reject) =>
+        return /** @type {Promise<void>} */ (new Promise((resolve, reject) =>
             this.subscribeUser(pattern, options, err =>
-                err ? reject(err) : resolve()));
+                err ? reject(err) : resolve())));
     }
 
     _unsubscribe(pattern, options, subClient, callback) {
@@ -1998,9 +2004,9 @@ class ObjectsInRedis {
     }
 
     unsubscribeAsync(pattern, options) {
-        return new Promise((resolve, reject) =>
+        return /** @type {Promise<void>} */ (new Promise((resolve, reject) =>
             this.unsubscribe(pattern, options, err =>
-                err ? reject(err) : resolve()));
+                err ? reject(err) : resolve())));
     }
 
     unsubscribeUser(pattern, options, callback) {
@@ -2018,9 +2024,9 @@ class ObjectsInRedis {
     }
 
     unsubscribeUserAsync(pattern, options) {
-        return new Promise((resolve, reject) =>
+        return /** @type {Promise<void>} */ (new Promise((resolve, reject) =>
             this.unsubscribeUser(pattern, options, err =>
-                err ? reject(err) : resolve()));
+                err ? reject(err) : resolve())));
     }
 
     async _objectHelper(keys, objs, callback) {
@@ -2830,9 +2836,9 @@ class ObjectsInRedis {
     }
 
     delObjectAsync(id, options) {
-        return new Promise((resolve, reject) =>
+        return /** @type {Promise<void>} */ (new Promise((resolve, reject) =>
             this.delObject(id, options, err =>
-                err ? reject(err) : resolve()));
+                err ? reject(err) : resolve())));
     }
 
     // this function is very ineffective. Because reads all objects and then process them
@@ -3694,9 +3700,9 @@ class ObjectsInRedis {
     }
 
     destroyDBAsync(options) {
-        return new Promise((resolve, reject) =>
+        return /** @type {Promise<void>} */ (new Promise((resolve, reject) =>
             this.destroyDB(options, err =>
-                err ? reject(err) : resolve()));
+                err ? reject(err) : resolve())));
     }
 
     // Destructor of the class. Called by shutting down.
@@ -3820,4 +3826,4 @@ class ObjectsInRedis {
     }
 }
 
-module.exports = ObjectsInRedis;
+module.exports = ObjectsInRedisClient;
