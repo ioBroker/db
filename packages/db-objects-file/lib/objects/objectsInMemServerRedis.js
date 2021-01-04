@@ -756,8 +756,7 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
                     response.push(this.getFileId(entryId, baseName + arr.file, false));
                 });
                 handler.sendArray(responseId, isScan ? ['0', response] : response); // send out file or full db response
-            }
-            else { // such a request should never happen
+            } else { // such a request should never happen
                 handler.sendArray(responseId, isScan ? ['0', []] : []); // send out file or full db response
             }
         } else {
