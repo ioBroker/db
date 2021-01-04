@@ -61,17 +61,16 @@ class StatesInMemoryServer extends StatesInMemoryFileDB {
         this.namespaceMsgLen     = this.namespaceMsg.length;
         this.namespaceLogLen     = this.namespaceLog.length;
         //this.namespaceSessionlen = this.namespaceSession.length;
-        this._initRedisServer(this.settings.connection, e => {
-            if (e) {
-                this.log.error(this.namespace + ' Cannot start inMem-states on port ' + (this.settings.port || 9000) + ': ' + e.message);
-                process.exit(24); // todo: replace it with exitcode
-            }
 
+        this._initRedisServer(this.settings.connection).then(() => {
             this.log.debug(this.namespace + ' ' + (settings.secure ? 'Secure ' : '') + ' Redis inMem-states listening on port ' + (this.settings.port || 9000));
 
             if (typeof this.settings.connected === 'function') {
                 setImmediate(() => this.settings.connected());
             }
+        }).catch(e => {
+            this.log.error(this.namespace + ' Cannot start inMem-states on port ' + (this.settings.port || 9000) + ': ' + e.message);
+            process.exit(24); // todo: replace it with exitcode
         });
     }
 
@@ -461,27 +460,28 @@ class StatesInMemoryServer extends StatesInMemoryFileDB {
     /**
      * Initialize Redis Server
      * @param settings Settings object
-     * @param callback listening/connection callback
      * @private
      */
-    _initRedisServer(settings, callback) {
-        try {
+    _initRedisServer(settings) {
+        return /** @type {Promise<void|Error>} */ (new Promise((resolve, reject) => {
             if (settings.secure) {
-                callback && callback(new Error('Secure Redis unsupported for File-DB'));
+                reject(new Error('Secure Redis unsupported for File-DB'));
             }
-            this.server = net.createServer();
-            this.server.on('error', err =>
-                this.log.info(this.namespace + ' ' + (settings.secure ? 'Secure ' : '') + ' Error inMem-states listening on port ' + (settings.port || 9000)) + ': ' + err);
-            this.server.on('connection', socket => this._initSocket(socket));
+            try {
+                this.server = net.createServer();
+                this.server.on('error', err =>
+                    this.log.info(this.namespace + ' ' + (settings.secure ? 'Secure ' : '') + ' Error inMem-states listening on port ' + (settings.port || 9000)) + ': ' + err);
+                this.server.on('connection', socket => this._initSocket(socket));
 
-            this.server.listen(
-                settings.port || 9000,
-                settings.host === 'localhost' ? '127.0.0.1' : settings.host ? settings.host : undefined,
-                callback
-            );
-        } catch (e) {
-            callback(e);
-        }
+                this.server.listen(
+                    settings.port || 9000,
+                    settings.host === 'localhost' ? '127.0.0.1' : settings.host ? settings.host : undefined,
+                    () => resolve()
+                );
+            } catch (err) {
+                reject(err);
+            }
+        }));
     }
 }
 
