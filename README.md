@@ -6,6 +6,9 @@
 	### __WORK IN PROGRESS__
 -->
 
+### __WORK IN PROGRESS__
+* (Apollon77) finalize first iteration of restructuring of db classes and always use the client class for all communications
+
 ### 0.0.14 (2020-12-30)
 * (Apollon77) initialize data directory for file DBs relative to js-controller dir
 
