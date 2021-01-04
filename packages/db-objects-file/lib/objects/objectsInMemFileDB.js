@@ -152,11 +152,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
     }
 
     // server only functionality
-    syncFileDirectory(limitId, callback) {
-        if (typeof limitId === 'function') {
-            callback = limitId;
-            limitId = null;
-        }
+    syncFileDirectory(limitId) {
         const resNotifies = [];
         let resSynced = 0;
 
@@ -177,12 +173,8 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
             return results;
         }
 
-        let res;
-        try {
-            res = this._getObjectView('system', 'meta', null);
-        } catch (err) {
-            return typeof callback === 'function' && callback(err);
-        }
+        const res = this._getObjectView('system', 'meta', null);
+
         // collect Meta objects
         const metaObjects = {};
         res.rows.forEach(obj => {
@@ -197,8 +189,10 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
 
         try {
             if (!fs.existsSync(this.objectsDir)) {
-                typeof callback === 'function' && callback(null, resSynced, resNotifies);
-                return;
+                return {
+                    numberSuccess: resSynced,
+                    notifications: resNotifies
+                };
             }
             const baseDirs = fs.readdirSync(this.objectsDir);
             baseDirs.forEach(dir => {
@@ -251,10 +245,12 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
                 dirSynced && resNotifies.push('Added ' + dirSynced + ' Files in Directory "' + dir + '"');
             });
         } catch (e) {
-            typeof callback === 'function' && callback(e, resSynced, resNotifies);
-            return;
+            throw e;
         }
-        typeof callback === 'function' && callback(null, resSynced, resNotifies);
+        return {
+            numberSuccess: resSynced,
+            notifications: resNotifies
+        };
     }
 
     // needed by server
@@ -470,11 +466,10 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
      *
      * @param {string} id id of the namespace
      * @param {string} [name] name of the directory
-     * @param {object} [_options] optional user context
-     * @returns {Promise<boolean>}
+     * @returns {boolean}
      */
     // special functionality only for Server (used together with SyncFileDirectory)
-    async dirExists(id, name, _options) {
+    dirExists(id, name) {
         if (typeof name !== 'string') {
             name = '';
         }
@@ -482,14 +477,14 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
         const location = path.join(this.objectsDir, id, name);
 
         try {
-            const stat = await fs.promises.lstat(location);
-            return Promise.resolve(stat.isDirectory());
+            const stat = fs.statSync(location);
+            return stat.isDirectory();
         } catch (e) {
             if (e.code !== 'ENOENT') {
                 this.log.error(`Cannot check directory existence of "${location}": ${e}`);
-                return Promise.reject(new Error(`Cannot check directory existence of "${location}": ${e}`));
+                throw new Error(`Cannot check directory existence of "${location}": ${e}`);
             }
-            return Promise.resolve(false);
+            return false;
         }
     }
 
@@ -850,51 +845,6 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
             throw new Error(`Cannot find search "${search}" in "${design}"`);
         }
         return this._applyView(this.dataset[`_design/${design}`].views[search], params);
-    }
-
-    // special functionality
-    destroyDB(options, callback) {
-        if (typeof options === 'function') {
-            callback = options;
-            options = null;
-        }
-
-        if (!callback) {
-            return new Promise((resolve, reject) => {
-                this.destroyDB(options, (err, obj) => {
-                    if (err) {
-                        reject(err);
-                    } else {
-                        resolve(obj);
-                    }
-                });
-            });
-        }
-
-        options = options || {};
-        options.acl = null;
-
-        utils.checkObjectRights(this, null, null, options, utils.CONSTS.ACCESS_WRITE, (err, options) => {
-            if (err) {
-                typeof callback === 'function' && setImmediate(() => callback(err));
-            } else {
-                // ONLY admin can destroy DB
-                if (!options.acl.file.write || options.user !== utils.CONSTS.SYSTEM_ADMIN_USER) {
-                    typeof callback === 'function' && setImmediate(() => callback(utils.ERRORS.ERROR_PERMISSION));
-                } else {
-                    if (fs.existsSync(this.datasetName)) {
-                        fs.unlinkSync(this.datasetName);
-                    }
-
-                    // also delete user files
-                    if (fs.existsSync(this.objectsDir)) {
-                        fs.emptyDirSync(this.objectsDir);
-                    }
-
-                    typeof callback === 'function' && setImmediate(() => callback());
-                }
-            }
-        });
     }
 
     // Destructor of the class. Called by shutting down.

@@ -44,16 +44,12 @@ class ObjectsInMemoryServerClass extends ObjectsInRedisClient {
         return this.objectsServer.getStatus(); // return Status as Server
     }
 
-    destroyDB(options, callback) {
-        return this.objectsServer.destroyDB(options, callback);
+    syncFileDirectory(limitId) {
+        return this.objectsServer.syncFileDirectory(limitId);
     }
 
-    syncFileDirectory(limitId, callback) {
-        return this.objectsServer.syncFileDirectory(limitId, callback);
-    }
-
-    async dirExists(id, name, options) {
-        return this.objectsServer.dirExists(id, name, options);
+    dirExists(id, name) {
+        return this.objectsServer.dirExists(id, name);
     }
 }
 
