@@ -454,7 +454,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
         const location = path.join(this.objectsDir, id, name);
 
         try {
-            const stat = fs.lstatSync(location);
+            const stat = fs.statSync(location);
             return stat.isFile();
         } catch (e) {
             if (e.code !== 'ENOENT') {
