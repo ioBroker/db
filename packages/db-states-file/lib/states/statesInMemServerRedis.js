@@ -461,16 +461,17 @@ class StatesInMemoryServer extends StatesInMemoryFileDB {
      * Initialize Redis Server
      * @param settings Settings object
      * @private
+     * @return {Promise<void>}
      */
     _initRedisServer(settings) {
-        return /** @type {Promise<void|Error>} */ (new Promise((resolve, reject) => {
+        return new Promise((resolve, reject) => {
             if (settings.secure) {
                 reject(new Error('Secure Redis unsupported for File-DB'));
             }
             try {
                 this.server = net.createServer();
                 this.server.on('error', err =>
-                    this.log.info(this.namespace + ' ' + (settings.secure ? 'Secure ' : '') + ' Error inMem-states listening on port ' + (settings.port || 9000)) + ': ' + err);
+                    this.log.info(`${this.namespace} ${settings.secure ? 'Secure ' : ''} Error inMem-objects listening on port ${settings.port || 9001}: ${err}`));
                 this.server.on('connection', socket => this._initSocket(socket));
 
                 this.server.listen(
@@ -481,7 +482,7 @@ class StatesInMemoryServer extends StatesInMemoryFileDB {
             } catch (err) {
                 reject(err);
             }
-        }));
+        });
     }
 }
 
