@@ -62,7 +62,7 @@ class ObjectsInRedisClient {
 
         this.log = tools.getLogger(this.settings.logger);
 
-        if (this.settings.autoConnect === undefined || this.settings.autoConnect) {
+        if (this.settings.autoConnect !== false) {
             this.connectDb();
         }
     }

@@ -37,7 +37,7 @@ class ObjectsInMemoryServerClass extends ObjectsInRedisClient {
 
     async destroy() {
         await super.destroy(); // destroy client first
-        this.objectsServer.destroy(); // server afterwards too
+        await this.objectsServer.destroy(); // server afterwards too
     }
 
     getStatus() {

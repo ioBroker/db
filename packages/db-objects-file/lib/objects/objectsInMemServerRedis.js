@@ -18,6 +18,7 @@ const fs     = require('fs-extra');
 const path   = require('path');
 const crypto = require('crypto');
 const utils  = require('@iobroker/db-objects-redis').objectsUtils;
+const tools  = require('@iobroker/db-base').tools;
 
 const RedisHandler          = require('@iobroker/db-base').redisHandler;
 const ObjectsInMemoryFileDB = require('./objectsInMemFileDB');
@@ -125,7 +126,7 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
                         fileIdDetails = id.match(this.normalizeFileRegex2);
                         if (fileIdDetails) {
                             id = fileIdDetails[1];
-                            name = fileIdDetails[2]|| '';
+                            name = fileIdDetails[2] || '';
                             isMeta = undefined;
                         } else {
                             name = '';
@@ -439,11 +440,11 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
                     } catch (err) {
                         return void handler.sendNull(responseId);
                     }
-                    if (!data || data.fileContent === undefined || data.fileContent === null) {
+                    if (data.fileContent === undefined || data.fileContent === null) {
                         return void handler.sendNull(responseId);
                     }
                     let fileData = data.fileContent;
-                    if (!Buffer.isBuffer(fileData) && typeof fileData === 'object') {
+                    if (!Buffer.isBuffer(fileData) && tools.isObject(fileData)) {
                         // if its an invalid object, stringify it and log warning
                         fileData = JSON.stringify(fileData);
                         this.log.warn(`${namespaceLog} Data of "${id}/${name}" has invalid structure at file data request: ${fileData}`);
@@ -571,7 +572,7 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
                 } catch (e) {
                     return void handler.sendError(responseId, e);
                 }
-                handler.sendInteger(responseId, +exists);
+                handler.sendInteger(responseId, exists ? 1 : 0);
             } else if (namespace === this.namespaceFile) {
                 let exists;
                 try {
@@ -579,7 +580,7 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
                 } catch (e) {
                     return void handler.sendError(responseId, e);
                 }
-                handler.sendInteger(responseId, +exists);
+                handler.sendInteger(responseId, exists ? 1 : 0);
             } else {
                 handler.sendError(responseId, new Error(`EXISTS-UNSUPPORTED for namespace ${namespace}`));
             }
@@ -674,8 +675,8 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
     /**
      * Destructor of the class. Called by shutting down.
      */
-    destroy(callback) {
-        super.destroy();
+    async destroy() {
+        await super.destroy();
 
         if (this.server) {
             Object.keys(this.serverConnections).forEach(s => {
@@ -683,11 +684,17 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
                 delete this.serverConnections[s];
             });
 
-            try {
-                this.server && this.server.close(callback);
-            } catch (e) {
-                console.log(e.message);
-            }
+            return /** @type {Promise<void>} */ (new Promise(resolve => {
+                if (!this.server) {
+                    return void resolve();
+                }
+                try {
+                    this.server.close(() => resolve());
+                } catch (e) {
+                    console.log(e.message);
+                    resolve();
+                }
+            }));
         }
     }
 
@@ -724,13 +731,14 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
                         }];
                     }
                 } catch (err) {
-                    if (!err.toString().endsWith(utils.ERRORS.ERROR_NOT_FOUND)) {
+                    if (!err.message.endsWith(utils.ERRORS.ERROR_NOT_FOUND)) {
                         return void handler.sendError(responseId, new Error(`ERROR readDir id=${id}: ${err.message}`));
                     }
                     res = [];
                 }
                 const response = [];
-                const baseName = (name || '') + ((!name || !name.length || name.endsWith('/')) ? '' : '/');
+                let baseName = name;
+                if (!baseName.endsWith('/')) baseName += '/';
                 res.forEach(arr => {
                     let entryId = id;
                     if (arr.isDir) {
@@ -796,11 +804,11 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
 
             this.server.listen(
                 settings.port || 9001,
-                (settings.host && settings.host !== 'localhost') ? settings.host : ((settings.host === 'localhost') ? '127.0.0.1' : undefined),
+                settings.host === 'localhost' ? '127.0.0.1' : settings.host ? settings.host : undefined,
                 callback
             );
         } catch (e) {
-            callback && callback(e);
+            callback(e);
         }
     }
 }

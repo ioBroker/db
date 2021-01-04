@@ -37,7 +37,7 @@ class StatesInMemoryServerClass extends StatesInRedisClient {
 
     async destroy() {
         await super.destroy(); // destroy client first
-        this.statesServer.destroy(); // server afterwards too
+        await this.statesServer.destroy(); // server afterwards too
     }
 
     getStatus() {

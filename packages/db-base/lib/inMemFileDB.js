@@ -349,7 +349,7 @@ class InMemoryFileDB {
     }
 
     // Destructor of the class. Called by shutting down.
-    destroy() {
+    async destroy() {
         this.stateTimer && this.saveState();
     }
 }

@@ -409,8 +409,8 @@ class StatesInMemoryServer extends StatesInMemoryFileDB {
     /**
      * Destructor of the class. Called by shutting down.
      */
-    destroy(callback) {
-        super.destroy();
+    async destroy() {
+        await super.destroy();
 
         if (this.server) {
             for (const s of Object.keys(this.serverConnections)) {
@@ -418,11 +418,17 @@ class StatesInMemoryServer extends StatesInMemoryFileDB {
                 delete this.serverConnections[s];
             }
 
-            try {
-                this.server && this.server.close(callback);
-            } catch (e) {
-                console.log(e.message);
-            }
+            return /** @type {Promise<void>} */ (new Promise(resolve => {
+                if (!this.server) {
+                    return void resolve();
+                }
+                try {
+                    this.server.close(() => resolve());
+                } catch (e) {
+                    console.log(e.message);
+                    resolve();
+                }
+            }));
         }
     }
 
@@ -470,11 +476,11 @@ class StatesInMemoryServer extends StatesInMemoryFileDB {
 
             this.server.listen(
                 settings.port || 9000,
-                (settings.host && settings.host !== 'localhost') ? settings.host : ((settings.host === 'localhost') ? '127.0.0.1' : undefined),
+                settings.host === 'localhost' ? '127.0.0.1' : settings.host ? settings.host : undefined,
                 callback
             );
         } catch (e) {
-            callback && callback(e);
+            callback(e);
         }
     }
 }

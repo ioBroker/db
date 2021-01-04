@@ -121,10 +121,10 @@ class StatesInMemoryFileDB extends InMemoryFileDB {
 
     // Destructor of the class. Called by shutting down.
     // internal functionality
-    destroy() {
+    async destroy() {
         this._expireAll();
 
-        super.destroy();
+        await super.destroy();
 
         if (this.stateTimer) {
             clearTimeout(this.stateTimer);
