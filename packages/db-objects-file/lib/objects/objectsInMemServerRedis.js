@@ -738,7 +738,9 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
                 }
                 const response = [];
                 let baseName = name;
-                if (!baseName.endsWith('/')) baseName += '/';
+                if (!baseName.endsWith('/')) {
+                    baseName += '/';
+                }
                 res.forEach(arr => {
                     let entryId = id;
                     if (arr.isDir) {
