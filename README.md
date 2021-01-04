@@ -6,6 +6,9 @@
 	### __WORK IN PROGRESS__
 -->
 
+### __WORK IN PROGRESS__
+* (Apollon77) fix Buffer deprecation
+
 ### 1.0.0 (2021-01-04)
 * (Apollon77) finalize first iteration of restructuring of db classes and always use the client class for all communications
 
