@@ -6,7 +6,7 @@
 	### __WORK IN PROGRESS__
 -->
 
-### __WORK IN PROGRESS__
+### 1.0.1 (2021-01-05)
 * (Apollon77) fix Buffer deprecation
 
 ### 1.0.0 (2021-01-04)
