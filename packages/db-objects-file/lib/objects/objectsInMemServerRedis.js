@@ -757,6 +757,9 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
                 });
                 handler.sendArray(responseId, isScan ? ['0', response] : response); // send out file or full db response
             }
+            else { // such a request should never happen
+                handler.sendArray(responseId, isScan ? ['0', []] : []); // send out file or full db response
+            }
         } else {
             handler.sendError(responseId, new Error(`${isScan ? 'SCAN' : 'KEYS'}-UNSUPPORTED for namespace ${namespace}: Pattern=${pattern}`));
         }
