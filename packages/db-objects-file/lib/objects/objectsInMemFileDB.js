@@ -187,66 +187,62 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
             metaObjects[obj.id] = obj.value.common.type;
         });
 
-        try {
-            if (!fs.existsSync(this.objectsDir)) {
-                return {
-                    numberSuccess: resSynced,
-                    notifications: resNotifies
-                };
-            }
-            const baseDirs = fs.readdirSync(this.objectsDir);
-            baseDirs.forEach(dir => {
-                let dirSynced = 0;
-                if (dir === '..' || dir === '.') {
-                    return;
-                }
-                const dirPath = path.join(this.objectsDir, dir);
-                const stat = fs.statSync(dirPath);
-                if (!stat.isDirectory()) {
-                    return;
-                }
-                if (limitId && dir !== limitId) {
-                    return;
-                }
-                if (!metaObjects[dir]) {
-                    resNotifies.push('Ignoring Directory "' + dir + '" because officially not created as meta object. Please remove directory!');
-                    return;
-                }
-                this._loadFileSettings(dir);
-                const files = getAllFiles(dirPath);
-                files.forEach(file => {
-                    const localFile = file.substr(dirPath.length + 1);
-                    if (localFile === '_data.json') {
-                        return;
-                    }
-                    if (!this.fileOptions[dir][localFile]) {
-                        const fileStat    = fs.statSync(file);
-                        const ext         = path.extname(localFile);
-                        const mime        = utils.getMimeType(ext);
-                        const _mimeType   = mime.mimeType;
-                        const isBinary    = mime.isBinary;
-
-                        this.fileOptions[dir][localFile] = {
-                            createdAt: fileStat.ctimeMs,
-                            acl      : {
-                                owner:       (this.defaultNewAcl && this.defaultNewAcl.owner)      || utils.CONSTS.SYSTEM_ADMIN_USER,
-                                ownerGroup:  (this.defaultNewAcl && this.defaultNewAcl.ownerGroup) || utils.CONSTS.SYSTEM_ADMIN_GROUP,
-                                permissions: (this.defaultNewAcl && this.defaultNewAcl.file)       || (utils.CONSTS.ACCESS_USER_RW | utils.CONSTS.ACCESS_GROUP_READ | utils.CONSTS.ACCESS_EVERY_READ)// 0x644
-                            },
-                            mimeType  : _mimeType,
-                            binary    : isBinary,
-                            modifiedAt: fileStat.mtimeMs
-                        };
-                        dirSynced++;
-                    }
-                });
-                this._saveFileSettings(dir);
-                resSynced += dirSynced;
-                dirSynced && resNotifies.push('Added ' + dirSynced + ' Files in Directory "' + dir + '"');
-            });
-        } catch (e) {
-            throw e;
+        if (!fs.existsSync(this.objectsDir)) {
+            return {
+                numberSuccess: resSynced,
+                notifications: resNotifies
+            };
         }
+        const baseDirs = fs.readdirSync(this.objectsDir);
+        baseDirs.forEach(dir => {
+            let dirSynced = 0;
+            if (dir === '..' || dir === '.') {
+                return;
+            }
+            const dirPath = path.join(this.objectsDir, dir);
+            const stat = fs.statSync(dirPath);
+            if (!stat.isDirectory()) {
+                return;
+            }
+            if (limitId && dir !== limitId) {
+                return;
+            }
+            if (!metaObjects[dir]) {
+                resNotifies.push('Ignoring Directory "' + dir + '" because officially not created as meta object. Please remove directory!');
+                return;
+            }
+            this._loadFileSettings(dir);
+            const files = getAllFiles(dirPath);
+            files.forEach(file => {
+                const localFile = file.substr(dirPath.length + 1);
+                if (localFile === '_data.json') {
+                    return;
+                }
+                if (!this.fileOptions[dir][localFile]) {
+                    const fileStat    = fs.statSync(file);
+                    const ext         = path.extname(localFile);
+                    const mime        = utils.getMimeType(ext);
+                    const _mimeType   = mime.mimeType;
+                    const isBinary    = mime.isBinary;
+
+                    this.fileOptions[dir][localFile] = {
+                        createdAt: fileStat.ctimeMs,
+                        acl      : {
+                            owner:       (this.defaultNewAcl && this.defaultNewAcl.owner)      || utils.CONSTS.SYSTEM_ADMIN_USER,
+                            ownerGroup:  (this.defaultNewAcl && this.defaultNewAcl.ownerGroup) || utils.CONSTS.SYSTEM_ADMIN_GROUP,
+                            permissions: (this.defaultNewAcl && this.defaultNewAcl.file)       || (utils.CONSTS.ACCESS_USER_RW | utils.CONSTS.ACCESS_GROUP_READ | utils.CONSTS.ACCESS_EVERY_READ)// 0x644
+                        },
+                        mimeType  : _mimeType,
+                        binary    : isBinary,
+                        modifiedAt: fileStat.mtimeMs
+                    };
+                    dirSynced++;
+                }
+            });
+            this._saveFileSettings(dir);
+            resSynced += dirSynced;
+            dirSynced && resNotifies.push('Added ' + dirSynced + ' Files in Directory "' + dir + '"');
+        });
         return {
             numberSuccess: resSynced,
             notifications: resNotifies
