@@ -584,7 +584,7 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
             }
         });
 
-        // handle Redis "SCAN" request for state namespace
+        // handle Redis "SCAN" request for objects namespace
         handler.on('scan', (data, responseId) => {
             if (!data || data.length < 3) {
                 return void handler.sendArray(responseId, ['0', []]);
@@ -708,12 +708,15 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
     _handleScanOrKeys(handler, pattern, responseId, isScan = false) {
         const {id, namespace, name, isMeta} = this._normalizeId(pattern);
 
-        if (namespace === this.namespaceObj) {
-            let result = this._getKeys(id);
-            result = result.map(val => this.namespaceObj + val);
+        let response = [];
+        if (namespace === this.namespaceObj || namespace === this.namespaceObjects) {
+            response =  this._getKeys(id).map(val => this.namespaceObj + val);
             // if scan, we send the cursor as first argument
-            handler.sendArray(responseId, isScan ? ['0', result] : result);
-        } else if (namespace === this.namespaceFile) {
+            if (namespace !== this.namespaceObjects) { // When it was not the full DB namespace send out response
+                return void handler.sendArray(responseId, isScan ? ['0', response] : response);
+            }
+        }
+        if (namespace === this.namespaceFile || namespace === this.namespaceObjects) {
             // Handle request to get meta data keys
             if (isMeta === undefined) {
                 let res;
@@ -734,7 +737,6 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
                     }
                     res = [];
                 }
-                const response = [];
                 let baseName = name;
                 if (!baseName.endsWith('/')) {
                     baseName += '/';
@@ -753,7 +755,7 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
                     response.push(this.getFileId(entryId, baseName + arr.file, true));
                     response.push(this.getFileId(entryId, baseName + arr.file, false));
                 });
-                handler.sendArray(responseId, isScan ? ['0', response] : response);
+                handler.sendArray(responseId, isScan ? ['0', response] : response); // send out file or full db response
             }
         } else {
             handler.sendError(responseId, new Error(`${isScan ? 'SCAN' : 'KEYS'}-UNSUPPORTED for namespace ${namespace}: Pattern=${pattern}`));
