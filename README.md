@@ -6,7 +6,7 @@
 	### __WORK IN PROGRESS__
 -->
 
-### __WORK IN PROGRESS__
+### 1.0.0 (2021-01-04)
 * (Apollon77) finalize first iteration of restructuring of db classes and always use the client class for all communications
 
 ### 0.0.14 (2020-12-30)
