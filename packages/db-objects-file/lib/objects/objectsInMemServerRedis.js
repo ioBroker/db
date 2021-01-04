@@ -227,7 +227,7 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
                 handler.sendArray(responseId, scripts);
             } else if (data[0] === 'load') {
                 const shasum = crypto.createHash('sha1');
-                const buf = new Buffer(data[1]);
+                const buf = Buffer.from(data[1]);
                 shasum.update(buf);
                 const scriptChecksum = shasum.digest('hex');
 
