@@ -6,6 +6,10 @@
 	### __WORK IN PROGRESS__
 -->
 
+### __WORK IN PROGRESS__
+* (Apollon77) fix logging for server in testing
+* (Apollon77) fix defaultport request for setup custom
+
 ### 1.0.2 (2021-01-05)
 * (Apollon77) Add a workaround mainly for testing that subscribes to states/objects before db is connected
 

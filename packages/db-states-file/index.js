@@ -1,7 +1,7 @@
 module.exports = {
     Client: require('@iobroker/db-states-redis').Client,
     Server: require('./lib/states/statesInMemServerClass.js'),
-    getDefaultObjectsPort: _host => {
+    getDefaultPort: _host => {
         return 9000;
     }
 };

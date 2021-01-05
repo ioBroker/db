@@ -39,7 +39,7 @@ class StatesInMemoryServerClass extends StatesInRedisClient {
         this.storedSubscribes = [];
 
         const serverSettings = {
-            namespace:  settings.namespace + '-Server',
+            namespace:  settings.namespace ? `${settings.namespace}-Server` : 'Server',
             connection: settings.connection,
             logger:     settings.logger,
             hostname:   settings.hostname,
