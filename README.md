@@ -6,7 +6,7 @@
 	### __WORK IN PROGRESS__
 -->
 
-### __WORK IN PROGRESS__
+### 1.0.2 (2021-01-05)
 * (Apollon77) Add a workaround mainly for testing that subscribes to states/objects before db is connected
 
 ### 1.0.1 (2021-01-05)
