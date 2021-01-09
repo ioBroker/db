@@ -502,33 +502,39 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
 
                 this.log.debug('Delete directory ' + path.join(id, name));
                 try {
-                    fs.rmdirSync(location);
+                    fs.removeSync(location);
                 } catch (e) {
                     this.log.error('Cannot delete directory "' + path.join(id, name) + '": ' + e);
                     throw e;
                 }
+
+                if (this.fileOptions[id]) {
+                    delete this.fileOptions[id];
+                }
+                if (this.files[id] && this.files[id]) {
+                    delete this.files[id];
+                }
+
             } else {
                 this.log.debug('Delete file ' + path.join(id, name));
                 try {
-                    fs.unlinkSync(location);
+                    fs.removeSync(location);
                 } catch (e) {
                     this.log.error('Cannot delete file "' + path.join(id, name) + '": ' + e);
                     throw e;
                 }
+
+                if (this.fileOptions[id][name]) {
+                    delete this.fileOptions[id][name];
+                }
+                if (this.files[id] && this.files[id][name]) {
+                    delete this.files[id][name];
+                }
+
+                // Store dir description
+                this._saveFileSettings(id, true);
             }
-        } else {
-            throw new Error(utils.ERRORS.ERROR_NOT_FOUND);
         }
-
-        if (this.fileOptions[id][name]) {
-            delete this.fileOptions[id][name];
-        }
-        if (this.files[id] && this.files[id][name]) {
-            delete this.files[id][name];
-        }
-
-        // Store dir description
-        this._saveFileSettings(id, true);
     }
 
     // needed by server
