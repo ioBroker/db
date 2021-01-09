@@ -6,7 +6,7 @@
 	### __WORK IN PROGRESS__
 -->
 
-### __WORK IN PROGRESS__
+### 1.0.4 (2021-01-09)
 * (Apollon77) optimize deleting directories and files in file storage
 
 ### 1.0.3 (2021-01-05)
