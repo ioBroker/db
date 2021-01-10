@@ -6,7 +6,7 @@
 	### __WORK IN PROGRESS__
 -->
 
-### __WORK IN PROGRESS__
+### 1.0.5 (2021-01-10)
 * (Apollon77) fix issues in readDir with directories
 
 ### 1.0.4 (2021-01-09)
