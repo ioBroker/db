@@ -537,7 +537,9 @@ class ObjectsInRedisClient {
             this.log.debug(this.namespace + ' Invalid file path ' + id + '/' + name);
             return '';
         }
-        id = normalized.id;
+        if (id !== '*') {
+            id = normalized.id;
+        }
         name = normalized.name;
 
         return this.fileNamespace + id + '$%$' + name + (isMeta !== undefined ? (isMeta ? '$%$meta' : '$%$data') : '');
@@ -1125,7 +1127,14 @@ class ObjectsInRedisClient {
             }
             for (const id of keys) {
                 try {
-                    await this.client.rename(id.replace(/\$%\$meta$/, '$%$data'), id.replace(oldBase, newBase).replace(/\$%\$meta$/, '$%$data'));
+                    try {
+                        await this.client.rename(id.replace(/\$%\$meta$/, '$%$data'), id.replace(oldBase, newBase).replace(/\$%\$meta$/, '$%$data'));
+                    } catch (e) {
+                        // _data.json is not having a data key, so ignore error
+                        if (!(id.endsWith('/_data.json$%$meta') && e.message.includes('no such key'))) {
+                            throw e;
+                        }
+                    }
                     await this.client.rename(id, id.replace(oldBase, newBase));
                 } catch (e) {
                     return tools.maybeCallbackWithError(callback, e);

@@ -6,6 +6,10 @@
 	### __WORK IN PROGRESS__
 -->
 
+### __WORK IN PROGRESS__
+* (Apollon77) fix rename of directories
+* (Apollon77) fix reading of root dir via redis
+
 ### 1.0.5 (2021-01-10)
 * (Apollon77) fix issues in readDir with directories
 
