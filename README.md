@@ -6,6 +6,9 @@
 	### __WORK IN PROGRESS__
 -->
 
+### __WORK IN PROGRESS__
+* (Apollon77) fix issues in readDir with directories
+
 ### 1.0.4 (2021-01-09)
 * (Apollon77) optimize deleting directories and files in file storage
 
