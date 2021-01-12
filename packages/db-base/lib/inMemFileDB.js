@@ -44,6 +44,7 @@ class InMemoryFileDB {
         this.namespace = this.settings.namespace || '';
         this.lastSave = null;
         this.zlib = null;
+        /** @type {MysteriousClient} */
         this.callbackSubscriptionClient = {};
 
         this.settings.backup = this.settings.backup || {
@@ -136,6 +137,13 @@ class InMemoryFileDB {
         }
     }
 
+    /**
+     * @param {MysteriousClient} client
+     * @param {SubscriptionScope} type
+     * @param {string | string[]} pattern
+     * @param {unknown} [options]
+     * @param {(() => void) | undefined} [cb]
+     */
     handleSubscribe(client, type, pattern, options, cb) {
         if (typeof options === 'function') {
             cb = options;
@@ -162,6 +170,12 @@ class InMemoryFileDB {
         typeof cb === 'function' && cb();
     }
 
+    /**
+     * @param {MysteriousClient} client
+     * @param {SubscriptionScope} type
+     * @param {string | string[]} pattern
+     * @param {(() => void) | undefined} [cb]
+     */
     handleUnsubscribe(client, type, pattern, cb) {
         if (!client._subscribe || !client._subscribe[type]) {
             if (typeof cb === 'function') {
@@ -194,7 +208,13 @@ class InMemoryFileDB {
 
     }
 
-    /** @returns {number} */
+    /**
+     * @param {MysteriousClient} _client
+     * @param {SubscriptionScope} _type
+     * @param {string} _id
+     * @param {ioBroker.Object} _obj
+     * @returns {number}
+     */
     publishToClients(_client, _type, _id, _obj) {
         throw new Error('no communication handling implemented');
     }
@@ -224,6 +244,9 @@ class InMemoryFileDB {
         }
     }
 
+    /**
+     * @param {number | Date} date
+     */
     getTimeStr(date) {
         const dateObj = new Date(date);
 
@@ -311,6 +334,12 @@ class InMemoryFileDB {
         return {};
     }
 
+    /**
+     * @param {SubscriptionScope} type
+     * @param {string} id
+     * @param {ioBroker.Object} obj
+     * @returns {number}
+     */
     publishAll(type, id, obj) {
         if (id === undefined) {
             this.log.error('Can not publish empty ID');

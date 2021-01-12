@@ -21,11 +21,11 @@ type EncodedRespArray = (Buffer | EncodedRespArray)[];
 type Socket = import("net").Socket;
 
 interface BackupOptions {
-	disabled: boolean,
-	files: number;
-	hours: number;
-	period: number;
-	path: string;
+  disabled: boolean;
+  files: number;
+  hours: number;
+  period: number;
+  path: string;
 }
 
 interface InMemoryFileDBOptions {
@@ -37,8 +37,8 @@ interface InMemoryFileDBOptions {
     dataDir: string;
   };
   fileDB: {
-	  fileName: string;
-	  backupDirName?: string;
+    fileName: string;
+    backupDirName?: string;
   };
   auth?: null | undefined;
   secure?: boolean;
@@ -47,4 +47,15 @@ interface InMemoryFileDBOptions {
   host?: string;
   namespace?: string;
   backup?: BackupOptions;
+}
+
+type SubscriptionScope = "objects" | "states" | "log" | "messagebox";
+interface Subscription {
+  pattern: string;
+  regex: RegExp;
+}
+
+// Until I know better what this is, I'm gonna call it like this
+interface MysteriousClient {
+  _subscribe?: Partial<Record<SubscriptionScope, Subscription[]>>;
 }
