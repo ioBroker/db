@@ -62,4 +62,4 @@ module.exports.maybeCallbackWithRedisError = (callback, error, ...args) => {
         error.message = module.exports.ERRORS.ERROR_DB_CLOSED;
     }
     return module.exports.maybeCallbackWithError(callback, error, ...args);
-}
+};
