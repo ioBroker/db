@@ -6,6 +6,9 @@
 	### __WORK IN PROGRESS__
 -->
 
+### __WORK IN PROGRESS__
+* (Apollon77) Map Redis connectivity issues to the normal ERROR_DB_CLOSED error to allow unique handling in js-controller
+
 ### 1.0.6 (2021-01-10)
 * (Apollon77) fix rename of directories
 * (Apollon77) fix reading of root dir via redis
