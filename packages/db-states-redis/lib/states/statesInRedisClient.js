@@ -476,7 +476,7 @@ class StateRedisClient {
             oldObj = await this.client.get(this.namespaceRedis + id);
         } catch (e) {
             this.log.warn(this.namespace + ' get state ' + e);
-            return tools.maybeCallbackWithError(callback, e, id);
+            return tools.maybeCallbackWithRedisError(callback, e, id);
         }
         if (!this.client) {
             return;
@@ -553,7 +553,7 @@ class StateRedisClient {
                 await this.client.publish(this.namespaceRedis + id, objString);
                 return tools.maybeCallbackWithError(callback, null, id);
             } catch (e) {
-                return tools.maybeCallbackWithError(callback, e, id);
+                return tools.maybeCallbackWithRedisError(callback, e, id);
             }
         } else {
             try {
@@ -563,7 +563,7 @@ class StateRedisClient {
                 await this.client.publish(this.namespaceRedis + id, objString);
                 return tools.maybeCallbackWithError(callback, null, id);
             } catch (e) {
-                return tools.maybeCallbackWithError(callback, e, id);
+                return tools.maybeCallbackWithRedisError(callback, e, id);
             }
         }
     }
@@ -597,7 +597,7 @@ class StateRedisClient {
             await this.client.set(this.namespaceRedis + id, JSON.stringify(state));
             return tools.maybeCallbackWithError(callback, null, id);
         } catch (e) {
-            return tools.maybeCallbackWithError(callback, e, id);
+            return tools.maybeCallbackWithRedisError(callback, e, id);
         }
     }
 
@@ -781,7 +781,7 @@ class StateRedisClient {
             return tools.maybeCallbackWithError(callback, null, id);
         } catch (e) {
             this.log.warn(`${this.namespace} redis del ${id}, error - ${e}`);
-            return tools.maybeCallbackWithError(callback, e, id);
+            return tools.maybeCallbackWithRedisError(callback, e, id);
         }
     }
 
@@ -794,7 +794,7 @@ class StateRedisClient {
         try {
             obj = await this.client.keys(this.namespaceRedis + pattern);
         } catch (e) {
-            return tools.maybeCallbackWithError(callback, e);
+            return tools.maybeCallbackWithRedisError(callback, e);
         }
         this.settings.connection.enhancedLogging && this.log.silly(this.namespace + ' redis keys ' + obj.length + ' ' + pattern);
         if (obj && !dontModify) {
@@ -833,7 +833,7 @@ class StateRedisClient {
             subClient.ioBrokerSubscriptions[this.namespaceRedis + pattern] = new RegExp(tools.pattern2RegEx(this.namespaceRedis + pattern));
             return tools.maybeCallback(callback);
         } catch (e) {
-            return tools.maybeCallbackWithError(callback, e);
+            return tools.maybeCallbackWithRedisError(callback, e);
         }
     }
 
@@ -898,7 +898,7 @@ class StateRedisClient {
             await this.client.publish(this.namespaceMsg + id, JSON.stringify(state));
             return tools.maybeCallbackWithError(callback, null, id);
         } catch (e) {
-            return tools.maybeCallbackWithError(callback, e);
+            return tools.maybeCallbackWithRedisError(callback, e);
         }
     }
 
@@ -920,7 +920,7 @@ class StateRedisClient {
             this.subSystem.ioBrokerSubscriptions[this.namespaceMsg + id] = true;
             return tools.maybeCallback(callback);
         } catch (e) {
-            return tools.maybeCallbackWithError(callback, e);
+            return tools.maybeCallbackWithRedisError(callback, e);
         }
     }
 
@@ -944,7 +944,7 @@ class StateRedisClient {
             }
             return tools.maybeCallback(callback);
         } catch (e) {
-            return tools.maybeCallbackWithError(callback, e);
+            return tools.maybeCallbackWithRedisError(callback, e);
         }
     }
 
@@ -963,7 +963,7 @@ class StateRedisClient {
                 await this.client.publish(this.namespaceLog + id, JSON.stringify(log));
                 return tools.maybeCallbackWithError(callback, null, id);
             } catch (e) {
-                return tools.maybeCallbackWithError(callback, e);
+                return tools.maybeCallbackWithRedisError(callback, e);
             }
         }
     }
@@ -1012,7 +1012,7 @@ class StateRedisClient {
             this.subSystem.ioBrokerSubscriptions[this.namespaceLog + id] = true;
             return tools.maybeCallback(callback);
         } catch (e) {
-            return tools.maybeCallbackWithError(callback, e);
+            return tools.maybeCallbackWithRedisError(callback, e);
         }
     }
 
@@ -1033,7 +1033,7 @@ class StateRedisClient {
             }
             return tools.maybeCallback(callback);
         } catch (e) {
-            return tools.maybeCallbackWithError(callback, e);
+            return tools.maybeCallbackWithRedisError(callback, e);
         }
     }
 
@@ -1077,7 +1077,7 @@ class StateRedisClient {
             this.settings.connection.enhancedLogging && this.log.silly(`${this.namespace} redis setex`, id, expire, obj);
             return tools.maybeCallback(callback);
         } catch (e) {
-            return tools.maybeCallbackWithError(callback, e);
+            return tools.maybeCallbackWithRedisError(callback, e);
         }
     }
 
@@ -1096,7 +1096,7 @@ class StateRedisClient {
             await this.client.del(id);
             return tools.maybeCallback(callback);
         } catch (e) {
-            return tools.maybeCallbackWithError(callback, e);
+            return tools.maybeCallbackWithRedisError(callback, e);
         }
     }
 
@@ -1117,7 +1117,7 @@ class StateRedisClient {
             await this.client.set(this.namespaceRedis + id, data);
             return tools.maybeCallback(callback);
         } catch (e) {
-            return tools.maybeCallbackWithError(callback, e);
+            return tools.maybeCallbackWithRedisError(callback, e);
         }
     }
 
@@ -1135,7 +1135,7 @@ class StateRedisClient {
             data = await this.client.getBuffer(this.namespaceRedis + id);
             return tools.maybeCallbackWithError(callback, null, data);
         } catch (e) {
-            return tools.maybeCallbackWithError(callback, e);
+            return tools.maybeCallbackWithRedisError(callback, e);
         }
     }
 
@@ -1152,7 +1152,7 @@ class StateRedisClient {
             await this.client.del(this.namespaceRedis + id);
             return tools.maybeCallbackWithError(callback, null, id);
         } catch (e) {
-            return tools.maybeCallbackWithError(callback, e, id);
+            return tools.maybeCallbackWithRedisError(callback, e, id);
         }
     }
 }

@@ -472,7 +472,7 @@ class ObjectsInRedisClient {
             await this.client.set(id, data);
             return tools.maybeCallback(callback);
         } catch (e) {
-            return tools.maybeCallbackWithError(callback, e);
+            return tools.maybeCallbackWithRedisError(callback, e);
         }
     }
 
@@ -493,7 +493,7 @@ class ObjectsInRedisClient {
             const data = await this.client.getBuffer(id);
             return tools.maybeCallbackWithError(callback, null, data);
         } catch (e) {
-            return tools.maybeCallbackWithError(callback, e);
+            return tools.maybeCallbackWithRedisError(callback, e);
         }
     }
 
@@ -513,7 +513,7 @@ class ObjectsInRedisClient {
                 await this.client.del(id);
                 return tools.maybeCallback(callback);
             } catch (e) {
-                return tools.maybeCallbackWithError(callback, e);
+                return tools.maybeCallbackWithRedisError(callback, e);
             }
         }
     }
@@ -645,7 +645,7 @@ class ObjectsInRedisClient {
                 await this.client.set(metaID, JSON.stringify(meta));
                 return tools.maybeCallback(callback);
             } catch (e) {
-                return tools.maybeCallbackWithError(callback, e);
+                return tools.maybeCallbackWithRedisError(callback, e);
             }
         } else {
             if (!meta) {
@@ -675,7 +675,7 @@ class ObjectsInRedisClient {
                     await this.client.set(metaID, JSON.stringify(meta));
                     return tools.maybeCallbackWithError(callback, err);
                 } catch (e) {
-                    return tools.maybeCallbackWithError(callback, err || e);
+                    return tools.maybeCallbackWithRedisError(callback, err || e);
                 }
             });
         }
@@ -879,7 +879,7 @@ class ObjectsInRedisClient {
                 await this.client.del(metaID);
                 return tools.maybeCallback(callback);
             } catch (e) {
-                return tools.maybeCallbackWithError(callback, e);
+                return tools.maybeCallbackWithRedisError(callback, e);
             }
         }
     }
@@ -940,7 +940,7 @@ class ObjectsInRedisClient {
             try {
                 keys = await this._getKeysViaScan(dirID);
             } catch (e) {
-                return tools.maybeCallbackWithError(callback, e);
+                return tools.maybeCallbackWithRedisError(callback, e);
             }
 
             if (!this.client) {
@@ -972,7 +972,7 @@ class ObjectsInRedisClient {
         try {
             keys = await this._getKeysViaScan(dirID);
         } catch (e) {
-            return tools.maybeCallbackWithError(callback, e);
+            return tools.maybeCallbackWithRedisError(callback, e);
         }
 
         if (!this.client) {
@@ -1020,7 +1020,7 @@ class ObjectsInRedisClient {
         try {
             objs = await this.client.mget(keys);
         } catch (e) {
-            return tools.maybeCallbackWithError(callback, e);
+            return tools.maybeCallbackWithRedisError(callback, e);
         }
 
         const result = [];
@@ -1137,7 +1137,7 @@ class ObjectsInRedisClient {
                     }
                     await this.client.rename(id, id.replace(oldBase, newBase));
                 } catch (e) {
-                    return tools.maybeCallbackWithError(callback, e);
+                    return tools.maybeCallbackWithRedisError(callback, e);
                 }
             }
             return tools.maybeCallback(callback);
@@ -1175,7 +1175,7 @@ class ObjectsInRedisClient {
             try {
                 keys = await this._getKeysViaScan(dirID);
             } catch (e) {
-                return tools.maybeCallbackWithError(callback, e);
+                return tools.maybeCallbackWithRedisError(callback, e);
             }
 
             if (!this.client) {
@@ -1197,7 +1197,7 @@ class ObjectsInRedisClient {
             try {
                 objs = await this.client.mget(keys);
             } catch (e) {
-                return tools.maybeCallbackWithError(callback, e);
+                return tools.maybeCallbackWithRedisError(callback, e);
             }
             let result;
             const dontCheck =
@@ -1229,7 +1229,7 @@ class ObjectsInRedisClient {
                 await this.client.rename(oldMetaID, newMetaID);
                 return tools.maybeCallback(callback);
             } catch (e) {
-                return tools.maybeCallbackWithError(callback, e);
+                return tools.maybeCallbackWithRedisError(callback, e);
             }
         }
     }
@@ -1291,7 +1291,7 @@ class ObjectsInRedisClient {
             await this.client.set(metaID, JSON.stringify(meta));
             return tools.maybeCallback(callback);
         } catch (e) {
-            return tools.maybeCallbackWithError(callback, e);
+            return tools.maybeCallbackWithRedisError(callback, e);
         }
     }
 
@@ -1340,7 +1340,7 @@ class ObjectsInRedisClient {
                     await this._delBinaryState(id.replace(/\$%\$meta$/, '$%$data'));
                     await this.client.del(id);
                 } catch (e) {
-                    return tools.maybeCallbackWithError(callback, e);
+                    return tools.maybeCallbackWithRedisError(callback, e);
                 }
             }
             return tools.maybeCallback(callback);
@@ -1369,7 +1369,7 @@ class ObjectsInRedisClient {
             try {
                 keys = await this._getKeysViaScan(dirID);
             } catch (e) {
-                return tools.maybeCallbackWithError(callback, e);
+                return tools.maybeCallbackWithRedisError(callback, e);
             }
             if (!this.client) {
                 return tools.maybeCallbackWithError(callback, utils.ERRORS.ERROR_DB_CLOSED);
@@ -1514,7 +1514,7 @@ class ObjectsInRedisClient {
             try {
                 await this.client.set(id, JSON.stringify(meta));
             } catch (e) {
-                return tools.maybeCallbackWithError(callback, e);
+                return tools.maybeCallbackWithRedisError(callback, e);
             }
         }
         return tools.maybeCallback(callback);
@@ -1537,7 +1537,7 @@ class ObjectsInRedisClient {
             try {
                 await this.client.set(metaID, JSON.stringify(meta));
             } catch (e) {
-                return tools.maybeCallbackWithError(callback, e);
+                return tools.maybeCallbackWithRedisError(callback, e);
             }
             const nameArr = name.split('/');
             const file = nameArr.pop();
@@ -1565,7 +1565,7 @@ class ObjectsInRedisClient {
         try {
             keys = await this._getKeysViaScan(dirID);
         } catch (e) {
-            return tools.maybeCallbackWithError(callback, e);
+            return tools.maybeCallbackWithRedisError(callback, e);
         }
 
         if (!this.client) {
@@ -1584,7 +1584,7 @@ class ObjectsInRedisClient {
         try {
             metas = await this.client.mget(keys);
         } catch (e) {
-            return tools.maybeCallbackWithError(callback, e);
+            return tools.maybeCallbackWithRedisError(callback, e);
         }
         const dontCheck = options.user === utils.CONSTS.SYSTEM_ADMIN_USER ||
                     options.group !== utils.CONSTS.SYSTEM_ADMIN_GROUP ||
@@ -1706,7 +1706,7 @@ class ObjectsInRedisClient {
             try {
                 await this.client.set(id, JSON.stringify(meta));
             } catch (e) {
-                return tools.maybeCallbackWithError(callback, e);
+                return tools.maybeCallbackWithRedisError(callback, e);
             }
         }
         return tools.maybeCallback(callback);
@@ -1727,7 +1727,7 @@ class ObjectsInRedisClient {
             try {
                 await this.client.set(metaID, JSON.stringify(meta));
             } catch (e) {
-                return tools.maybeCallbackWithError(callback, e);
+                return tools.maybeCallbackWithRedisError(callback, e);
             }
 
             const nameArr = name.split('/');
@@ -1756,7 +1756,7 @@ class ObjectsInRedisClient {
         try {
             keys = await this._getKeysViaScan(dirID);
         } catch (e) {
-            return tools.maybeCallbackWithError(callback, e);
+            return tools.maybeCallbackWithRedisError(callback, e);
         }
 
         if (!this.client) {
@@ -1775,7 +1775,7 @@ class ObjectsInRedisClient {
         try {
             objs = await this.client.mget(keys);
         } catch (e) {
-            return tools.maybeCallbackWithError(callback, e);
+            return tools.maybeCallbackWithRedisError(callback, e);
         }
 
         const dontCheck =
@@ -2052,7 +2052,7 @@ class ObjectsInRedisClient {
                     await this.client.set(id, message);
                     await this.client.publish(id, message);
                 } catch (e) {
-                    return tools.maybeCallbackWithError(callback, e);
+                    return tools.maybeCallbackWithRedisError(callback, e);
                 }
             }
             return tools.maybeCallback(callback);
@@ -2072,7 +2072,7 @@ class ObjectsInRedisClient {
             try {
                 objects = await this.client.mget(keys);
             } catch (e) {
-                return tools.maybeCallbackWithError(callback, e);
+                return tools.maybeCallbackWithRedisError(callback, e);
             }
             const filteredKeys = [];
             const filteredObjs = [];
@@ -2177,7 +2177,7 @@ class ObjectsInRedisClient {
             try {
                 objects = await this.client.mget(keys);
             } catch (e) {
-                return tools.maybeCallbackWithError(callback, e);
+                return tools.maybeCallbackWithRedisError(callback, e);
             }
 
             const filteredKeys = [];
@@ -2338,7 +2338,7 @@ class ObjectsInRedisClient {
         try {
             keys = await this._getKeysViaScan(this.objNamespace + pattern);
         } catch (e) {
-            return tools.maybeCallbackWithError(callback, e);
+            return tools.maybeCallbackWithRedisError(callback, e);
         }
 
         if (!this.client) {
@@ -2372,7 +2372,7 @@ class ObjectsInRedisClient {
                 try {
                     metas = await this.client.mget(keys);
                 } catch (e) {
-                    return tools.maybeCallbackWithError(callback, e);
+                    return tools.maybeCallbackWithRedisError(callback, e);
                 }
                 metas = metas || [];
                 for (let i = 0; i < keys.length; i++) {
@@ -2540,7 +2540,7 @@ class ObjectsInRedisClient {
         try {
             keys = await this._getKeysViaScan(this.objNamespace + pattern);
         } catch (e) {
-            return tools.maybeCallbackWithError(callback, e);
+            return tools.maybeCallbackWithRedisError(callback, e);
         }
         if (!this.client) {
             return tools.maybeCallbackWithError(callback, utils.ERRORS.ERROR_DB_CLOSED);
@@ -2605,7 +2605,7 @@ class ObjectsInRedisClient {
         try {
             oldObj = await this.client.get(this.objNamespace + id);
         } catch (e) {
-            return tools.maybeCallbackWithError(callback, e);
+            return tools.maybeCallbackWithRedisError(callback, e);
         }
 
         try {
@@ -2731,7 +2731,7 @@ class ObjectsInRedisClient {
 
             return tools.maybeCallbackWithError(callback, null, {id});
         } catch (e) {
-            return tools.maybeCallbackWithError(callback, e, {id});
+            return tools.maybeCallbackWithRedisError(callback, e, {id});
         }
     }
 
@@ -2816,7 +2816,7 @@ class ObjectsInRedisClient {
                 await this.client.publish(this.objNamespace + id, 'null');
                 return tools.maybeCallback(callback);
             } catch (e) {
-                return tools.maybeCallbackWithError(callback, e);
+                return tools.maybeCallbackWithRedisError(callback, e);
             }
         }
     }
@@ -3140,7 +3140,7 @@ class ObjectsInRedisClient {
             try {
                 keys = await this._getKeysViaScan(searchKeys);
             } catch (e) {
-                return tools.maybeCallbackWithError(callback, e);
+                return tools.maybeCallbackWithRedisError(callback, e);
             }
 
             if (!this.client) {
@@ -3259,7 +3259,7 @@ class ObjectsInRedisClient {
             obj = await this.client.get(this.objNamespace + '_design/' + design);
         } catch (e) {
             this.log.error(`${this.namespace} Cannot find view "${design}" for search "${search}" : ${e}`);
-            return tools.maybeCallbackWithError(callback, new Error(`Cannot find view "${design}"`));
+            return tools.maybeCallbackWithRedisError(callback, new Error(`Cannot find view "${design}"`));
         }
 
         if (obj) {
@@ -3329,7 +3329,7 @@ class ObjectsInRedisClient {
         try {
             keys = await this._getKeysViaScan(pattern);
         } catch (e) {
-            return tools.maybeCallbackWithError(callback, e);
+            return tools.maybeCallbackWithRedisError(callback, e);
         }
 
         if (!this.client) {
@@ -3427,7 +3427,7 @@ class ObjectsInRedisClient {
         try {
             oldObj = await this.client.get(this.objNamespace + id);
         } catch (e) {
-            return tools.maybeCallbackWithError(callback, e);
+            return tools.maybeCallbackWithRedisError(callback, e);
         }
 
         try {
@@ -3521,7 +3521,7 @@ class ObjectsInRedisClient {
             await this.client.publish(this.objNamespace + id, message);
             return tools.maybeCallbackWithError(callback, null, {id: id, value: oldObj}, id);
         } catch (e) {
-            return tools.maybeCallbackWithError(callback, e);
+            return tools.maybeCallbackWithRedisError(callback, e);
         }
     }
 
@@ -3582,7 +3582,7 @@ class ObjectsInRedisClient {
                     try {
                         objs = await this.client.mget(keys);
                     } catch (e) {
-                        return tools.maybeCallbackWithError(callback, e);
+                        return tools.maybeCallbackWithRedisError(callback, e);
                     }
                     objs = objs || [];
                     // Assume it is name
@@ -3683,7 +3683,7 @@ class ObjectsInRedisClient {
                 const keys = await this._getKeysViaScan(`${this.redisNamespace}*`);
                 return this._destroyDBHelper(keys, callback);
             } catch (e) {
-                return tools.maybeCallbackWithError(callback, e);
+                return tools.maybeCallbackWithRedisError(callback, e);
             }
         }
     }
