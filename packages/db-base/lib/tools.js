@@ -58,7 +58,7 @@ module.exports.getControllerDir = () => controllerDir;
  * @returns {Promise<any>} - if Promise is resolved with multiple arguments, an array is returned
  */
 module.exports.maybeCallbackWithRedisError = (callback, error, ...args) => {
-    if (error && error instanceof Error && error.message.includes('Connection is closed')) {
+    if (error instanceof Error && error.message.includes('Connection is closed')) {
         error.message = module.exports.ERRORS.ERROR_DB_CLOSED;
     }
     return module.exports.maybeCallbackWithError(callback, error, ...args);
