@@ -2280,6 +2280,10 @@ class ObjectsInRedisClient {
             obj = obj ? JSON.parse(obj) : null;
         } catch (e) {
             this.log.warn(`${this.namespace} Cannot parse ${id} - ${obj}: ${e.message}`);
+            obj = null;
+            if (!err) {
+                err = e;
+            }
         }
         if (obj) {
             // Check permissions
@@ -2801,6 +2805,7 @@ class ObjectsInRedisClient {
             oldObj = oldObj ? JSON.parse(oldObj) : null;
         } catch (e) {
             this.log.warn(`${this.namespace} Cannot parse ${id} - ${oldObj}: ${e.message}`);
+            oldObj = null;
         }
 
         if (!utils.checkObject(oldObj, options, utils.CONSTS.ACCESS_WRITE)) {
@@ -3118,8 +3123,9 @@ class ObjectsInRedisClient {
                         obj = JSON.parse(obj);
                     } catch (e) {
                         this.log.error(`${this.namespace} Cannot parse JSON: ${obj}`);
+                        obj = null;
                     }
-                    if (obj.common && obj.common.custom) {
+                    if (obj && obj.common && obj.common.custom) {
                         result.rows.push({id: obj._id, value: obj.common.custom});
                     }
                 });
@@ -3435,7 +3441,7 @@ class ObjectsInRedisClient {
         } catch (e) {
             this.log.error(`${this.namespace} Cannot parse JSON ${id}: ${oldObj}`);
             oldObj = null;
-            return typeof callback === 'function' && callback(utils.ERRORS.ERROR_PERMISSION);
+            return typeof callback === 'function' && callback(`Cannot parse JSON ${id}: ${oldObj}`);
         }
         if (!utils.checkObject(oldObj, options, utils.CONSTS.ACCESS_WRITE)) {
             return typeof callback === 'function' && callback(utils.ERRORS.ERROR_PERMISSION);

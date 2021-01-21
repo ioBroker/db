@@ -6,6 +6,9 @@
 	### __WORK IN PROGRESS__
 -->
 
+### __WORK IN PROGRESS__
+* (Apollon77) enhance error handling in one place in objects db
+
 ### 1.0.7 (2021-01-15)
 * (Apollon77) Map Redis connectivity issues to the normal ERROR_DB_CLOSED error to allow unique handling in js-controller
 
