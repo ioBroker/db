@@ -6,7 +6,7 @@
 	### __WORK IN PROGRESS__
 -->
 
-### __WORK IN PROGRESS__
+### 1.0.8 (2021-01-21)
 * (Apollon77) enhance error handling in one place in objects db
 
 ### 1.0.7 (2021-01-15)
