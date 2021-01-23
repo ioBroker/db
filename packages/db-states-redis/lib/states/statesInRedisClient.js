@@ -459,7 +459,7 @@ class StateRedisClient {
 
         const obj = {};
 
-        if (typeof state !== 'object') {
+        if (!tools.isObject(state)) {
             state = {
                 val: state
             };
