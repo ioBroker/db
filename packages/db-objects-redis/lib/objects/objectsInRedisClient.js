@@ -3792,7 +3792,6 @@ class ObjectsInRedisClient {
 
         arr && _scripts.forEach((e, i) => _scripts[i].loaded = !!arr[i]);
 
-
         if (!this.client) {
             throw new Error(tools.ERRORS.ERROR_DB_CLOSED);
         }
