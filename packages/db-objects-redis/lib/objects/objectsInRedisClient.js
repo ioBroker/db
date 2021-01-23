@@ -393,41 +393,45 @@ class ObjectsInRedisClient {
 
             this.log.debug(this.namespace + ' Objects client initialize lua scripts');
             initCounter++;
-            this.loadLuaScripts(async () => {
-                if (!this.client) {
-                    return;
-                }
-                // init default new acl
-                let obj;
+            try {
+                await this.loadLuaScripts();
+            } catch (err) {
+                this.log.error(`${this.namespace} Cannot initialize database scripts: ${err}`);
+                return;
+            }
+            if (!this.client) {
+                return;
+            }
+            // init default new acl
+            let obj;
+            try {
+                obj = await this.client.get(this.objNamespace + 'system.config');
+            } catch {
+                // ignore
+            }
+            if (obj) {
                 try {
-                    obj = await this.client.get(this.objNamespace + 'system.config');
-                } catch {
-                    // ignore
+                    obj = JSON.parse(obj);
+                } catch (e) {
+                    this.log.error(`${this.namespace} Cannot parse JSON system.config: ${obj}`);
+                    obj = null;
                 }
-                if (obj) {
-                    try {
-                        obj = JSON.parse(obj);
-                    } catch (e) {
-                        this.log.error(`${this.namespace} Cannot parse JSON system.config: ${obj}`);
-                        obj = null;
-                    }
-                    if (obj && obj.common && obj.common.defaultNewAcl) {
-                        this.defaultNewAcl = obj.common.defaultNewAcl;
-                    }
-                } else {
-                    this.log.error(`${this.namespace} Cannot read system.config: ${obj} (OK when migrating or restoring)`);
+                if (obj && obj.common && obj.common.defaultNewAcl) {
+                    this.defaultNewAcl = obj.common.defaultNewAcl;
                 }
+            } else {
+                this.log.error(`${this.namespace} Cannot read system.config: ${obj} (OK when migrating or restoring)`);
+            }
 
-                if (--initCounter < 1) {
-                    if (this.settings.connection.port === 0) {
-                        this.log.debug(this.namespace + ' Objects ' + (ready ? 'client re' : '') + 'connected to redis: ' + this.settings.connection.host);
-                    } else {
-                        this.log.debug(this.namespace + ' Objects ' + (ready ? 'client re' : '') + 'connected to redis: ' + this.settings.connection.host + ':' + this.settings.connection.port);
-                    }
-                    !ready && typeof this.settings.connected === 'function' && this.settings.connected();
-                    ready = true;
+            if (--initCounter < 1) {
+                if (this.settings.connection.port === 0) {
+                    this.log.debug(this.namespace + ' Objects ' + (ready ? 'client re' : '') + 'connected to redis: ' + this.settings.connection.host);
+                } else {
+                    this.log.debug(this.namespace + ' Objects ' + (ready ? 'client re' : '') + 'connected to redis: ' + this.settings.connection.host + ':' + this.settings.connection.port);
                 }
-            });
+                !ready && typeof this.settings.connected === 'function' && this.settings.connected();
+                ready = true;
+            }
         });
     }
 
@@ -3750,49 +3754,47 @@ class ObjectsInRedisClient {
         }
     }
 
-    async loadLuaScripts(callback, _scripts) {
-        if (!_scripts) {
-            if (scriptFiles && scriptFiles.filter) {
-                _scripts = [];
-                for (const name of Object.keys(scriptFiles)) {
-                    const shasum = crypto.createHash('sha1');
-                    const buf = Buffer.from(scriptFiles[name]);
-                    shasum.update(buf);
-                    _scripts.push({
-                        name,
-                        text: buf,
-                        hash: shasum.digest('hex')
-                    });
-                }
-            } else {
-                _scripts = fs.readdirSync(__dirname + '/lua/').map(name => {
-                    const shasum = crypto.createHash('sha1');
-                    const script = fs.readFileSync(__dirname + '/lua/' + name);
-                    shasum.update(script);
-                    const hash = shasum.digest('hex');
-                    return {name: name.replace(/\.lua$/, ''), text: script, hash};
+    async loadLuaScripts() {
+        let _scripts = [];
+        if (scriptFiles && scriptFiles.filter) {
+            for (const name of Object.keys(scriptFiles)) {
+                const shasum = crypto.createHash('sha1');
+                const buf = Buffer.from(scriptFiles[name]);
+                shasum.update(buf);
+                _scripts.push({
+                    name,
+                    text: buf,
+                    hash: shasum.digest('hex')
                 });
             }
-            const hashes = _scripts.map(e => e.hash);
-            hashes.unshift('EXISTS');
-
-            if (!this.client) {
-                return;
-            }
-
-            let arr;
-            try {
-                arr = await this.client.script(hashes);
-            } catch {
-                // ignore
-            }
-
-            arr && _scripts.forEach((e, i) => _scripts[i].loaded = !!arr[i]);
-            return this.loadLuaScripts(callback, _scripts);
+        } else {
+            _scripts = fs.readdirSync(__dirname + '/lua/').map(name => {
+                const shasum = crypto.createHash('sha1');
+                const script = fs.readFileSync(__dirname + '/lua/' + name);
+                shasum.update(script);
+                const hash = shasum.digest('hex');
+                return {name: name.replace(/\.lua$/, ''), text: script, hash};
+            });
         }
+        const hashes = _scripts.map(e => e.hash);
+        hashes.unshift('EXISTS');
 
         if (!this.client) {
-            return;
+            throw new Error(tools.ERRORS.ERROR_DB_CLOSED);
+        }
+
+        let arr;
+        try {
+            arr = await this.client.script(hashes);
+        } catch {
+            // ignore
+        }
+
+        arr && _scripts.forEach((e, i) => _scripts[i].loaded = !!arr[i]);
+
+
+        if (!this.client) {
+            throw new Error(tools.ERRORS.ERROR_DB_CLOSED);
         }
 
         for (let i = 0; i < _scripts.length; i++) {
@@ -3805,14 +3807,13 @@ class ObjectsInRedisClient {
                 } catch (e) {
                     script.loaded = false;
                     this.log.error(this.namespace + ' Cannot load "' + script.name + '": ' + e);
+                    throw new Error(`Cannot load "${script.name}" into objects database: ${e}`);
                 }
                 script.hash = hash;
-                return setImmediate(() => this.loadLuaScripts(callback, _scripts));
             }
         }
         this.scripts = {};
         _scripts.forEach(e => this.scripts[e.name] = e.hash);
-        typeof callback === 'function' && callback();
     }
 
     /**
