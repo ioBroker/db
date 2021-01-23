@@ -6,6 +6,10 @@
 	### __WORK IN PROGRESS__
 -->
 
+### __WORK IN PROGRESS__
+* (Apollon77) make sure errors in lua script initialization do not run into endless loop
+* (Apollon77) make sure in setState that a null state do not crash
+
 ### 1.0.8 (2021-01-21)
 * (Apollon77) enhance error handling in one place in objects db
 
