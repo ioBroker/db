@@ -6,7 +6,7 @@
 	### __WORK IN PROGRESS__
 -->
 
-### __WORK IN PROGRESS__
+### 1.0.9 (2021-01-23)
 * (Apollon77) make sure errors in lua script initialization do not run into endless loop
 * (Apollon77) make sure in setState that a null state do not crash
 
