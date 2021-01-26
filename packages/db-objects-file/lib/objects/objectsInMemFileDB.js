@@ -402,10 +402,10 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
                 };
             }
         } catch (e) {
-            this.log.warn(`Cannot read file ${id} / ${name}: ${JSON.stringify(e)}`);
+            this.log.warn(`${this.namespace} Cannot read file ${id} / ${name}: ${JSON.stringify(e)}`);
             throw e;
         }
-        throw new Error (utils.ERRORS.ERROR_NOT_FOUND);
+        throw new Error(utils.ERRORS.ERROR_NOT_FOUND);
     }
 
     /**
@@ -425,7 +425,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
             // check if the id exists
             return Object.prototype.hasOwnProperty.call(this.dataset, id);
         } catch (e) {
-            this.log.error(`Cannot check object existence of "${id}": ${e}`);
+            this.log.error(`${this.namespace} Cannot check object existence of "${id}": ${e}`);
             throw new Error(`Cannot check object existence of "${id}": ${e}`);
         }
     }
@@ -450,7 +450,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
             return stat.isFile();
         } catch (e) {
             if (e.code !== 'ENOENT') {
-                this.log.error(`Cannot check file existence of "${location}": ${e}`);
+                this.log.error(`${this.namespace} Cannot check file existence of "${location}": ${e}`);
                 throw new Error(`Cannot check file existence of "${location}": ${e}`);
             }
             return false;
@@ -477,7 +477,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
             return stat.isDirectory();
         } catch (e) {
             if (e.code !== 'ENOENT') {
-                this.log.error(`Cannot check directory existence of "${location}": ${e}`);
+                this.log.error(`${this.namespace} Cannot check directory existence of "${location}": ${e}`);
                 throw new Error(`Cannot check directory existence of "${location}": ${e}`);
             }
             return false;
@@ -504,7 +504,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
                 try {
                     fs.removeSync(location);
                 } catch (e) {
-                    this.log.error('Cannot delete directory "' + path.join(id, name) + '": ' + e);
+                    this.log.error(this.namespace + ' Cannot delete directory "' + path.join(id, name) + '": ' + e);
                     throw e;
                 }
 
@@ -520,7 +520,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
                 try {
                     fs.removeSync(location);
                 } catch (e) {
-                    this.log.error('Cannot delete file "' + path.join(id, name) + '": ' + e);
+                    this.log.error(this.namespace + ' Cannot delete file "' + path.join(id, name) + '": ' + e);
                     throw e;
                 }
 
@@ -814,7 +814,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
                 try {
                     f(this.dataset[id]);
                 } catch (e) {
-                    this.log.warn('Cannot execute map: ' + e.message);
+                    this.log.warn(this.namespace  + ' Cannot execute map: ' + e.message);
                 }
             }
         }
@@ -839,11 +839,11 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
     // needed by server
     _getObjectView(design, search, params) {
         if (!this.dataset['_design/' + design]) {
-            this.log.error(`Cannot find view "${design}"`);
+            this.log.error(`${this.namespace} Cannot find view "${design}"`);
             throw new Error(`Cannot find view "${design}"`);
         }
         if (!this.dataset[`_design/${design}`].views && this.dataset['_design/' + design].views[search]) {
-            this.log.warn(`Cannot find search "${search}" in "${design}"`);
+            this.log.warn(`${this.namespace} Cannot find search "${search}" in "${design}"`);
             throw new Error(`Cannot find search "${search}" in "${design}"`);
         }
         return this._applyView(this.dataset[`_design/${design}`].views[search], params);

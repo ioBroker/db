@@ -28,7 +28,7 @@ class ObjectsInMemoryServerClass extends ObjectsInRedisClient {
         settings.connected = () => {
             this.clientConnected = true;
             if (Array.isArray(this.storedSubscribes) && this.storedSubscribes.length) {
-                this.log.warn(`Replay ${this.storedSubscribes.length} subscription calls for Objects Server that were done before the client was connected initially`);
+                this.log.warn(`${this.namespace} Replay ${this.storedSubscribes.length} subscription calls for Objects Server that were done before the client was connected initially`);
                 this.storedSubscribes.forEach((s => this.subscribe(s.pattern, s.options, s.callback)));
                 this.storedSubscribes = [];
             }

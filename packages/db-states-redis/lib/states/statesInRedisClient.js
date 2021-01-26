@@ -152,11 +152,11 @@ class StateRedisClient {
                 initError = true;
                 // Seems we have a socket.io server
                 if (error.message.startsWith('Protocol error, got "H" as reply type byte.')) {
-                    this.log.error('Could not connect database at ' + this.settings.connection.options.host + ':' + this.settings.connection.options.port + ' (invalid protocol). Please make sure the configured IP and port points to a host running JS-Controller >= 2.0. and that the port is not occupied by other software!');
+                    this.log.error(this.namespace + ' Could not connect to states database at ' + this.settings.connection.options.host + ':' + this.settings.connection.options.port + ' (invalid protocol). Please make sure the configured IP and port points to a host running JS-Controller >= 2.0. and that the port is not occupied by other software!');
                 }
                 return;
             }
-            this.log.error(this.namespace + ' ' + error.message);
+            this.log.error(this.namespace + ' States database error: ' + error.message);
             errorLogged = true;
         });
 
@@ -171,7 +171,7 @@ class StateRedisClient {
             this.settings.connection.enhancedLogging && this.log.silly(this.namespace + ' States-Redis Event connect (stop=' + this.stop + ')');
             connected = true;
             if (errorLogged) {
-                this.log.info(this.settings.namespace + ' Objects database successfully reconnected');
+                this.log.info(this.namespace + ' Objects database successfully reconnected');
                 errorLogged = false;
             }
         });
@@ -187,7 +187,7 @@ class StateRedisClient {
             }
             this.settings.connection.enhancedLogging && this.log.silly(this.namespace + ' States-Redis Event reconnect (reconnectCounter=' + reconnectCounter + ', stop=' + this.stop + ')');
             if (reconnectCounter > 2) { // fallback logic for nodejs <10
-                this.log.error('The DB port  ' + this.settings.connection.options.port +' is occupied by something that is not a Redis protocol server. Please check other software running on this port or, if you use iobroker, make sure to update to js-controller 2.0 or higher!');
+                this.log.error(this.namespace + ' The DB port  ' + this.settings.connection.options.port +' is occupied by something that is not a Redis protocol server. Please check other software running on this port or, if you use iobroker, make sure to update to js-controller 2.0 or higher!');
                 return;
             }
             connected = false;
@@ -207,7 +207,7 @@ class StateRedisClient {
                 try {
                     await this.client.config('set', ['notify-keyspace-events', 'Exe']);// enable Expiry/Evicted events in server
                 } catch (e) {
-                    this.log.warn(`Unable to enable Expiry Keyspace events from Redis Server: ${e}`);
+                    this.log.warn(`${this.namespace} Unable to enable Expiry Keyspace events from Redis Server: ${e}`);
                 }
 
                 this.log.debug(this.namespace + ' States create System PubSub Client');
@@ -294,13 +294,13 @@ class StateRedisClient {
                     try {
                         this.subSystem && await this.subSystem.subscribe(`__keyevent@${this.settings.connection.options.db}__:expired`);
                     } catch (e) {
-                        this.log.warn(`Unable to subscribe to expiry Keyspace events from Redis Server: ${e}`);
+                        this.log.warn(`${this.namespace} Unable to subscribe to expiry Keyspace events from Redis Server: ${e}`);
                     }
 
                     try {
                         this.subSystem && await this.subSystem.subscribe(`__keyevent@${this.settings.connection.options.db}__:evicted`);
                     } catch (e) {
-                        this.log.warn(`Unable to subscribe to evicted Keyspace events from Redis Server: ${e}`);
+                        this.log.warn(`${this.namespace} Unable to subscribe to evicted Keyspace events from Redis Server: ${e}`);
                     }
 
                     if (--initCounter < 1) {
@@ -475,7 +475,7 @@ class StateRedisClient {
         try {
             oldObj = await this.client.get(this.namespaceRedis + id);
         } catch (e) {
-            this.log.warn(this.namespace + ' get state ' + e);
+            this.log.warn(this.namespace + ' get state error: ' + e);
             return tools.maybeCallbackWithRedisError(callback, e, id);
         }
         if (!this.client) {
@@ -653,7 +653,7 @@ class StateRedisClient {
 
     async getStates(keys, callback, dontModify) {
         if (typeof callback !== 'function') {
-            this.log.warn(this.settings.namespace + ' redis getStates no callback');
+            this.log.warn(this.namespace + ' redis getStates no callback');
             return;
         }
         if (!keys || !Array.isArray(keys)) {

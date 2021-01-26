@@ -168,11 +168,11 @@ class ObjectsInRedisClient {
                 initError = true;
                 // Seems we have a socket.io server
                 if (!ignoreErrors && error.message.startsWith('Protocol error, got "H" as reply type byte.')) {
-                    this.log.error('Could not connect database at ' + this.settings.connection.options.host + ':' + this.settings.connection.options.port + ' (invalid protocol). Please make sure the configured IP and port points to a host running JS-Controller >= 2.0. and that the port is not occupied by other software!');
+                    this.log.error(this.namespace + ' Could not connect to objects database at ' + this.settings.connection.options.host + ':' + this.settings.connection.options.port + ' (invalid protocol). Please make sure the configured IP and port points to a host running JS-Controller >= 2.0. and that the port is not occupied by other software!');
                 }
                 return;
             }
-            this.log.error(this.settings.namespace + ' ' + error.message);
+            this.log.error(this.namespace + ' Objects database error: ' + error.message);
             errorLogged = true;
         });
 
@@ -185,7 +185,7 @@ class ObjectsInRedisClient {
             this.settings.connection.enhancedLogging && this.log.silly(this.namespace + ' Objects-Redis Event connect (stop=' + this.stop + ')');
             connected = true;
             if (errorLogged) {
-                this.log.info(this.settings.namespace + ' Objects database successfully reconnected');
+                this.log.info(this.namespace + ' Objects database successfully reconnected');
                 errorLogged = false;
             }
         });
@@ -203,7 +203,7 @@ class ObjectsInRedisClient {
             this.settings.connection.enhancedLogging && this.log.silly(this.namespace + ' Objects-Redis Event reconnect (reconnectCounter=' + reconnectCounter + ', stop=' + this.stop + ')');
 
             if (reconnectCounter > 2) { // fallback logic for nodejs <10
-                this.log.error('The DB port  ' + this.settings.connection.options.port +' is occupied by something that is not a Redis protocol server. Please check other software running on this port or, if you use iobroker, make sure to update to js-controller 2.0 or higher!');
+                this.log.error(this.namespace + ' The DB port  ' + this.settings.connection.options.port +' is occupied by something that is not a Redis protocol server. Please check other software running on this port or, if you use iobroker, make sure to update to js-controller 2.0 or higher!');
                 return;
             }
             connected = false;
@@ -221,7 +221,7 @@ class ObjectsInRedisClient {
             try {
                 await this.client.config('set', ['lua-time-limit', 10000]); // increase LUA timeout TODO needs better fix
             } catch (e) {
-                this.log.warn(`Unable to increase LUA script timeout: ${e}`);
+                this.log.warn(`${this.namespace} Unable to increase LUA script timeout: ${e}`);
             }
 
             let initCounter = 0;
@@ -707,7 +707,7 @@ class ObjectsInRedisClient {
         try {
             await this.validateMetaObject(id);
         } catch (e) {
-            this.log.error(`Cannot write file ${name}: ${e.message}`);
+            this.log.error(`${this.namespace} Cannot write file ${name}: ${e.message}`);
             return tools.maybeCallbackWithError(callback, e);
         }
 
