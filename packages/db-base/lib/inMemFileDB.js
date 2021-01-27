@@ -113,12 +113,12 @@ class InMemoryFileDB {
             try {
                 this.dataset = fs.readJSONSync(this.datasetName);
             } catch (e) {
-                this.log.error(this.namespace + ' Cannot parse ' + this.datasetName + ': ' + e);
+                this.log.error(this.namespace + ' Cannot parse ' + this.datasetName + ': ' + e.message);
                 if (fs.existsSync(this.datasetName + '.bak')) {
                     try {
                         this.dataset = fs.readJSONSync(this.datasetName + '.bak');
                     } catch (e) {
-                        this.log.error(this.namespace + ' Cannot parse ' + this.datasetName + '.bak: ' + e);
+                        this.log.error(this.namespace + ' Cannot parse ' + this.datasetName + '.bak: ' + e.message);
                         this.dataset = {};
                     }
                 } else {
@@ -129,7 +129,7 @@ class InMemoryFileDB {
             try {
                 this.dataset = fs.readJSONSync(this.datasetName + '.bak');
             } catch (e) {
-                this.log.error(this.namespace + ' Cannot parse ' + this.datasetName + '.bak: ' + e);
+                this.log.error(this.namespace + ' Cannot parse ' + this.datasetName + '.bak: ' + e.message);
                 this.dataset = {};
             }
         } else {
@@ -227,7 +227,7 @@ class InMemoryFileDB {
                 try {
                     fs.unlinkSync(path.join(this.backupDir, file));
                 } catch (e) {
-                    this.log.error(`${this.namespace} Cannot delete file "${path.join(this.backupDir, file)}: ${JSON.stringify(e)}`);
+                    this.log.error(`${this.namespace} Cannot delete file "${path.join(this.backupDir, file)}: ${e.message}`);
                 }
             }
         }
@@ -303,7 +303,7 @@ class InMemoryFileDB {
                 }
             }
         } catch (e) {
-            this.log.error(this.namespace + ' Cannot save ' + this.datasetName + ': ' + e);
+            this.log.error(this.namespace + ' Cannot save ' + this.datasetName + ': ' + e.message);
         }
         if (this.stateTimer) {
             clearTimeout(this.stateTimer);

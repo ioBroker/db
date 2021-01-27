@@ -286,7 +286,7 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
                             include_docs: true
                         });
                     } catch (err) {
-                        return void handler.sendError(responseId, new Error('_getObjectView Error for ' + scriptDesign + '/' + scriptSearch + ': ' + err));
+                        return void handler.sendError(responseId, new Error('_getObjectView Error for ' + scriptDesign + '/' + scriptSearch + ': ' + err.message));
                     }
                     const res = objs.rows.map(obj => JSON.stringify(this.dataset[obj.value._id || obj.id]));
                     handler.sendArray(responseId, res);
@@ -368,7 +368,7 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
                             obj.stats = fs.statSync(path.join(this.objectsDir, id, name));
                         } catch (err) {
                             if (!name.endsWith('/_data.json')) {
-                                this.log.warn(`${namespaceLog} Got MGET request for non existing file ${dataId}, err: ${err}`);
+                                this.log.warn(`${namespaceLog} Got MGET request for non existing file ${dataId}, err: ${err.message}`);
                             }
                             response.push(null);
                             return;
@@ -463,7 +463,7 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
                     const obj = JSON.parse(data[1].toString('utf-8'));
                     this._setObjectDirect(id, obj);
                 } catch (err) {
-                    return void handler.sendError(responseId, new Error(`ERROR setObject id=${id}: ${err}`));
+                    return void handler.sendError(responseId, new Error(`ERROR setObject id=${id}: ${err.message}`));
                 }
                 handler.sendString(responseId, 'OK');
             } else if (namespace === this.namespaceFile) {

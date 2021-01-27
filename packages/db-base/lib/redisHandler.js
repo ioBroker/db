@@ -171,7 +171,7 @@ class RedisHandler extends EventEmitter {
             return this._write(data);
         }
         if (!responseId) {
-            throw Error('Invalid implementation: no responseId provided!');
+            throw new Error('Invalid implementation: no responseId provided!');
         }
         if (!data) {
             this.log.warn(this.socketId + ' Not able to write ' + JSON.stringify(data));

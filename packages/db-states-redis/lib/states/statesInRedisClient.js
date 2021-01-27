@@ -207,7 +207,7 @@ class StateRedisClient {
                 try {
                     await this.client.config('set', ['notify-keyspace-events', 'Exe']);// enable Expiry/Evicted events in server
                 } catch (e) {
-                    this.log.warn(`${this.namespace} Unable to enable Expiry Keyspace events from Redis Server: ${e}`);
+                    this.log.warn(`${this.namespace} Unable to enable Expiry Keyspace events from Redis Server: ${e.message}`);
                 }
 
                 this.log.debug(this.namespace + ' States create System PubSub Client');
@@ -294,13 +294,13 @@ class StateRedisClient {
                     try {
                         this.subSystem && await this.subSystem.subscribe(`__keyevent@${this.settings.connection.options.db}__:expired`);
                     } catch (e) {
-                        this.log.warn(`${this.namespace} Unable to subscribe to expiry Keyspace events from Redis Server: ${e}`);
+                        this.log.warn(`${this.namespace} Unable to subscribe to expiry Keyspace events from Redis Server: ${e.message}`);
                     }
 
                     try {
                         this.subSystem && await this.subSystem.subscribe(`__keyevent@${this.settings.connection.options.db}__:evicted`);
                     } catch (e) {
-                        this.log.warn(`${this.namespace} Unable to subscribe to evicted Keyspace events from Redis Server: ${e}`);
+                        this.log.warn(`${this.namespace} Unable to subscribe to evicted Keyspace events from Redis Server: ${e.message}`);
                     }
 
                     if (--initCounter < 1) {
@@ -475,7 +475,7 @@ class StateRedisClient {
         try {
             oldObj = await this.client.get(this.namespaceRedis + id);
         } catch (e) {
-            this.log.warn(this.namespace + ' get state error: ' + e);
+            this.log.warn(this.namespace + ' get state error: ' + e.message);
             return tools.maybeCallbackWithRedisError(callback, e, id);
         }
         if (!this.client) {
@@ -621,7 +621,7 @@ class StateRedisClient {
             obj = await this.client.get(this.namespaceRedis + id);
             this.settings.connection.enhancedLogging && this.log.silly(`${this.namespace} redis get ${id} ok: ${obj}`);
         } catch (e) {
-            this.log.warn(`${this.namespace} redis get ${id}, error - ${e}`);
+            this.log.warn(`${this.namespace} redis get ${id}, error - ${e.message}`);
         }
 
         if (!obj) {
@@ -677,7 +677,7 @@ class StateRedisClient {
             obj = await this.client.mget(_keys);
             this.settings.connection.enhancedLogging && this.log.silly(`${this.namespace} redis mget ${(!obj) ? 0 : obj.length} ${_keys.length}`);
         } catch (e) {
-            this.log.warn(`${this.namespace} redis mget ${(!obj) ? 0 : obj.length} ${_keys.length}, err: ${e}`);
+            this.log.warn(`${this.namespace} redis mget ${(!obj) ? 0 : obj.length} ${_keys.length}, err: ${e.message}`);
         }
         const result = [];
 
@@ -780,7 +780,7 @@ class StateRedisClient {
             this.settings.connection.enhancedLogging && this.log.silly(`${this.namespace} redis del ${id}, ok`);
             return tools.maybeCallbackWithError(callback, null, id);
         } catch (e) {
-            this.log.warn(`${this.namespace} redis del ${id}, error - ${e}`);
+            this.log.warn(`${this.namespace} redis del ${id}, error - ${e.message}`);
             return tools.maybeCallbackWithRedisError(callback, e, id);
         }
     }

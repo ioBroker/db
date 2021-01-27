@@ -221,7 +221,7 @@ class ObjectsInRedisClient {
             try {
                 await this.client.config('set', ['lua-time-limit', 10000]); // increase LUA timeout TODO needs better fix
             } catch (e) {
-                this.log.warn(`${this.namespace} Unable to increase LUA script timeout: ${e}`);
+                this.log.warn(`${this.namespace} Unable to increase LUA script timeout: ${e.message}`);
             }
 
             let initCounter = 0;
@@ -396,7 +396,7 @@ class ObjectsInRedisClient {
             try {
                 await this.loadLuaScripts();
             } catch (err) {
-                this.log.error(`${this.namespace} Cannot initialize database scripts: ${err}`);
+                this.log.error(`${this.namespace} Cannot initialize database scripts: ${err.message}`);
                 return;
             }
             if (!this.client) {
@@ -827,8 +827,8 @@ class ObjectsInRedisClient {
             const exists = await this.client.exists(this.objNamespace + id);
             return !!exists;
         } catch (e) {
-            this.log.error(`${this.namespace} Cannot check object existence of "${id}": ${e}`);
-            return Promise.reject(new Error(`Cannot check object existence of "${id}": ${e}`));
+            this.log.error(`${this.namespace} Cannot check object existence of "${id}": ${e.message}`);
+            return Promise.reject(new Error(`Cannot check object existence of "${id}": ${e.message}`));
         }
     }
 
@@ -863,8 +863,8 @@ class ObjectsInRedisClient {
             const exists = await this.client.exists(id);
             return !!exists;
         } catch (e) {
-            this.log.error(`${this.namespace} Cannot check file existence of "${id}": ${e}`);
-            return Promise.reject(new Error(`Cannot check file existence of "${id}": ${e}`));
+            this.log.error(`${this.namespace} Cannot check file existence of "${id}": ${e.message}`);
+            return Promise.reject(new Error(`Cannot check file existence of "${id}": ${e.message}`));
         }
     }
 
@@ -2276,7 +2276,7 @@ class ObjectsInRedisClient {
         try {
             obj = await this.client.get(this.objNamespace + id);
         } catch (e) {
-            this.log.debug(`${this.namespace} redis get ${id}, error - ${e}`);
+            this.log.debug(`${this.namespace} redis get ${id}, error - ${e.message}`);
             err = e;
         }
 
@@ -2464,7 +2464,7 @@ class ObjectsInRedisClient {
             objs = await this.client.mget(_keys);
             this.settings.connection.enhancedLogging && this.log.silly(this.namespace + ' redis mget ' + (!objs ? 0 : objs.length) + ' ' + _keys.length);
         } catch (e) {
-            this.log.warn(`${this.namespace} redis mget ${!objs ? 0 : objs.length} ${_keys.length}, err: ${e}`);
+            this.log.warn(`${this.namespace} redis mget ${!objs ? 0 : objs.length} ${_keys.length}, err: ${e.message}`);
         }
         let result = [];
 
@@ -2798,7 +2798,7 @@ class ObjectsInRedisClient {
         try {
             oldObj = await this.client.get(this.objNamespace + id);
         } catch (e) {
-            this.log.warn(`${this.namespace} redis get ${id}, error - ${e}`);
+            this.log.warn(`${this.namespace} redis get ${id}, error - ${e.message}`);
         }
 
         if (!oldObj) {
@@ -2922,7 +2922,7 @@ class ObjectsInRedisClient {
                 try {
                     objs = await this.client.evalsha([this.scripts.filter, 5, this.objNamespace, params.startkey, params.endkey, m[1], cursor]);
                 } catch (e) {
-                    this.log.warn(`${this.namespace} Cannot get view: ${e}`);
+                    this.log.warn(`${this.namespace} Cannot get view: ${e.message}`);
                 }
                 objs = objs || [];
                 // if real redis we will have e.g. [[objs..], '0'], else [{}, .., {}]
@@ -2986,7 +2986,7 @@ class ObjectsInRedisClient {
                 try {
                     objs = await this.client.evalsha([this.scripts.script, 4, this.objNamespace, params.startkey, params.endkey, cursor]);
                 } catch (e) {
-                    this.log.warn(`${this.namespace} Cannot get view: ${e}`);
+                    this.log.warn(`${this.namespace} Cannot get view: ${e.message}`);
                 }
                 // if real redis we will have e.g. [[objs..], '0'], else [{}, .., {}]
                 if (Array.isArray(objs[0])) {
@@ -3028,7 +3028,7 @@ class ObjectsInRedisClient {
                 try {
                     objs = await this.client.evalsha([this.scripts.programs, 4, this.objNamespace, params.startkey, params.endkey, cursor]);
                 } catch (e) {
-                    this.log.warn(`${this.namespace} Cannot get view: ${e}`);
+                    this.log.warn(`${this.namespace} Cannot get view: ${e.message}`);
                 }
                 // if real redis we will have e.g. [[objs..], '0'], else [{}, .., {}]
                 if (Array.isArray(objs[0])) {
@@ -3070,7 +3070,7 @@ class ObjectsInRedisClient {
                 try {
                     objs = await this.client.evalsha([this.scripts.variables, 4, this.objNamespace, params.startkey, params.endkey, cursor]);
                 } catch (e) {
-                    this.log.warn(`${this.namespace} Cannot get view ${e}`);
+                    this.log.warn(`${this.namespace} Cannot get view ${e.message}`);
                 }
                 // if real redis we will have e.g. [[objs..], '0'], else [{}, .., {}]
                 if (Array.isArray(objs[0])) {
@@ -3111,7 +3111,7 @@ class ObjectsInRedisClient {
                 try {
                     objs = await this.client.evalsha([this.scripts.custom, 4, this.objNamespace, params.startkey, params.endkey, cursor]);
                 } catch (e) {
-                    this.log.warn(`${this.namespace} Cannot get view: ${e}`);
+                    this.log.warn(`${this.namespace} Cannot get view: ${e.message}`);
                 }
                 // if real redis we will have e.g. [[objs..], '0'], else [{}, .., {}]
                 if (Array.isArray(objs[0])) {
@@ -3268,7 +3268,7 @@ class ObjectsInRedisClient {
         try {
             obj = await this.client.get(this.objNamespace + '_design/' + design);
         } catch (e) {
-            this.log.error(`${this.namespace} Cannot find view "${design}" for search "${search}" : ${e}`);
+            this.log.error(`${this.namespace} Cannot find view "${design}" for search "${search}" : ${e.message}`);
             return tools.maybeCallbackWithRedisError(callback, new Error(`Cannot find view "${design}"`));
         }
 
@@ -3805,8 +3805,8 @@ class ObjectsInRedisClient {
                     script.loaded = true;
                 } catch (e) {
                     script.loaded = false;
-                    this.log.error(this.namespace + ' Cannot load "' + script.name + '": ' + e);
-                    throw new Error(`Cannot load "${script.name}" into objects database: ${e}`);
+                    this.log.error(this.namespace + ' Cannot load "' + script.name + '": ' + e.message);
+                    throw new Error(`Cannot load "${script.name}" into objects database: ${e.message}`);
                 }
                 script.hash = hash;
             }

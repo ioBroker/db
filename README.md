@@ -6,6 +6,10 @@
 	### __WORK IN PROGRESS__
 -->
 
+### __WORK IN PROGRESS__
+* (Apollon77) add missing log namespaces in some places
+* (Apollon77) Do not log error objects directly, but e.message
+
 ### 1.0.9 (2021-01-23)
 * (Apollon77) make sure errors in lua script initialization do not run into endless loop
 * (Apollon77) make sure in setState that a null state do not crash

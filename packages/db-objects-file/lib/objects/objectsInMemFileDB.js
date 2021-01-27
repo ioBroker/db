@@ -125,7 +125,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
                 try {
                     this.fileOptions[id] = fs.readJSONSync(location);
                 } catch (e) {
-                    this.log.error(this.namespace + ' Cannot parse ' + location + ': ' + e);
+                    this.log.error(this.namespace + ' Cannot parse ' + location + ': ' + e.message);
                     this.fileOptions[id] = {};
                 }
                 let corrected = false;
@@ -402,7 +402,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
                 };
             }
         } catch (e) {
-            this.log.warn(`${this.namespace} Cannot read file ${id} / ${name}: ${JSON.stringify(e)}`);
+            this.log.warn(`${this.namespace} Cannot read file ${id} / ${name}: ${e.message}`);
             throw e;
         }
         throw new Error(utils.ERRORS.ERROR_NOT_FOUND);
@@ -425,7 +425,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
             // check if the id exists
             return Object.prototype.hasOwnProperty.call(this.dataset, id);
         } catch (e) {
-            this.log.error(`${this.namespace} Cannot check object existence of "${id}": ${e}`);
+            this.log.error(`${this.namespace} Cannot check object existence of "${id}": ${e.message}`);
             throw new Error(`Cannot check object existence of "${id}": ${e}`);
         }
     }
@@ -450,8 +450,8 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
             return stat.isFile();
         } catch (e) {
             if (e.code !== 'ENOENT') {
-                this.log.error(`${this.namespace} Cannot check file existence of "${location}": ${e}`);
-                throw new Error(`Cannot check file existence of "${location}": ${e}`);
+                this.log.error(`${this.namespace} Cannot check file existence of "${location}": ${e.message}`);
+                throw new Error(`Cannot check file existence of "${location}": ${e.message}`);
             }
             return false;
         }
@@ -477,8 +477,8 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
             return stat.isDirectory();
         } catch (e) {
             if (e.code !== 'ENOENT') {
-                this.log.error(`${this.namespace} Cannot check directory existence of "${location}": ${e}`);
-                throw new Error(`Cannot check directory existence of "${location}": ${e}`);
+                this.log.error(`${this.namespace} Cannot check directory existence of "${location}": ${e.message}`);
+                throw new Error(`Cannot check directory existence of "${location}": ${e.message}`);
             }
             return false;
         }
@@ -504,7 +504,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
                 try {
                     fs.removeSync(location);
                 } catch (e) {
-                    this.log.error(this.namespace + ' Cannot delete directory "' + path.join(id, name) + '": ' + e);
+                    this.log.error(this.namespace + ' Cannot delete directory "' + path.join(id, name) + '": ' + e.message);
                     throw e;
                 }
 
@@ -520,7 +520,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
                 try {
                     fs.removeSync(location);
                 } catch (e) {
-                    this.log.error(this.namespace + ' Cannot delete file "' + path.join(id, name) + '": ' + e);
+                    this.log.error(this.namespace + ' Cannot delete file "' + path.join(id, name) + '": ' + e.message);
                     throw e;
                 }
 
@@ -662,7 +662,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
                     });
 
                 } catch (e) {
-                    this.log.error(this.namespace + ' Cannot read permssions of  ' + path.join(this.objectsDir, id, name, _files[j]) + ': ' + e);
+                    this.log.error(this.namespace + ' Cannot read permssions of  ' + path.join(this.objectsDir, id, name, _files[j]) + ': ' + e.message);
                 }
             }
         }

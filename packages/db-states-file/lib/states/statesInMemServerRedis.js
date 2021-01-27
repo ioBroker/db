@@ -195,7 +195,7 @@ class StatesInMemoryServer extends StatesInMemoryFileDB {
                     const result = states.map(el => el ? JSON.stringify(el) : null);
                     handler.sendArray(responseId, result);
                 } catch (err) {
-                    handler.sendError(responseId, new Error('ERROR _getStates: ' + err));
+                    handler.sendError(responseId, new Error('ERROR _getStates: ' + err.message));
                 }
             } else {
                 handler.sendError(responseId, new Error('MGET-UNSUPPORTED for namespace ' + namespace + ': Data=' + JSON.stringify(data)));
@@ -243,7 +243,7 @@ class StatesInMemoryServer extends StatesInMemoryFileDB {
                     this._setStateDirect(id, state);
                     handler.sendString(responseId, 'OK');
                 } catch (err) {
-                    handler.sendError(responseId, new Error('ERROR setState id=' + id + ': ' + err));
+                    handler.sendError(responseId, new Error('ERROR setState id=' + id + ': ' + err.message));
                 }
             } else {
                 handler.sendError(responseId, new Error('SET-UNSUPPORTED for namespace ' + namespace + ': Data=' + JSON.stringify(data)));
@@ -268,7 +268,7 @@ class StatesInMemoryServer extends StatesInMemoryFileDB {
                     this._setStateDirect(id, state, expire);
                     handler.sendString(responseId, 'OK');
                 } catch (err) {
-                    handler.sendError(responseId, new Error('ERROR setStateEx id=' + id + ': ' + err));
+                    handler.sendError(responseId, new Error('ERROR setStateEx id=' + id + ': ' + err.message));
                 }
             } else if (namespace === this.namespaceSession) {
                 try {
@@ -280,7 +280,7 @@ class StatesInMemoryServer extends StatesInMemoryFileDB {
                     this._setSession(id, expire, state);
                     handler.sendString(responseId, 'OK');
                 } catch (err) {
-                    handler.sendError(responseId, new Error('ERROR _setSession ' + id + ': ' + err));
+                    handler.sendError(responseId, new Error('ERROR _setSession ' + id + ': ' + err.message));
                 }
             } else {
                 handler.sendError(responseId, new Error('SETEX-UNSUPPORTED for namespace ' + namespace + ': Data=' + JSON.stringify(data)));
