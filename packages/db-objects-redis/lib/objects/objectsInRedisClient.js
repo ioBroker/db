@@ -2801,8 +2801,8 @@ class ObjectsInRedisClient {
             this.log.warn(`${this.namespace} redis get ${id}, error - ${e.message}`);
         }
 
-        if (!oldObj) {
-            return tools.maybeCallbackWithError(callback, utils.ERRORS.ERROR_NOT_FOUND);
+        if (!oldObj) { // Not existent, so goal reached :-)
+            return tools.maybeCallback(callback);
         }
 
         try {
