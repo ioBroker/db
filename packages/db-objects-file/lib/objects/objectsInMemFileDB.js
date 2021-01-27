@@ -426,7 +426,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
             return Object.prototype.hasOwnProperty.call(this.dataset, id);
         } catch (e) {
             this.log.error(`${this.namespace} Cannot check object existence of "${id}": ${e.message}`);
-            throw new Error(`Cannot check object existence of "${id}": ${e}`);
+            throw new Error(`Cannot check object existence of "${id}": ${e.message}`);
         }
     }
 
