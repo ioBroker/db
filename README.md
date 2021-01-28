@@ -9,6 +9,7 @@
 ### __WORK IN PROGRESS__
 * (Apollon77) add missing log namespaces in some places
 * (Apollon77) Do not log error objects directly, but e.message
+* (Apollon77) deleting a not existing object is handled as success instead of Not-Exists error
 
 ### 1.0.9 (2021-01-23)
 * (Apollon77) make sure errors in lua script initialization do not run into endless loop
