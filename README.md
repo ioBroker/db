@@ -6,7 +6,7 @@
 	### __WORK IN PROGRESS__
 -->
 
-### __WORK IN PROGRESS__
+### 1.0.10 (2021-01-28)
 * (Apollon77) add missing log namespaces in some places
 * (Apollon77) Do not log error objects directly, but e.message
 * (Apollon77) deleting a not existing object is handled as success instead of Not-Exists error
