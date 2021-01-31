@@ -139,7 +139,8 @@ class StateRedisClient {
         }
         this.settings.connection.options.password = this.settings.connection.options.auth_pass || this.settings.connection.pass || null;
         this.settings.connection.options.autoResubscribe = false; // We do our own resubscribe because other sometimes not work
-        this.settings.connection.options.connectionName = this.namespace;
+        // REDIS does not allow whitespaces, we have some because of pid
+        this.settings.connection.options.connectionName = this.namespace.replace(/\s/g, '');
 
         this.client = new Redis(this.settings.connection.options);
 
