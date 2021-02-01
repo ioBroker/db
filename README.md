@@ -6,7 +6,7 @@
 	### __WORK IN PROGRESS__
 -->
 
-### __WORK IN PROGRESS__
+### 1.0.11 (2021-02-01)
 * (foxriver76) fix redis client names
 
 ### 1.0.10 (2021-01-28)
