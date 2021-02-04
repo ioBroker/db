@@ -3824,7 +3824,7 @@ class ObjectsInRedisClient {
      * @return {Promise<string[]>}
      * @private
      */
-    _getKeysViaScan(pattern, count= 500) {
+    _getKeysViaScan(pattern, count = 250) {
         return new Promise(resolve => {
             const stream = this.client.scanStream({match: pattern, count: count});
             let uniqueKeys = [];

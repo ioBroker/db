@@ -6,6 +6,9 @@
 	### __WORK IN PROGRESS__
 -->
 
+### __WORK IN PROGRESS__
+* (Apollon77) adjust scan entry count to 250 to have smaller script runs
+
 ### 1.0.11 (2021-02-01)
 * (foxriver76) fix redis client names
 
