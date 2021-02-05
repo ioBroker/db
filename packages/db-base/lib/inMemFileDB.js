@@ -277,7 +277,7 @@ class InMemoryFileDB {
     saveState() {
         const jsonString = this.saveDataset();
 
-        if (!this.settings.backup.disabled) {
+        if (!this.settings.backup.disabled && jsonString) {
             this.saveBackup(jsonString);
         }
 
