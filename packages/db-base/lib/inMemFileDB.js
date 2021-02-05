@@ -73,9 +73,7 @@ class InMemoryFileDB {
 
         this.datasetName = path.join(this.dataDir, this.settings.fileDB.fileName);
         const parts = path.dirname(this.datasetName);
-        if (!fs.existsSync(parts)) {
-            fs.ensureDirSync(parts);
-        }
+        fs.ensureDirSync(parts);
 
         this.stateTimer = null;
 
@@ -147,9 +145,7 @@ class InMemoryFileDB {
             this.settings.backup.hours = 48;
         }
         // Create backup directory
-        if (!fs.existsSync(this.backupDir)) {
-            fs.ensureDirSync(this.backupDir);
-        }
+        fs.ensureDirSync(this.backupDir);
     }
 
     handleSubscribe(client, type, pattern, options, cb) {
@@ -274,36 +270,37 @@ class InMemoryFileDB {
     /**
      * Handle saving the dataset incl. backups
      */
-    saveState() {
-        const jsonString = this.saveDataset();
-
-        if (!this.settings.backup.disabled && jsonString) {
-            this.saveBackup(jsonString);
-        }
-
+    async saveState() {
         if (this.stateTimer) {
             clearTimeout(this.stateTimer);
             this.stateTimer = null;
+        }
+
+        const jsonString = await this.saveDataset();
+
+        if (!this.settings.backup.disabled && jsonString) {
+            this.saveBackup(jsonString);
         }
     }
 
     /**
      * Saves the dataset into File incl. handling of a fallback backup file
      *
-     * @returns {string} JSON string of the complete dataset to also be stored into a compressed backup file
+     * @returns {Promise<string>} JSON string of the complete dataset to also be stored into a compressed backup file
      */
-    saveDataset() {
+    async saveDataset() {
+        const jsonString = JSON.stringify(this.dataset);
+
         try {
-            if (fs.existsSync(this.datasetName)) {
-                fs.renameSync(this.datasetName, `${this.datasetName}.bak`);
+            if (await fs.pathExists(this.datasetName)) {
+                await fs.move(this.datasetName, `${this.datasetName}.bak`, { overwrite: true });
             }
         } catch (e) {
             this.log.error(`${this.namespace} Cannot save backup file ${this.datasetName}.bak: ${e.message}`);
         }
 
-        const jsonString = JSON.stringify(this.dataset);
         try {
-            fs.writeFileSync(this.datasetName, jsonString);
+            await fs.writeFile(this.datasetName, jsonString);
         } catch (e) {
             this.log.error(`${this.namespace} Cannot save ${this.datasetName}: ${e.message}`);
         }
@@ -388,7 +385,9 @@ class InMemoryFileDB {
 
     // Destructor of the class. Called by shutting down.
     async destroy() {
-        this.stateTimer && this.saveState();
+        if (this.stateTimer) {
+            await this.saveState();
+        }
     }
 }
 
