@@ -19,6 +19,7 @@ const InMemoryFileDB        = require('@iobroker/db-base').inMemoryFileDB;
 const tools                 = require('@iobroker/db-base').tools;
 const utils                 = require('@iobroker/db-objects-redis').objectsUtils;
 const deepClone             = require('deep-clone');
+const { isDeepStrictEqual } = require('util');
 
 /**
  * This class inherits InMemoryFileDB class and adds all relevant logic for objects
@@ -67,6 +68,18 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
         if (this.dataset['system.config'] && this.dataset['system.config'].common && this.dataset['system.config'].common.defaultNewAcl) {
             this.defaultNewAcl = deepClone(this.dataset['system.config'].common.defaultNewAcl);
         }
+
+        this.objectTouchInterval = this.settings.connection && typeof this.settings.connection.objectTouchInterval === 'number' ?
+            parseInt(this.settings.connection.objectTouchInterval) : this.writeFileInterval * 4;
+        this.objectTouchSaveTimer = null;
+    }
+
+    async saveState() {
+        if (this.objectTouchSaveTimer) {
+            clearTimeout(this.objectTouchSaveTimer);
+            this.objectTouchSaveTimer = null;
+        }
+        await super.saveState();
     }
 
     // internal functionality
@@ -704,20 +717,6 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
         this._saveFileSettings(id, true);
     }
 
-    // internal functionality
-    _clone(obj) {
-        if (obj === null || obj === undefined || !tools.isObject(obj)) {
-            return obj;
-        }
-
-        const temp = obj.constructor(); // changed
-
-        for (const key of Object.keys(obj)) {
-            temp[key] = this._clone(obj[key]);
-        }
-        return temp;
-    }
-
     // needed by server
     _subscribeConfigForClient(client, pattern) {
         this.handleSubscribe(client, 'objects', pattern);
@@ -750,8 +749,44 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
         return keys.map(id => this.dataset[id]);
     }
 
+    objectEquivalent(a, b) {
+        if (a === null || a === undefined || b === null || b === undefined) {
+            return (a === b);
+        }
+        const aProps = Object.getOwnPropertyNames(a);
+        const bProps = Object.getOwnPropertyNames(b);
+
+        // different number of keys, different object
+        if (aProps.length !== bProps.length) {
+            return false;
+        }
+        // at least one key in the second object that is not in the first, different object
+        for (const key of bProps) {
+            if (!aProps.includes(key)) {
+                return false;
+            }
+        }
+
+        // we know keys are identical, so compare them
+        for (const key of aProps) {
+            // ignore ts and from
+            if (key === 'ts' || key === 'from') {
+                continue;
+            }
+            if (!isDeepStrictEqual(a[key], b[key])) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     // needed by server
     _setObjectDirect(id, obj) {
+        let touchOnly = false;
+        if (this.dataset[id]) {
+            touchOnly = this.objectEquivalent(this.dataset[id], obj);
+        }
+
         this.dataset[id] = obj;
 
         // object updated -> if type changed to meta -> cache
@@ -761,7 +796,11 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
 
         setImmediate(() => this.publishAll('objects', id, obj));
 
-        this.stateTimer = this.stateTimer || setTimeout(() => this.saveState(), this.writeFileInterval);
+        if (touchOnly) {
+            this.objectTouchSaveTimer = this.objectTouchSaveTimer || setTimeout(() => this.saveState(), this.objectTouchInterval);
+        } else {
+            this.stateTimer = this.stateTimer || setTimeout(() => this.saveState(), this.writeFileInterval);
+        }
     }
 
     // needed by server

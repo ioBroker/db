@@ -13,12 +13,13 @@
 /* jshint strict:false */
 /* jslint node: true */
 'use strict';
-const net    = require('net');
-const fs     = require('fs-extra');
-const path   = require('path');
-const crypto = require('crypto');
-const utils  = require('@iobroker/db-objects-redis').objectsUtils;
-const tools  = require('@iobroker/db-base').tools;
+const net       = require('net');
+const fs        = require('fs-extra');
+const path      = require('path');
+const crypto    = require('crypto');
+const utils     = require('@iobroker/db-objects-redis').objectsUtils;
+const tools     = require('@iobroker/db-base').tools;
+const deepClone = require('deep-clone');
 
 const RedisHandler          = require('@iobroker/db-base').redisHandler;
 const ObjectsInMemoryFileDB = require('./objectsInMemFileDB');
@@ -362,7 +363,7 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
                             response.push(null);
                             return;
                         }
-                        const obj = this._clone(this.fileOptions[id][name]);
+                        const obj = deepClone(this.fileOptions[id][name]);
                         try {
                             // @ts-ignore
                             obj.stats = fs.statSync(path.join(this.objectsDir, id, name));
@@ -417,7 +418,7 @@ class ObjectsInMemoryServer extends ObjectsInMemoryFileDB {
                         return void handler.sendNull(responseId);
                     }
 
-                    let obj = this._clone(this.fileOptions[id][name]);
+                    let obj = deepClone(this.fileOptions[id][name]);
                     if (typeof obj !== 'object') {
                         obj = {
                             mimeType: obj,
