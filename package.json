@@ -4,8 +4,10 @@
   "dependencies": {
     "@iobroker/db-base": "file:packages/db-base",
     "@iobroker/db-objects-file": "file:packages/db-objects-file",
+    "@iobroker/db-objects-jsonl": "file:packages/db-objects-jsonl",
     "@iobroker/db-objects-redis": "file:packages/db-objects-redis",
     "@iobroker/db-states-file": "file:packages/db-states-file",
+    "@iobroker/db-states-jsonl": "file:packages/db-states-jsonl",
     "@iobroker/db-states-redis": "file:packages/db-states-redis"
   },
   "devDependencies": {

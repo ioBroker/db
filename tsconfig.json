@@ -21,7 +21,8 @@
 		"moduleResolution": "node",
 		"skipLibCheck": true,
 		"strict": true,
-		"noImplicitAny": false
+		"noImplicitAny": false,
+		"target": "ES2018"
 	},
 	"include": [
 		"packages/*/lib/**/*.js",
