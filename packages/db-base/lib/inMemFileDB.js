@@ -71,78 +71,81 @@ class InMemoryFileDB {
         }
         this.dataDir = this.dataDir.replace(/\\/g, '/');
 
-        // Create data directory
-        if (!fs.existsSync(this.dataDir)) {
-            fs.mkdirSync(this.dataDir);
-        }
-
         this.datasetName = path.join(this.dataDir, this.settings.fileDB.fileName);
+        const parts = path.dirname(this.datasetName);
+        fs.ensureDirSync(parts);
+
         this.stateTimer = null;
 
         this.backupDir = this.settings.backup.path || (path.join(this.dataDir, this.settings.fileDB.backupDirName));
 
         if (!this.settings.backup.disabled) {
-            this.zlib = this.zlib || require('zlib');
-            // Interval in minutes => to milliseconds
-            this.settings.backup.period = this.settings.backup.period === undefined ? 120 : parseInt(this.settings.backup.period);
-            if (isNaN(this.settings.backup.period)) {
-                this.settings.backup.period = 120;
-            }
-            this.settings.backup.period *= 60000;
-
-            this.settings.backup.files = this.settings.backup.files === undefined ? 24 : parseInt(this.settings.backup.files);
-            if (isNaN(this.settings.backup.files)) {
-                this.settings.backup.files = 24;
-            }
-
-            this.settings.backup.hours = this.settings.backup.hours === undefined ? 48 : parseInt(this.settings.backup.hours);
-            if (isNaN(this.settings.backup.hours)) {
-                this.settings.backup.hours = 48;
-            }
-            // Create backup directory
-            if (!fs.existsSync(this.backupDir)) {
-                fs.mkdirSync(this.backupDir);
-            }
+            this.initBackupDir();
         }
 
         this.log = tools.getLogger(this.settings.logger);
 
         this.log.debug(this.namespace + ' Data File: ' + this.datasetName);
+
         // load values from file
-        if (fs.existsSync(this.datasetName)) {
+        this.dataset = this.loadDataset(this.datasetName);
+    }
+
+    /**
+     * Loads a dataset file
+     *
+     * @param datasetName {string} Filename of the file to load
+     * @returns {object} read data, normally as object
+     */
+    loadDatasetFile(datasetName) {
+        if (!fs.existsSync(datasetName)) {
+            throw new Error(`Database file ${datasetName} does not exists.`);
+        }
+        return fs.readJSONSync(datasetName);
+    }
+
+    /**
+     * Loads the dataset including pot. Fallback handling
+     *
+     * @param datasetName {string} Filename of the file to load
+     * @returns {object} dataset read as object
+     */
+    loadDataset(datasetName) {
+        try {
+            return this.loadDatasetFile(datasetName);
+        } catch (err) {
+            this.log.error(`${this.namespace} Cannot load ${datasetName}: ${err.message}. Try last Backup!`);
+
             try {
-                this.dataset = fs.readJSONSync(this.datasetName);
-            } catch (e) {
-                this.log.error(this.namespace + ' Cannot parse ' + this.datasetName + ': ' + e.message);
-                if (fs.existsSync(this.datasetName + '.bak')) {
-                    try {
-                        this.dataset = fs.readJSONSync(this.datasetName + '.bak');
-                    } catch (e) {
-                        this.log.error(this.namespace + ' Cannot parse ' + this.datasetName + '.bak: ' + e.message);
-                        this.dataset = {};
-                    }
-                } else {
-                    this.dataset = {};
-                }
+                return this.loadDatasetFile(datasetName + '.bak');
+            } catch (err) {
+                this.log.error(`${this.namespace} Cannot load ${datasetName}.bak: ${err.message}. Continue with empty dataset!`);
+
+                return {};
             }
-        } else if (fs.existsSync(this.datasetName + '.bak')) {
-            try {
-                this.dataset = fs.readJSONSync(this.datasetName + '.bak');
-            } catch (e) {
-                this.log.error(this.namespace + ' Cannot parse ' + this.datasetName + '.bak: ' + e.message);
-                this.dataset = {};
-            }
-        } else {
-            this.dataset = {};
+        }
+    }
+
+    initBackupDir() {
+        this.zlib = this.zlib || require('zlib');
+        // Interval in minutes => to milliseconds
+        this.settings.backup.period = this.settings.backup.period === undefined ? 120 : parseInt(this.settings.backup.period);
+        if (isNaN(this.settings.backup.period)) {
+            this.settings.backup.period = 120;
+        }
+        this.settings.backup.period *= 60000;
+
+        this.settings.backup.files = this.settings.backup.files === undefined ? 24 : parseInt(this.settings.backup.files);
+        if (isNaN(this.settings.backup.files)) {
+            this.settings.backup.files = 24;
         }
 
-        // Check if directory exists
-        this.datasetName = this.datasetName.replace(/\\/g, '/');
-
-        const parts = path.dirname(this.datasetName);
-        if (!fs.existsSync(parts)) {
-            fs.mkdirSync(parts);
+        this.settings.backup.hours = this.settings.backup.hours === undefined ? 48 : parseInt(this.settings.backup.hours);
+        if (isNaN(this.settings.backup.hours)) {
+            this.settings.backup.hours = 48;
         }
+        // Create backup directory
+        fs.ensureDirSync(this.backupDir);
     }
 
     handleSubscribe(client, type, pattern, options, cb) {
@@ -264,50 +267,82 @@ class InMemoryFileDB {
         return text;
     }
 
-    saveState() {
-        try {
-            if (fs.existsSync(this.datasetName)) {
-                const old = fs.readFileSync(this.datasetName);
-                fs.writeFileSync(this.datasetName + '.bak', old);
-            }
-
-            const actual = JSON.stringify(this.dataset);
-            fs.writeFileSync(this.datasetName, actual);
-
-            if (!this.settings.backup.disabled) {
-                // save files for the last x hours
-                const now = Date.now();
-
-                // makes backups only if settings.backupInterval is not 0
-                if (this.settings.backup.period && (!this.lastSave || now - this.lastSave > this.settings.backup.period)) {
-                    this.lastSave = now;
-                    const backFileName = path.join(this.backupDir, this.getTimeStr(now) + '_' + this.settings.fileDB.fileName + '.gz');
-
-                    if (!fs.existsSync(backFileName)) {
-                        this.zlib = this.zlib || require('zlib');
-                        const output = fs.createWriteStream(backFileName);
-                        output.on('error', err => {
-                            this.log.error(this.namespace + ' Cannot save ' + this.datasetName + ': ' + err);
-                        });
-                        const compress = this.zlib.createGzip();
-                        /* The following line will pipe everything written into compress to the file stream */
-                        compress.pipe(output);
-                        /* Since we're piped through the file stream, the following line will do:
-                           'Hello World!'->gzip compression->file which is the desired effect */
-                        compress.write(actual);
-                        compress.end();
-
-                        // analyse older files
-                        this.deleteOldBackupFiles();
-                    }
-                }
-            }
-        } catch (e) {
-            this.log.error(this.namespace + ' Cannot save ' + this.datasetName + ': ' + e.message);
-        }
+    /**
+     * Handle saving the dataset incl. backups
+     */
+    async saveState() {
         if (this.stateTimer) {
             clearTimeout(this.stateTimer);
             this.stateTimer = null;
+        }
+
+        const jsonString = await this.saveDataset();
+
+        if (!this.settings.backup.disabled && jsonString) {
+            this.saveBackup(jsonString);
+        }
+    }
+
+    /**
+     * Saves the dataset into File incl. handling of a fallback backup file
+     *
+     * @returns {Promise<string>} JSON string of the complete dataset to also be stored into a compressed backup file
+     */
+    async saveDataset() {
+        const jsonString = JSON.stringify(this.dataset);
+
+        try {
+            if (await fs.pathExists(this.datasetName)) {
+                await fs.move(this.datasetName, `${this.datasetName}.bak`, { overwrite: true });
+            }
+        } catch (e) {
+            this.log.error(`${this.namespace} Cannot save backup file ${this.datasetName}.bak: ${e.message}`);
+        }
+
+        try {
+            await fs.writeFile(this.datasetName, jsonString);
+        } catch (e) {
+            this.log.error(`${this.namespace} Cannot save ${this.datasetName}: ${e.message}`);
+        }
+
+        return jsonString;
+    }
+
+    /**
+     * Stores a compressed backup of the DB in definable intervals
+     *
+     * @param jsonString {string} JSON string of the complete dataset to also be stored into a compressed backup file
+     */
+    saveBackup(jsonString) {
+        // save files for the last x hours
+        const now = Date.now();
+
+        // makes backups only if settings.backupInterval is not 0
+        if (this.settings.backup.period && (!this.lastSave || now - this.lastSave > this.settings.backup.period)) {
+            this.lastSave = now;
+            const backFileName = path.join(this.backupDir, this.getTimeStr(now) + '_' + this.settings.fileDB.fileName + '.gz');
+
+            try {
+                if (!fs.existsSync(backFileName)) {
+                    this.zlib = this.zlib || require('zlib');
+                    const output = fs.createWriteStream(backFileName);
+                    output.on('error', err => {
+                        this.log.error(this.namespace + ' Cannot save ' + this.datasetName + ': ' + err);
+                    });
+                    const compress = this.zlib.createGzip();
+                    /* The following line will pipe everything written into compress to the file stream */
+                    compress.pipe(output);
+                    /* Since we're piped through the file stream, the following line will do:
+                       'Hello World!'->gzip compression->file which is the desired effect */
+                    compress.write(jsonString);
+                    compress.end();
+
+                    // analyse older files
+                    this.deleteOldBackupFiles();
+                }
+            } catch (e) {
+                this.log.error(`${this.namespace} Cannot save backup ${backFileName}: ${e.message}`);
+            }
         }
     }
 
@@ -350,7 +385,9 @@ class InMemoryFileDB {
 
     // Destructor of the class. Called by shutting down.
     async destroy() {
-        this.stateTimer && this.saveState();
+        if (this.stateTimer) {
+            await this.saveState();
+        }
     }
 }
 
