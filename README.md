@@ -6,6 +6,9 @@
 	### __WORK IN PROGRESS__
 -->
 
+### __WORK IN PROGRESS__
+* (AlCalzone) use absolute dir for jsonl db
+
 ### 1.1.2 (2021-02-07)
 * (AlCalzone) fix jsonl db proxy object
 
