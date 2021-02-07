@@ -6,6 +6,9 @@
 	### __WORK IN PROGRESS__
 -->
 
+### __WORK IN PROGRESS__
+* (AlCalzone) fix jsonl db proxy object
+
 ### 1.1.1 (2021-02-07)
 * (AlCalzone) fix jsonl db proxy object
 
