@@ -6,7 +6,7 @@
 	### __WORK IN PROGRESS__
 -->
 
-### __WORK IN PROGRESS__
+### 1.1.3 (2021-02-08)
 * (AlCalzone) use absolute dir for jsonl db
 
 ### 1.1.2 (2021-02-07)
