@@ -7,7 +7,10 @@
 -->
 
 ### __WORK IN PROGRESS__
-* (Apollon77) adjust scan entry count to 250 to have smaller script runs
+* (Apollon77) adjust scan entry count to 250 to have smaller script runs and hopefully better redis performance
+* (Apollon77) Restructure base MemFileDB to prepare jsonl
+* (Apollon77) When creating backup simply rename the file instead of read/write - lowers write i/o by 50%
+* (AlCalzone) EXPERIMENTAL: First version of jsonl DB classes to test if this is better on i/o
 
 ### 1.0.11 (2021-02-01)
 * (foxriver76) fix redis client names
