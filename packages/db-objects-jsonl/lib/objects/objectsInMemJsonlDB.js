@@ -15,6 +15,7 @@
 
 const ObjectsInMemoryFileDB        = require('@iobroker/db-objects-file').ObjectsInMemoryFileDB;
 const { JsonlDB } = require('@alcalzone/jsonl-db');
+const path = require('path');
 
 /**
  * This class inherits InMemoryFileDB class and adds all relevant logic for objects
@@ -48,7 +49,10 @@ class ObjectsInMemoryJsonlDB extends ObjectsInMemoryFileDB {
         super(settings);
 
         /** @type {JsonlDB<any>} */
-        this._db = new JsonlDB(settings.jsonlDB.fileName, settings.jsonlDB.jsonlOptions);
+        this._db = new JsonlDB(
+            path.join(this.dataDir, settings.jsonlDB.fileName),
+            settings.jsonlDB.jsonlOptions
+        );
     }
 
     async open() {
