@@ -102,7 +102,7 @@ class StatesInMemoryJsonlDB extends StatesInMemoryFileDB {
             /** @param {any} prop */
             getOwnPropertyDescriptor(target, prop) {
                 return {
-                    configurable: false,
+                    configurable: true,
                     enumerable: true,
                     writable: true,
                     value: target.get(prop)
