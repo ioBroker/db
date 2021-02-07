@@ -17,7 +17,7 @@ const net = require('net');
 const { inspect } = require('util');
 
 const RedisHandler         = require('@iobroker/db-base').redisHandler;
-const StatesInMemoryFileDB = require('./statesInMemFileDB');
+const StatesInMemoryJsonlDB = require('./statesInMemJsonlDB');
 
 // settings = {
 //    change:    function (id, state) {},
@@ -44,7 +44,7 @@ const StatesInMemoryFileDB = require('./statesInMemFileDB');
  * This class inherits statesInMemoryFileDB class and adds socket.io communication layer
  * to access the methods via socket.io
  **/
-class StatesInMemoryServer extends StatesInMemoryFileDB {
+class StatesInMemoryServer extends StatesInMemoryJsonlDB {
     /**
      * Constructor
      * @param settings State and InMem-DB settings

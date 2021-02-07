@@ -86,44 +86,47 @@ class InMemoryFileDB {
         this.log = tools.getLogger(this.settings.logger);
 
         this.log.debug(this.namespace + ' Data File: ' + this.datasetName);
+    }
 
+    /** @returns {Promise<void>} */
+    async open() {
         // load values from file
-        this.dataset = this.loadDataset(this.datasetName);
+        this.dataset = await this.loadDataset(this.datasetName);
     }
 
     /**
      * Loads a dataset file
      *
      * @param datasetName {string} Filename of the file to load
-     * @returns {object} read data, normally as object
+     * @returns {Promise<Record<string, any>>} read data, normally as object
      */
-    loadDatasetFile(datasetName) {
-        if (!fs.existsSync(datasetName)) {
+    async loadDatasetFile(datasetName) {
+        if (!(await fs.pathExists(datasetName))) {
             throw new Error(`Database file ${datasetName} does not exists.`);
         }
-        return fs.readJSONSync(datasetName);
+        return fs.readJSON(datasetName);
     }
 
     /**
      * Loads the dataset including pot. Fallback handling
      *
      * @param datasetName {string} Filename of the file to load
-     * @returns {object} dataset read as object
+     * @returns {Promise<Record<string, any>>} dataset read as object
      */
-    loadDataset(datasetName) {
+    async loadDataset(datasetName) {
+        let ret = {};
         try {
-            return this.loadDatasetFile(datasetName);
+            ret = await this.loadDatasetFile(datasetName);
         } catch (err) {
             this.log.error(`${this.namespace} Cannot load ${datasetName}: ${err.message}. Try last Backup!`);
 
             try {
-                return this.loadDatasetFile(datasetName + '.bak');
+                ret = await this.loadDatasetFile(datasetName + '.bak');
             } catch (err) {
                 this.log.error(`${this.namespace} Cannot load ${datasetName}.bak: ${err.message}. Continue with empty dataset!`);
-
-                return {};
             }
         }
+        return ret;
     }
 
     initBackupDir() {
