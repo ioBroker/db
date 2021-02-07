@@ -6,7 +6,7 @@
 	### __WORK IN PROGRESS__
 -->
 
-### __WORK IN PROGRESS__
+### 1.1.0 (2021-02-07)
 * (Apollon77) adjust scan entry count to 250 to have smaller script runs and hopefully better redis performance
 * (Apollon77) Restructure base MemFileDB to prepare jsonl
 * (Apollon77) When creating backup simply rename the file instead of read/write - lowers write i/o by 50%
