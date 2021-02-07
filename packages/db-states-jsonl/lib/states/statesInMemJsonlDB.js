@@ -16,6 +16,7 @@
 
 const StatesInMemoryFileDB        = require('@iobroker/db-states-file').StatesInMemoryFileDB;
 const { JsonlDB } = require('@alcalzone/jsonl-db');
+const path = require('path');
 
 // settings = {
 //    change:    function (id, state) {},
@@ -71,7 +72,10 @@ class StatesInMemoryJsonlDB extends StatesInMemoryFileDB {
         super(settings);
 
         /** @type {JsonlDB<any>} */
-        this._db = new JsonlDB(settings.jsonlDB.fileName, settings.jsonlDB.jsonlOptions);
+        this._db = new JsonlDB(
+            path.join(this.dataDir, settings.jsonlDB.fileName),
+            settings.jsonlDB.jsonlOptions
+        );
     }
 
     async open() {
