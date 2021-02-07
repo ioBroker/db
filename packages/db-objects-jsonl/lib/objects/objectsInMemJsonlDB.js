@@ -78,6 +78,9 @@ class ObjectsInMemoryJsonlDB extends ObjectsInMemoryFileDB {
             },
             /** @param {any} prop */
             getOwnPropertyDescriptor(target, prop) {
+                if (!target.has(prop)) {
+                    return undefined;
+                }
                 return {
                     configurable: true,
                     enumerable: true,
