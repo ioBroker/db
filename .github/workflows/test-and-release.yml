@@ -72,7 +72,7 @@ jobs:
         git clone https://github.com/ioBroker/ioBroker.js-controller
         cd ioBroker.js-controller
         git checkout ${{ matrix.js-controller }}
-    
+
     - name: Install JS-Controller's dependencies
       # TODO: Determine the DB-dependencies automatically
       run: |
@@ -104,14 +104,28 @@ jobs:
         choco install redis-64 --version 3.0.503
         powershell "Start-Process redis-server.exe -PassThru"
 
-    - name: Run JS-Controller's tests
+    - name: Run JS-Controller's Standard tests
       run: |
         cd ioBroker.js-controller
         npm run test
       env:
         CI: true
 
-    - name: Run JS-Controller's Redis Sentinel Tests (Linux)
+    - name: Install jsonl dependencies
+      # TODO: Determine the DB-dependencies automatically
+      run: |
+        cd ioBroker.js-controller
+        npm link @iobroker/db-objects-jsonl
+        npm link @iobroker/db-states-jsonl
+
+    - name: Run JS-Controller's Jsonl tests
+      run: |
+        cd ioBroker.js-controller
+        npm run test-jsonl
+      env:
+        CI: true
+
+    - name: Run JS-Controller's Redis Socket/Sentinel Tests (Linux)
       if: ${{ matrix.os == 'ubuntu-latest' }}
       run: |
         cd ioBroker.js-controller
