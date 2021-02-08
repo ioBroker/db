@@ -6,6 +6,9 @@
 	### __WORK IN PROGRESS__
 -->
 
+### __WORK IN PROGRESS__
+* (AlCalzone) fix jsonl db to use correct settings and compact the db
+
 ### 1.1.4 (2021-02-08)
 * (Apollon77/AlCalzone) change dependency handling between the db packages
 

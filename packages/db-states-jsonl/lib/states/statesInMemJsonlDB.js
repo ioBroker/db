@@ -62,7 +62,7 @@ class StatesInMemoryJsonlDB extends StatesInMemoryFileDB {
             ignoreReadErrors: true,
             throttleFS: {
                 intervalMs: 60000,
-                maxBufferedCommands: 100
+                maxBufferedCommands: 2000
             }
         };
         settings.jsonlDB = {
