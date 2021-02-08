@@ -6,7 +6,7 @@
 	### __WORK IN PROGRESS__
 -->
 
-### __WORK IN PROGRESS__
+### 1.1.5 (2021-02-08)
 * (AlCalzone) fix jsonl db to use correct settings and compact the db
 
 ### 1.1.4 (2021-02-08)
