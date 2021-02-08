@@ -6,7 +6,7 @@
 	### __WORK IN PROGRESS__
 -->
 
-### __WORK IN PROGRESS__
+### 1.1.4 (2021-02-08)
 * (Apollon77/AlCalzone) change dependency handling between the db packages
 
 ### 1.1.3 (2021-02-08)
