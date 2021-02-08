@@ -74,7 +74,7 @@ class StatesInMemoryJsonlDB extends StatesInMemoryFileDB {
         /** @type {JsonlDB<any>} */
         this._db = new JsonlDB(
             path.join(this.dataDir, settings.jsonlDB.fileName),
-            settings.jsonlDB.jsonlOptions
+            jsonlOptions
         );
     }
 
