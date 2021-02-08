@@ -19,7 +19,8 @@
         "*.md"
       ],
       "amend": true,
-      "push": false
+      "push": false,
+      "exact": true
     }
   }
 }

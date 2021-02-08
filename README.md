@@ -6,6 +6,9 @@
 	### __WORK IN PROGRESS__
 -->
 
+### __WORK IN PROGRESS__
+* (Apollon77/AlCalzone) change dependency handling between the db packages
+
 ### 1.1.3 (2021-02-08)
 * (AlCalzone) use absolute dir for jsonl db
 
