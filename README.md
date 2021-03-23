@@ -6,7 +6,7 @@
 	### __WORK IN PROGRESS__
 -->
 
-### __WORK IN PROGRESS__
+### 1.2.0 (2021-03-23)
 * (bluefox) fix the redis function applyViewFunc if the name has the translations
 
 ### 1.1.5 (2021-02-08)
