@@ -6,6 +6,9 @@
 	### __WORK IN PROGRESS__
 -->
 
+### ### __WORK IN PROGRESS__
+* (bluefox) fix the redis function applyViewFunc if the name has the translations
+
 ### 1.1.5 (2021-02-08)
 * (AlCalzone) fix jsonl db to use correct settings and compact the db
 

@@ -1,7 +1,7 @@
 /**
  *      States DB in memory - Server with Redis protocol
  *
- *      Copyright 2013-2020 bluefox <dogafox@gmail.com>
+ *      Copyright 2013-2021 bluefox <dogafox@gmail.com>
  *
  *      MIT License
  *
@@ -13,10 +13,10 @@
 /* jshint strict:false */
 /* jslint node: true */
 'use strict';
-const net = require('net');
+const net         = require('net');
 const { inspect } = require('util');
 
-const RedisHandler         = require('@iobroker/db-base').redisHandler;
+const RedisHandler          = require('@iobroker/db-base').redisHandler;
 const StatesInMemoryJsonlDB = require('./statesInMemJsonlDB');
 
 // settings = {
@@ -65,13 +65,13 @@ class StatesInMemoryServer extends StatesInMemoryJsonlDB {
         this.open().then(() => {
             return this._initRedisServer(this.settings.connection);
         }).then(() => {
-            this.log.debug(this.namespace + ' ' + (settings.secure ? 'Secure ' : '') + ' Redis inMem-states listening on port ' + (this.settings.port || 9000));
+            this.log.debug(`${this.namespace} ${settings.secure ? 'Secure ' : ''} Redis inMem-states listening on port ${this.settings.port || 9000}`);
 
             if (typeof this.settings.connected === 'function') {
                 setImmediate(() => this.settings.connected());
             }
         }).catch(e => {
-            this.log.error(this.namespace + ' Cannot start inMem-states on port ' + (this.settings.port || 9000) + ': ' + e.message);
+            this.log.error(`${this.namespace} Cannot start inMem-states on port ${this.settings.port || 9000}: ${e.message}`);
             process.exit(24); // todo: replace it with exitcode
         });
     }
@@ -163,7 +163,7 @@ class StatesInMemoryServer extends StatesInMemoryJsonlDB {
             infoString += '# CPU\r\n';
             infoString += '# Cluster\r\n';
             infoString += '# Keyspace\r\n';
-            infoString += 'db0:keys=' + Object.keys(this.dataset).length + ',expires=' + (Object.keys(this.stateExpires).length + Object.keys(this.sessionExpires).length) + ',avg_ttl=98633637897';
+            infoString += `db0:keys=${Object.keys(this.dataset).length},expires=${Object.keys(this.stateExpires).length + Object.keys(this.sessionExpires).length},avg_ttl=98633637897`;
             handler.sendBulk(responseId, infoString);
         });
 
@@ -197,10 +197,10 @@ class StatesInMemoryServer extends StatesInMemoryJsonlDB {
                     const result = states.map(el => el ? JSON.stringify(el) : null);
                     handler.sendArray(responseId, result);
                 } catch (err) {
-                    handler.sendError(responseId, new Error('ERROR _getStates: ' + err.message));
+                    handler.sendError(responseId, new Error(`ERROR _getStates: ${err.message}`));
                 }
             } else {
-                handler.sendError(responseId, new Error('MGET-UNSUPPORTED for namespace ' + namespace + ': Data=' + JSON.stringify(data)));
+                handler.sendError(responseId, new Error(`MGET-UNSUPPORTED for namespace ${namespace}: Data=${JSON.stringify(data)}`));
             }
         });
 
@@ -226,7 +226,7 @@ class StatesInMemoryServer extends StatesInMemoryJsonlDB {
                     handler.sendBulk(responseId, JSON.stringify(result));
                 }
             } else {
-                handler.sendError(responseId, new Error('GET-UNSUPPORTED for namespace ' + namespace + ': Data=' + JSON.stringify(data)));
+                handler.sendError(responseId, new Error(`GET-UNSUPPORTED for namespace ${namespace}: Data=${JSON.stringify(data)}`));
             }
         });
 
@@ -245,10 +245,10 @@ class StatesInMemoryServer extends StatesInMemoryJsonlDB {
                     this._setStateDirect(id, state);
                     handler.sendString(responseId, 'OK');
                 } catch (err) {
-                    handler.sendError(responseId, new Error('ERROR setState id=' + id + ': ' + err.message));
+                    handler.sendError(responseId, new Error(`ERROR setState id=${id}: ${err.message}`));
                 }
             } else {
-                handler.sendError(responseId, new Error('SET-UNSUPPORTED for namespace ' + namespace + ': Data=' + JSON.stringify(data)));
+                handler.sendError(responseId, new Error(`SET-UNSUPPORTED for namespace ${namespace}: Data=${JSON.stringify(data)}`));
             }
         });
 
@@ -265,27 +265,27 @@ class StatesInMemoryServer extends StatesInMemoryJsonlDB {
                     }
                     const expire = parseInt(data[1].toString('utf-8'), 10);
                     if (isNaN(expire)) {
-                        return void handler.sendError(responseId, new Error('ERROR parsing expire value ' + data[1].toString('utf-8')));
+                        return void handler.sendError(responseId, new Error(`ERROR parsing expire value ${data[1].toString('utf-8')}`));
                     }
                     this._setStateDirect(id, state, expire);
                     handler.sendString(responseId, 'OK');
                 } catch (err) {
-                    handler.sendError(responseId, new Error('ERROR setStateEx id=' + id + ': ' + err.message));
+                    handler.sendError(responseId, new Error(`ERROR setStateEx id=${id}: ${err.message}`));
                 }
             } else if (namespace === this.namespaceSession) {
                 try {
                     const state = JSON.parse(data[2].toString('utf-8'));
                     const expire = parseInt(data[1].toString('utf-8'), 10);
                     if (isNaN(expire)) {
-                        return void handler.sendError(responseId, new Error('ERROR parsing expire value ' + data[1].toString('utf-8')));
+                        return void handler.sendError(responseId, new Error(`ERROR parsing expire value ${data[1].toString('utf-8')}`));
                     }
                     this._setSession(id, expire, state);
                     handler.sendString(responseId, 'OK');
                 } catch (err) {
-                    handler.sendError(responseId, new Error('ERROR _setSession ' + id + ': ' + err.message));
+                    handler.sendError(responseId, new Error(`ERROR _setSession ${id}: ${err.message}`));
                 }
             } else {
-                handler.sendError(responseId, new Error('SETEX-UNSUPPORTED for namespace ' + namespace + ': Data=' + JSON.stringify(data)));
+                handler.sendError(responseId, new Error(`SETEX-UNSUPPORTED for namespace ${namespace}: Data=${JSON.stringify(data)}`));
             }
         });
 
@@ -299,7 +299,7 @@ class StatesInMemoryServer extends StatesInMemoryJsonlDB {
                 this._destroySession(id);
                 handler.sendInteger(responseId, 1);
             } else {
-                handler.sendError(responseId, new Error('DEL-UNSUPPORTED for namespace ' + namespace + ': Data=' + JSON.stringify(data)));
+                handler.sendError(responseId, new Error(`DEL-UNSUPPORTED for namespace ${namespace}: Data=${JSON.stringify(data)}`));
             }
         });
 
@@ -319,7 +319,7 @@ class StatesInMemoryServer extends StatesInMemoryJsonlDB {
                 const result = keys.map(id => this.namespaceStates + id);
                 handler.sendArray(responseId, result);
             } else {
-                handler.sendError(responseId, new Error('KEYS-UNSUPPORTED for namespace ' + namespace + ': Data=' + JSON.stringify(data)));
+                handler.sendError(responseId, new Error(`KEYS-UNSUPPORTED for namespace ${namespace}: Data=${JSON.stringify(data)}`));
             }
         });
 
@@ -336,7 +336,7 @@ class StatesInMemoryServer extends StatesInMemoryJsonlDB {
                 this._subscribeForClient(handler, id);
                 handler.sendArray(responseId, ['psubscribe', data[0], 1]);
             } else {
-                handler.sendError(responseId, new Error('PSUBSCRIBE-UNSUPPORTED for namespace ' + namespace + ': Data=' + JSON.stringify(data)));
+                handler.sendError(responseId, new Error(`PSUBSCRIBE-UNSUPPORTED for namespace ${namespace}: Data=${JSON.stringify(data)}`));
             }
         });
 
@@ -353,7 +353,7 @@ class StatesInMemoryServer extends StatesInMemoryJsonlDB {
                 this._unsubscribeForClient(handler, id);
                 handler.sendArray(responseId, ['punsubscribe', data[0], 1]);
             } else {
-                handler.sendError(responseId, new Error('PUNSUBSCRIBE-UNSUPPORTED for namespace ' + namespace + ': Data=' + JSON.stringify(data)));
+                handler.sendError(responseId, new Error(`PUNSUBSCRIBE-UNSUPPORTED for namespace ${namespace}: Data=${JSON.stringify(data)}`));
             }
         });
 
@@ -363,7 +363,7 @@ class StatesInMemoryServer extends StatesInMemoryJsonlDB {
                 // we ignore these type of events because we publish expires anyway directly
                 handler.sendArray(responseId, ['subscribe', data[0], 1]);
             } else {
-                handler.sendError(responseId, new Error('SUBSCRIBE-UNSUPPORTED for ' + data[0]));
+                handler.sendError(responseId, new Error(`SUBSCRIBE-UNSUPPORTED for ${data[0]}`));
             }
         });
 
@@ -439,7 +439,7 @@ class StatesInMemoryServer extends StatesInMemoryJsonlDB {
      * @private
      */
     _initSocket(socket) {
-        this.settings.connection.enhancedLogging && this.log.silly(this.namespace + ' Handling new Redis States connection');
+        this.settings.connection.enhancedLogging && this.log.silly(`${this.namespace} Handling new Redis States connection`);
 
         const options = {
             log: this.log,

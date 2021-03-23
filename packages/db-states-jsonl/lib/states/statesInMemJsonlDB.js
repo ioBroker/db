@@ -1,7 +1,7 @@
 /**
  *      States DB in memory - Server
  *
- *      Copyright 2013-2018 bluefox <dogafox@gmail.com>
+ *      Copyright 2013-2021 bluefox <dogafox@gmail.com>
  *
  *      MIT License
  *
@@ -14,9 +14,9 @@
 /* jslint node: true */
 'use strict';
 
-const StatesInMemoryFileDB        = require('@iobroker/db-states-file').StatesInMemoryFileDB;
-const { JsonlDB } = require('@alcalzone/jsonl-db');
-const path = require('path');
+const StatesInMemoryFileDB = require('@iobroker/db-states-file').StatesInMemoryFileDB;
+const { JsonlDB }          = require('@alcalzone/jsonl-db');
+const path                 = require('path');
 
 // settings = {
 //    change:    function (id, state) {},

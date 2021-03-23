@@ -1,7 +1,7 @@
 /**
  * Object DB in REDIS - Client
  *
- * Copyright (c) 2018-2020 ioBroker GmbH - All rights reserved.
+ * Copyright (c) 2018-2021 ioBroker GmbH - All rights reserved.
  *
  * You may not to use, modify or distribute this package in any form without explicit agreement from ioBroker GmbH.
  *
@@ -2945,7 +2945,15 @@ class ObjectsInRedisClient {
                     if (m[2] && m[2].trim() === 'doc._id') {
                         return {id: obj._id, value: obj};
                     } else if (m[2] && m[2].trim() === 'doc.common.name' && obj.common) {
-                        return {id: obj.common.name, value: obj};
+                        if (typeof obj.common.name === 'object') {
+                            if (obj.common.name.en) {
+                                return {id: obj.common.name.en, value: obj};
+                            } else {
+                                return {id: JSON.stringify(obj.common.name), value: obj};
+                            }
+                        } else {
+                            return {id: obj.common.name, value: obj};
+                        }
                     } else {
                         this.log.error(`${this.namespace} Cannot filter "${m[2]}": ${JSON.stringify(obj)}`);
                         return {id: 'parseError', value: null};

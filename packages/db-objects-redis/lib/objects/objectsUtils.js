@@ -1,7 +1,7 @@
 /**
  *      Common functions between client and server
  *
- *      Copyright 2013-2020 bluefox <dogafox@gmail.com>
+ *      Copyright 2013-2021 bluefox <dogafox@gmail.com>
  *
  *      MIT License
  *
@@ -141,7 +141,7 @@ WMStrm.prototype._write = function (chunk, enc, cb) {
         // concatenate to the buffer already there
         if (!memStore[this.key]) {
             memStore[this.key] = Buffer.alloc(0);
-            console.log('memstore for ' + this.key + ' is null');
+            console.log(`memstore for ${this.key} is null`);
         }
         memStore[this.key] = Buffer.concat([memStore[this.key], buffer]);
     }
@@ -162,7 +162,7 @@ function insert(objects, id, attName, _ignore, options, _obj, callback) {
     strm.on('finish', () => {
         let error = null;
         if (!memStore[id + '/' + attName]) {
-            error = 'File ' + id + ' / ' +  attName + ' is empty';
+            error = `File ${id} / ${attName} is empty`;
         }
         objects.writeFile(id, attName, memStore[id + '/' + attName] || '', options, () => {
             if (memStore[id + '/' + attName] !== undefined) {
@@ -381,7 +381,7 @@ function getUserGroup(objects, user, callback) {
                 for (let m = 0; m < groups[g].common.members.length; m++) {
                     const u = groups[g].common.members[m];
                     if (!users[u]) {
-                        error = error || 'Unknown user in group "' + g + '": ' + u;
+                        error = error || (`Unknown user in group "${g}": ${u}`);
                         continue;
                     }
                     users[u].groups.push(groups[g]._id);

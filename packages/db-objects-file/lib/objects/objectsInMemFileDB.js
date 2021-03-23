@@ -1,7 +1,7 @@
 /**
  *      Object DB in memory - Server
  *
- *      Copyright 2013-2020 bluefox <dogafox@gmail.com>
+ *      Copyright 2013-2021 bluefox <dogafox@gmail.com>
  *
  *      MIT License
  *
@@ -36,7 +36,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
 
         if (!this.change) {
             this.change = id => {
-                this.log.silly(this.namespace + ' objects change: ' + id + ' ' + JSON.stringify(this.change));
+                this.log.silly(`${this.namespace} objects change: ${id} ${JSON.stringify(this.change)}`);
             };
         }
         this.fileOptions = {};
@@ -109,7 +109,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
                     try {
                         fs.writeFileSync(location, JSON.stringify(this.fileOptions[this.writeIds[id]]));
                     } catch (e) {
-                        this.log.error(this.namespace + ' Cannot write files: ' + location + ': ' + e.message);
+                        this.log.error(`${this.namespace} Cannot write files: ${location}: ${e.message}`);
                     }
                 }
                 this.writeIds = [];
@@ -125,7 +125,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
                 try {
                     this.fileOptions[id] = fs.readJSONSync(location);
                 } catch (e) {
-                    this.log.error(this.namespace + ' Cannot parse ' + location + ': ' + e.message);
+                    this.log.error(`${this.namespace} Cannot parse ${location}: ${e.message}`);
                     this.fileOptions[id] = {};
                 }
                 let corrected = false;
@@ -141,7 +141,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
                         try {
                             fs.writeFileSync(location, JSON.stringify(this.fileOptions[id]));
                         } catch (e) {
-                            this.log.error(this.namespace + ' Cannot write files: ' + location + ': ' + e.message);
+                            this.log.error(`${this.namespace} Cannot write files: ${location}: ${e.message}`);
                         }
                     }
                 });
@@ -208,7 +208,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
                 return;
             }
             if (!metaObjects[dir]) {
-                resNotifies.push('Ignoring Directory "' + dir + '" because officially not created as meta object. Please remove directory!');
+                resNotifies.push(`Ignoring Directory "${dir}" because officially not created as meta object. Please remove directory!`);
                 return;
             }
             this._loadFileSettings(dir);
@@ -241,7 +241,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
             });
             this._saveFileSettings(dir);
             resSynced += dirSynced;
-            dirSynced && resNotifies.push('Added ' + dirSynced + ' Files in Directory "' + dir + '"');
+            dirSynced && resNotifies.push(`Added ${dirSynced} Files in Directory "${dir}"`);
         });
         return {
             numberSuccess: resSynced,
@@ -276,8 +276,8 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
                 fs.mkdirSync(path.join(this.objectsDir, id));
             }
         } catch (e) {
-            this.log.error(this.namespace + ' Cannot create directories: ' + path.join(this.objectsDir, id) + ': ' + e.message);
-            this.log.error(this.namespace + ' Check the permissions! Or run installation fixer or "iobroker fix" command!');
+            this.log.error(`${this.namespace} Cannot create directories: ${path.join(this.objectsDir, id)}: ${e.message}`);
+            this.log.error(`${this.namespace} Check the permissions! Or run installation fixer or "iobroker fix" command!`);
             throw e;
         }
 
@@ -314,7 +314,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
             // Store dir description
             this._saveFileSettings(id);
         } catch (e) {
-            this.log.error(this.namespace + ' Cannot write files: ' + path.join(this.objectsDir, id, name) + ': ' + e.message);
+            this.log.error(`${this.namespace} Cannot write files: ${path.join(this.objectsDir, id, name)}: ${e.message}`);
             throw e;
         }
     }
@@ -504,7 +504,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
                 try {
                     fs.removeSync(location);
                 } catch (e) {
-                    this.log.error(this.namespace + ' Cannot delete directory "' + path.join(id, name) + '": ' + e.message);
+                    this.log.error(`${this.namespace} Cannot delete directory "${path.join(id, name)}": ${e.message}`);
                     throw e;
                 }
 
@@ -520,7 +520,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
                 try {
                     fs.removeSync(location);
                 } catch (e) {
-                    this.log.error(this.namespace + ' Cannot delete file "' + path.join(id, name) + '": ' + e.message);
+                    this.log.error(`${this.namespace} Cannot delete file "${path.join(id, name)}": ${e.message}`);
                     throw e;
                 }
 
@@ -662,7 +662,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
                     });
 
                 } catch (e) {
-                    this.log.error(this.namespace + ' Cannot read permssions of  ' + path.join(this.objectsDir, id, name, _files[j]) + ': ' + e.message);
+                    this.log.error(`${this.namespace} Cannot read permissions of ${path.join(this.objectsDir, id, name, _files[j])}: ${e.message}`);
                 }
             }
         }
@@ -814,7 +814,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
                 try {
                     f(this.dataset[id]);
                 } catch (e) {
-                    this.log.warn(this.namespace  + ' Cannot execute map: ' + e.message);
+                    this.log.warn(`${this.namespace} Cannot execute map: ${e.message}`);
                 }
             }
         }

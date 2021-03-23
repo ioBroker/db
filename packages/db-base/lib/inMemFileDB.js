@@ -1,7 +1,7 @@
 /**
  *      States DB in memory - Server
  *
- *      Copyright 2013-2020 bluefox <dogafox@gmail.com>
+ *      Copyright 2013-2021 bluefox <dogafox@gmail.com>
  *
  *      MIT License
  *
@@ -85,7 +85,7 @@ class InMemoryFileDB {
 
         this.log = tools.getLogger(this.settings.logger);
 
-        this.log.debug(this.namespace + ' Data File: ' + this.datasetName);
+        this.log.debug(`${this.namespace} Data File: ${this.datasetName}`);
     }
 
     /** @returns {Promise<void>} */
@@ -190,23 +190,16 @@ class InMemoryFileDB {
                 const index = s.findIndex(sub => sub.pattern === pattern);
                 if (index > -1) {
                     s.splice(index, 1);
-                    return;
                 }
             });
         } else {
             const index = s.findIndex(sub => sub.pattern === pattern);
             if (index > -1) {
                 s.splice(index, 1);
-                if (typeof cb === 'function') {
-                    cb();
-                }
-                return;
+                return typeof cb === 'function' && cb();
             }
         }
-        if (typeof cb === 'function') {
-            cb();
-        }
-
+        typeof cb === 'function' && cb();
     }
 
     /** @returns {number} */
@@ -228,7 +221,7 @@ class InMemoryFileDB {
                 continue;
             }
             // extract time
-            const ms = new Date(file.substring(0, 10) + ' ' + file.substring(11, 16).replace('-', ':') + ':00').getTime();
+            const ms = new Date(`${file.substring(0, 10)} ${file.substring(11, 16).replace('-', ':')}:00`).getTime();
             if (limit > ms) {
                 try {
                     fs.unlinkSync(path.join(this.backupDir, file));
@@ -330,7 +323,7 @@ class InMemoryFileDB {
                     this.zlib = this.zlib || require('zlib');
                     const output = fs.createWriteStream(backFileName);
                     output.on('error', err => {
-                        this.log.error(this.namespace + ' Cannot save ' + this.datasetName + ': ' + err);
+                        this.log.error(`${this.namespace} Cannot save ${this.datasetName}: ${err}`);
                     });
                     const compress = this.zlib.createGzip();
                     /* The following line will pipe everything written into compress to the file stream */
@@ -360,7 +353,7 @@ class InMemoryFileDB {
 
     publishAll(type, id, obj) {
         if (id === undefined) {
-            this.log.error(this.namespace + ' Can not publish empty ID');
+            this.log.error(`${this.namespace} Can not publish empty ID`);
             return 0;
         }
 

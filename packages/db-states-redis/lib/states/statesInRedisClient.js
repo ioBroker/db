@@ -1,7 +1,7 @@
 /**
  *      States DB in redis - Client
  *
- *      Copyright 2013-2020 bluefox <dogafox@gmail.com>
+ *      Copyright 2013-2021 bluefox <dogafox@gmail.com>
  *      Copyright 2013-2014 hobbyquaker
  *
  *      MIT License
@@ -117,7 +117,7 @@ class StateRedisClient {
         if (this.settings.connection.port === 0) { // Port = 0 means unix socket
             // initiate a unix socket connection
             this.settings.connection.options.path = this.settings.connection.host;
-            this.log.debug(this.namespace + ' Redis States: Use File Socket for connection: ' + this.settings.connection.options.path);
+            this.log.debug(`${this.namespace} Redis States: Use File Socket for connection: ${this.settings.connection.options.path}`);
         } else if (Array.isArray(this.settings.connection.host)) { // Host is an array means we use a sentinel
             const defaultPort = Array.isArray(this.settings.connection.port) ? null : this.settings.connection.port;
             this.settings.connection.options.sentinels = this.settings.connection.host.map((redisNode, idx) => ({
@@ -125,11 +125,11 @@ class StateRedisClient {
                 port: defaultPort || this.settings.connection.port[idx]
             }));
             this.settings.connection.options.name = this.settings.connection.sentinelName ? this.settings.connection.sentinelName : 'mymaster';
-            this.log.debug(this.namespace + ' Redis States: Use Sentinel for connection: ' + this.settings.connection.options.name + ', ' + JSON.stringify(this.settings.connection.options.sentinels));
+            this.log.debug(`${this.namespace} Redis States: Use Sentinel for connection: ${this.settings.connection.options.name}, ${JSON.stringify(this.settings.connection.options.sentinels)}`);
         } else {
             this.settings.connection.options.host = this.settings.connection.host;
             this.settings.connection.options.port = this.settings.connection.port;
-            this.log.debug(this.namespace + ' Redis States: Use Redis connection: ' + this.settings.connection.options.host + ':' + this.settings.connection.options.port);
+            this.log.debug(`${this.namespace} Redis States: Use Redis connection: ${this.settings.connection.options.host}:${this.settings.connection.options.port}`);
         }
         if (this.settings.connection.options.db === undefined) {
             this.settings.connection.options.db = 0;
@@ -153,32 +153,32 @@ class StateRedisClient {
                 initError = true;
                 // Seems we have a socket.io server
                 if (error.message.startsWith('Protocol error, got "H" as reply type byte.')) {
-                    this.log.error(this.namespace + ' Could not connect to states database at ' + this.settings.connection.options.host + ':' + this.settings.connection.options.port + ' (invalid protocol). Please make sure the configured IP and port points to a host running JS-Controller >= 2.0. and that the port is not occupied by other software!');
+                    this.log.error(`${this.namespace} Could not connect to states database at ${this.settings.connection.options.host}:${this.settings.connection.options.port} (invalid protocol). Please make sure the configured IP and port points to a host running JS-Controller >= 2.0. and that the port is not occupied by other software!`);
                 }
                 return;
             }
-            this.log.error(this.namespace + ' States database error: ' + error.message);
+            this.log.error(`${this.namespace} States database error: ${error.message}`);
             errorLogged = true;
         });
 
         this.client.on('end', () => {
-            this.settings.connection.enhancedLogging && this.log.silly(this.namespace + ' States-Redis Event end (stop=' + this.stop + ')');
+            this.settings.connection.enhancedLogging && this.log.silly(`${this.namespace} States-Redis Event end (stop=${this.stop})`);
             if (ready && typeof this.settings.disconnected === 'function') {
                 this.settings.disconnected();
             }
         });
 
         this.client.on('connect', () => {
-            this.settings.connection.enhancedLogging && this.log.silly(this.namespace + ' States-Redis Event connect (stop=' + this.stop + ')');
+            this.settings.connection.enhancedLogging && this.log.silly(`${this.namespace} States-Redis Event connect (stop=${this.stop})`);
             connected = true;
             if (errorLogged) {
-                this.log.info(this.namespace + ' Objects database successfully reconnected');
+                this.log.info(`${this.namespace} Objects database successfully reconnected`);
                 errorLogged = false;
             }
         });
 
         this.client.on('close', () => {
-            this.settings.connection.enhancedLogging && this.log.silly(this.namespace + ' States-Redis Event close (stop=' + this.stop + ')');
+            this.settings.connection.enhancedLogging && this.log.silly(`${this.namespace} States-Redis Event close (stop=${this.stop})`);
             //if (ready && typeof this.settings.disconnected === 'function') this.settings.disconnected();
         });
 
@@ -186,9 +186,9 @@ class StateRedisClient {
             if (connected && !ready && !initError) {
                 reconnectCounter++;
             }
-            this.settings.connection.enhancedLogging && this.log.silly(this.namespace + ' States-Redis Event reconnect (reconnectCounter=' + reconnectCounter + ', stop=' + this.stop + ')');
+            this.settings.connection.enhancedLogging && this.log.silly(`${this.namespace} States-Redis Event reconnect (reconnectCounter=${reconnectCounter}, stop=${this.stop})`);
             if (reconnectCounter > 2) { // fallback logic for nodejs <10
-                this.log.error(this.namespace + ' The DB port  ' + this.settings.connection.options.port +' is occupied by something that is not a Redis protocol server. Please check other software running on this port or, if you use iobroker, make sure to update to js-controller 2.0 or higher!');
+                this.log.error(`${this.namespace} The DB port  ${this.settings.connection.options.port} is occupied by something that is not a Redis protocol server. Please check other software running on this port or, if you use iobroker, make sure to update to js-controller 2.0 or higher!`);
                 return;
             }
             connected = false;
@@ -196,7 +196,7 @@ class StateRedisClient {
         });
 
         this.client.on('ready', async () => {
-            this.settings.connection.enhancedLogging && this.log.silly(this.namespace + ' States-Redis Event ready (stop=' + this.stop + ')');
+            this.settings.connection.enhancedLogging && this.log.silly(`${this.namespace} States-Redis Event ready (stop=${this.stop})`);
             if (this.stop) {
                 return;
             }
@@ -218,12 +218,12 @@ class StateRedisClient {
                 if (typeof onChange === 'function') {
                     this.subSystem.on('pmessage', (pattern, channel, message) => {
                         setImmediate(() => {
-                            this.log.silly(this.namespace + ' States system redis pmessage ' + pattern + '/' + channel + ':' + message);
+                            this.log.silly(`${this.namespace} States system redis pmessage ${pattern}/${channel}:${message}`);
 
                             try {
                                 message = message ? JSON.parse(message, message.includes('"Buffer"') ? bufferJsonDecoder: undefined) : null;
                             } catch (e) {
-                                this.log.warn(this.namespace + ' Cannot parse system pmessage "' + message + '"');
+                                this.log.warn(`${this.namespace} Cannot parse system pmessage "${message}"`);
                                 message = null;
                             }
 
@@ -234,8 +234,8 @@ class StateRedisClient {
                                     onChange(channel, message);
                                 }
                             } catch (e) {
-                                this.log.warn(this.namespace + ' States system pmessage ' + channel + ' ' + JSON.stringify(message) + ' ' + e.message);
-                                this.log.warn(this.namespace + ' ' + e.stack);
+                                this.log.warn(`${this.namespace} States system pmessage ${channel} ${JSON.stringify(message)} ${e.message}`);
+                                this.log.warn(`${this.namespace} ${e.stack}`);
                             }
                         });
                     });
@@ -246,10 +246,10 @@ class StateRedisClient {
                         setImmediate(() => {
                             this.log.silly(this.namespace + ' redis message expired/evicted ' + channel + ':' + message);
                             try {
-                                if (channel === '__keyevent@' + this.settings.connection.options.db + '__:evicted') {
+                                if (channel === `__keyevent@${this.settings.connection.options.db}__:evicted`) {
                                     this.log.warn(this.namespace + ' Redis has evicted state ' + message + '. Please check your maxMemory settings for your redis instance!');
-                                } else if (channel !== '__keyevent@' + this.settings.connection.options.db + '__:expired') {
-                                    this.log.warn(this.namespace + ' Unknown user message ' + channel + ' ' + message);
+                                } else if (channel !== `__keyevent@${this.settings.connection.options.db}__:expired`) {
+                                    this.log.warn(`${this.namespace} Unknown user message ${channel} ${message}`);
                                     return;
                                 }
                                 if (typeof onChange === 'function') {
@@ -263,13 +263,13 @@ class StateRedisClient {
                                     found && onChangeUser(message.substring(this.namespaceRedisL), null);
                                 }
                             } catch (e) {
-                                this.log.warn(this.namespace + ' user message ' + channel + ' ' + message + ' ' + e.message);
-                                this.log.warn(this.namespace + ' ' + e.stack);
+                                this.log.warn(`${this.namespace} user message ${channel} ${message} ${e.message}`);
+                                this.log.warn(`${this.namespace} ${e.stack}`);
                             }
                         }));
                 }
                 this.subSystem.on('end', () => {
-                    this.settings.connection.enhancedLogging && this.log.silly(this.namespace + ' States-Redis System Event end sub (stop=' + this.stop + ')');
+                    this.settings.connection.enhancedLogging && this.log.silly(`${this.namespace} States-Redis System Event end sub (stop=${this.stop})`);
                     ready && typeof this.settings.disconnected === 'function' && this.settings.disconnected();
                 });
 
@@ -277,18 +277,18 @@ class StateRedisClient {
                     if (this.stop) {
                         return;
                     }
-                    this.settings.connection.enhancedLogging && this.log.silly(this.namespace + ' Sub-Client States System No redis connection: ' + JSON.stringify(error));
+                    this.settings.connection.enhancedLogging && this.log.silly(`${this.namespace} Sub-Client States System No redis connection: ${JSON.stringify(error)}`);
                 });
 
                 if (this.settings.connection.enhancedLogging) {
                     this.subSystem.on('connect', () =>
-                        this.log.silly(this.namespace + ' PubSub client States-Redis System Event connect (stop=' + this.stop + ')'));
+                        this.log.silly(`${this.namespace} PubSub client States-Redis System Event connect (stop=${this.stop})`));
 
                     this.subSystem.on('close', () =>
-                        this.log.silly(this.namespace + ' PubSub client States-Redis System Event close (stop=' + this.stop + ')'));
+                        this.log.silly(`${this.namespace} PubSub client States-Redis System Event close (stop=${this.stop})`));
 
                     this.subSystem.on('reconnecting', reconnectCounter =>
-                        this.log.silly(this.namespace + ' PubSub client States-Redis System Event reconnect (reconnectCounter=' + reconnectCounter + ', stop=' + this.stop + ')'));
+                        this.log.silly(`${this.namespace} PubSub client States-Redis System Event reconnect (reconnectCounter=${reconnectCounter}, stop=${this.stop})`));
                 }
 
                 this.subSystem.on('ready', async _error => {
@@ -333,12 +333,12 @@ class StateRedisClient {
 
                 this.sub.on('pmessage', (pattern, channel, message) => {
                     setImmediate(() => {
-                        this.log.silly(this.namespace + ' States user redis pmessage ' + pattern + '/' + channel + ':' + message);
+                        this.log.silly(`${this.namespace} States user redis pmessage ${pattern}/${channel}:${message}`);
 
                         try {
                             message = message ? JSON.parse(message, message.includes('"Buffer"') ? bufferJsonDecoder: undefined) : null;
                         } catch (e) {
-                            this.log.warn(this.namespace + ' Cannot parse user pmessage "' + message + '"');
+                            this.log.warn(`${this.namespace} Cannot parse user pmessage "${message}"`);
                             message = null;
                         }
 
@@ -349,14 +349,14 @@ class StateRedisClient {
                                 onChangeUser(channel, message);
                             }
                         } catch (e) {
-                            this.log.warn(this.namespace + ' States user pmessage ' + channel + ' ' + JSON.stringify(message) + ' ' + e.message);
-                            this.log.warn(this.namespace + ' ' + e.stack);
+                            this.log.warn(`${this.namespace} States user pmessage ${channel} ${JSON.stringify(message)} ${e.message}`);
+                            this.log.warn(`${this.namespace} ${e.stack}`);
                         }
                     });
                 });
 
                 this.sub.on('end', () => {
-                    this.settings.connection.enhancedLogging && this.log.silly(this.namespace + ' States-Redis User Event end sub (stop=' + this.stop + ')');
+                    this.settings.connection.enhancedLogging && this.log.silly(`${this.namespace} States-Redis User Event end sub (stop=${this.stop})`);
                     if (ready && typeof this.settings.disconnected === 'function') {
                         this.settings.disconnected();
                     }
@@ -367,30 +367,30 @@ class StateRedisClient {
                         return;
                     }
                     if (this.settings.connection.enhancedLogging) {
-                        this.log.silly(this.namespace + ' Sub-Client States User No redis connection: ' + JSON.stringify(error));
+                        this.log.silly(`${this.namespace} Sub-Client States User No redis connection: ${JSON.stringify(error)}`);
                     }
                 });
 
                 if (this.settings.connection.enhancedLogging) {
                     this.sub.on('connect', () => {
-                        this.log.silly(this.namespace + ' PubSub client States-Redis User Event connect (stop=' + this.stop + ')');
+                        this.log.silly(`${this.namespace} PubSub client States-Redis User Event connect (stop=${this.stop})`);
                     });
 
                     this.sub.on('close', () => {
-                        this.log.silly(this.namespace + ' PubSub client States-Redis User Event close (stop=' + this.stop + ')');
+                        this.log.silly(`${this.namespace} PubSub client States-Redis User Event close (stop=${this.stop})`);
                     });
 
                     this.sub.on('reconnecting', reconnectCounter => {
-                        this.log.silly(this.namespace + ' PubSub client States-Redis User Event reconnect (reconnectCounter=' + reconnectCounter + ', stop=' + this.stop + ')');
+                        this.log.silly(`${this.namespace} PubSub client States-Redis User Event reconnect (reconnectCounter=${reconnectCounter}, stop=${this.stop})`);
                     });
                 }
 
                 this.sub.on('ready', async _error => {
                     if (--initCounter < 1) {
                         if (this.settings.connection.port === 0) {
-                            this.log.debug(this.namespace + ' States ' + (ready ? 'user re' : '') + 'connected to redis: ' + this.settings.connection.host);
+                            this.log.debug(`${this.namespace} States ${ready ? 'user re' : ''}connected to redis: ${this.settings.connection.host}`);
                         } else {
-                            this.log.debug(this.namespace + ' States ' + (ready ? 'user re' : '') + 'connected to redis: ' + this.settings.connection.host + ':' + this.settings.connection.port);
+                            this.log.debug(`${this.namespace} States ${ready ? 'user re' : ''}connected to redis: ${this.settings.connection.host}:${this.settings.connection.port}`);
                         }
                         !ready && typeof this.settings.connected === 'function' && this.settings.connected();
                         ready = true;
@@ -408,9 +408,9 @@ class StateRedisClient {
 
             if (initCounter < 1) {
                 if (this.settings.connection.port === 0) {
-                    this.log.debug(this.namespace + ' States ' + (ready ? 'client re' : '') + 'connected to redis: ' + this.settings.connection.host);
+                    this.log.debug(`${this.namespace} States ${ready ? 'client re' : ''}connected to redis: ${this.settings.connection.host}`);
                 } else {
-                    this.log.debug(this.namespace + ' States ' + (ready ? 'client re' : '') + 'connected to redis: ' + this.settings.connection.host + ':' + this.settings.connection.port);
+                    this.log.debug(`${this.namespace} States ${ready ? 'client re' : ''}connected to redis: ${this.settings.connection.host}:${this.settings.connection.port}`);
                 }
                 !ready && typeof this.settings.connected === 'function' && this.settings.connected();
                 ready = true;
@@ -476,7 +476,7 @@ class StateRedisClient {
         try {
             oldObj = await this.client.get(this.namespaceRedis + id);
         } catch (e) {
-            this.log.warn(this.namespace + ' get state error: ' + e.message);
+            this.log.warn(`${this.namespace} get state error: ${e.message}`);
             return tools.maybeCallbackWithRedisError(callback, e, id);
         }
         if (!this.client) {
@@ -550,7 +550,7 @@ class StateRedisClient {
             try {
                 await this.client.setex(this.namespaceRedis + id, expire, objString);
                 // publish event in redis
-                this.settings.connection.enhancedLogging && this.log.silly(this.namespace + ' redis publish ' + this.namespaceRedis + id + ' ' + objString);
+                this.settings.connection.enhancedLogging && this.log.silly(`${this.namespace} redis publish ${this.namespaceRedis}${id} ${objString}`);
                 await this.client.publish(this.namespaceRedis + id, objString);
                 return tools.maybeCallbackWithError(callback, null, id);
             } catch (e) {
@@ -654,7 +654,7 @@ class StateRedisClient {
 
     async getStates(keys, callback, dontModify) {
         if (typeof callback !== 'function') {
-            this.log.warn(this.namespace + ' redis getStates no callback');
+            this.log.warn(`${this.namespace} redis getStates no callback`);
             return;
         }
         if (!keys || !Array.isArray(keys)) {
@@ -797,7 +797,7 @@ class StateRedisClient {
         } catch (e) {
             return tools.maybeCallbackWithRedisError(callback, e);
         }
-        this.settings.connection.enhancedLogging && this.log.silly(this.namespace + ' redis keys ' + obj.length + ' ' + pattern);
+        this.settings.connection.enhancedLogging && this.log.silly(`${this.namespace} redis keys ${obj.length} ${pattern}`);
         if (obj && !dontModify) {
             const len = this.namespaceRedisL;
             obj = obj.map(el => el.substring(len));
@@ -863,7 +863,7 @@ class StateRedisClient {
             return typeof callback === 'function' && setImmediate(callback, tools.ERRORS.ERROR_DB_CLOSED);
         }
 
-        this.settings.connection.enhancedLogging && this.log.silly(this.namespace + ' redis punsubscribe ' + this.namespaceRedis + pattern);
+        this.settings.connection.enhancedLogging && this.log.silly(`${this.namespace} redis punsubscribe ${this.namespaceRedis}${pattern}`);
         subClient.punsubscribe(this.namespaceRedis + pattern, err => {
             if (!err && subClient.ioBrokerSubscriptions[this.namespaceRedis + pattern] !== undefined) {
                 delete subClient.ioBrokerSubscriptions[this.namespaceRedis + pattern];
@@ -915,7 +915,7 @@ class StateRedisClient {
         if (id.startsWith('.')) {
             id = id.substring(1);
         }
-        this.settings.connection.enhancedLogging && this.log.silly(this.namespace + ' redis subscribeMessage ' + this.namespaceMsg + id);
+        this.settings.connection.enhancedLogging && this.log.silly(`${this.namespace} redis subscribeMessage ${this.namespaceMsg}${id}`);
         try {
             await this.subSystem.psubscribe(this.namespaceMsg + id);
             this.subSystem.ioBrokerSubscriptions[this.namespaceMsg + id] = true;
@@ -937,7 +937,7 @@ class StateRedisClient {
         if (id.startsWith('.')) {
             id = id.substring(1);
         }
-        this.settings.connection.enhancedLogging && this.log.silly(this.namespace + ' redis unsubscribeMessage ' + this.namespaceMsg + id);
+        this.settings.connection.enhancedLogging && this.log.silly(`${this.namespace} redis unsubscribeMessage ${this.namespaceMsg}${id}`);
         try {
             await this.subSystem.punsubscribe(this.namespaceMsg + id);
             if (this.subSystem.ioBrokerSubscriptions[this.namespaceMsg + id] !== undefined) {
@@ -951,7 +951,7 @@ class StateRedisClient {
 
     async pushLog(id, log, callback) {
         if (!id || typeof id !== 'string') {
-            return tools.maybeCallbackWithError(callback, 'invalid id ' + JSON.stringify(id));
+            return tools.maybeCallbackWithError(callback, `invalid id ${JSON.stringify(id)}`);
         }
 
         log._id = this.globalLogId++;
@@ -1007,7 +1007,7 @@ class StateRedisClient {
             return tools.maybeCallbackWithError(callback, tools.ERRORS.ERROR_DB_CLOSED);
         }
 
-        this.settings.connection.enhancedLogging && this.log.silly(this.namespace + ' redis subscribeMessage ' + this.namespaceLog + id);
+        this.settings.connection.enhancedLogging && this.log.silly(`${this.namespace} redis subscribeMessage ${this.namespaceLog}${id}`);
         try {
             await this.subSystem.psubscribe(this.namespaceLog + id);
             this.subSystem.ioBrokerSubscriptions[this.namespaceLog + id] = true;
@@ -1026,7 +1026,7 @@ class StateRedisClient {
             return tools.maybeCallbackWithError(callback, tools.ERRORS.ERROR_DB_CLOSED);
         }
 
-        this.settings.connection.enhancedLogging && this.log.silly(this.namespace + ' redis unsubscribeMessage ' + this.namespaceLog + id);
+        this.settings.connection.enhancedLogging && this.log.silly(`${this.namespace} redis unsubscribeMessage ${this.namespaceLog}${id}`);
         try {
             await this.subSystem.punsubscribe(this.namespaceLog + id);
             if (this.subSystem.ioBrokerSubscriptions[this.namespaceLog + id] !== undefined) {
@@ -1142,7 +1142,7 @@ class StateRedisClient {
 
     async delBinaryState(id, callback) {
         if (!id || typeof id !== 'string') {
-            return tools.maybeCallbackWithError(callback, 'invalid id ' + JSON.stringify(id));
+            return tools.maybeCallbackWithError(callback, `invalid id ${JSON.stringify(id)}`);
         }
 
         if (!this.client) {
