@@ -1823,9 +1823,8 @@ class ObjectsInRedisClient {
                 });
             }
         }
-        this._chmodFileHelper(keysFiltered, objsFiltered, options, err => {
-            return tools.maybeCallbackWithError(callback, err, processed);
-        });
+        this._chmodFileHelper(keysFiltered, objsFiltered, options, err =>
+            tools.maybeCallbackWithError(callback, err, processed));
     }
 
     chmodFile(id, name, options, callback) {
