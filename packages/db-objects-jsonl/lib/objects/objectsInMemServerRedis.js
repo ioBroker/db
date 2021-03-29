@@ -404,7 +404,7 @@ class ObjectsInMemoryServer extends ObjectsInMemoryJsonlDB {
                     let stats;
                     try {
                         stats = fs.statSync(path.join(this.objectsDir, id, name));
-                    } catch (err) {
+                    } catch {
                         return void handler.sendNull(responseId);
                     }
                     if (stats.isDirectory()) {
@@ -437,7 +437,7 @@ class ObjectsInMemoryServer extends ObjectsInMemoryJsonlDB {
                     let data;
                     try {
                         data = this._readFile(id, name);
-                    } catch (err) {
+                    } catch {
                         return void handler.sendNull(responseId);
                     }
                     if (data.fileContent === undefined || data.fileContent === null) {
@@ -517,7 +517,7 @@ class ObjectsInMemoryServer extends ObjectsInMemoryJsonlDB {
                     // Handle request for File data
                     try {
                         this._rename(oldDetails.id, oldDetails.name, newDetails.name);
-                    } catch (err) {
+                    } catch {
                         return void handler.sendNull(responseId);
                     }
                     handler.sendString(responseId, 'OK');
@@ -557,7 +557,7 @@ class ObjectsInMemoryServer extends ObjectsInMemoryJsonlDB {
             }
         });
 
-        handler.on('exists', async (data, responseId) => {
+        handler.on('exists', (data, responseId) => {
             if (!data || !data.length) {
                 return void handler.sendInteger(responseId, 0);
             }

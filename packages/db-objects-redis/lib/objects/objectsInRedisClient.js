@@ -31,7 +31,7 @@ function initScriptFiles() {
     try {
         fs.readdirSync(__dirname + '/lib/objects/lua')
             .forEach(name => scripts[name.replace(/.lua$/, '')] = fs.readFileSync(path.join(__dirname, 'lua', name)).toString('utf8'));
-    } catch (err) {
+    } catch {
         // TODO
     }
     return scripts;
@@ -413,7 +413,7 @@ class ObjectsInRedisClient {
             if (obj) {
                 try {
                     obj = JSON.parse(obj);
-                } catch (e) {
+                } catch {
                     this.log.error(`${this.namespace} Cannot parse JSON system.config: ${obj}`);
                     obj = null;
                 }
@@ -573,7 +573,7 @@ class ObjectsInRedisClient {
         fileOptions = fileOptions || '{"notExists": true}';
         try {
             fileOptions = JSON.parse(fileOptions);
-        } catch (e) {
+        } catch {
             this.log.error(`${this.namespace} Cannot parse JSON ${id}: ${fileOptions}`);
             fileOptions = {notExists: true};
         }
@@ -761,7 +761,7 @@ class ObjectsInRedisClient {
         return tools.maybeCallbackWithError(callback, null, buffer, mimeType);
     }
 
-    async readFile(id, name, options, callback) {
+    readFile(id, name, options, callback) {
         if (typeof options === 'function') {
             callback = options;
             options  = null;
@@ -1047,7 +1047,7 @@ class ObjectsInRedisClient {
 
             try {
                 objs[i] = JSON.parse(objs[i]);
-            } catch (e) {
+            } catch {
                 this.log.error(`${this.namespace} Cannot parse JSON ${keys[i]}: ${objs[i]}`);
                 continue;
             }
@@ -1083,7 +1083,7 @@ class ObjectsInRedisClient {
         return tools.maybeCallbackWithError(callback, null, result);
     }
 
-    async readDir(id, name, options, callback) {
+    readDir(id, name, options, callback) {
         if (typeof options === 'function') {
             callback = options;
             options = null;
@@ -1216,7 +1216,7 @@ class ObjectsInRedisClient {
                 for (let i = 0; i < keys.length; i++) {
                     try {
                         objs[i] = JSON.parse(objs[i]);
-                    } catch (e) {
+                    } catch {
                         this.log.error(`${this.namespace} Cannot parse JSON ${keys[i]}: ${objs[i]}`);
                         continue;
                     }
@@ -1409,7 +1409,7 @@ class ObjectsInRedisClient {
                 for (let i = 0; i < keys.length; i++) {
                     try {
                         objs[i] = JSON.parse(objs[i]);
-                    } catch (e) {
+                    } catch {
                         this.log.error(`${this.namespace} Cannot parse JSON ${keys[i]}: ${objs[i]}`);
                         continue;
                     }
@@ -1604,7 +1604,7 @@ class ObjectsInRedisClient {
         for (let i = 0; i < keys.length; i++) {
             try {
                 metas[i] = JSON.parse(metas[i]);
-            } catch (e) {
+            } catch {
                 this.log.error(`${this.namespace} Cannot parse JSON ${keys[i]}: ${metas[i]}`);
                 continue;
             }
@@ -1798,7 +1798,7 @@ class ObjectsInRedisClient {
         for (let i = 0; i < keys.length; i++) {
             try {
                 objs[i] = JSON.parse(objs[i]);
-            } catch (e) {
+            } catch {
                 this.log.error(`${this.namespace} Cannot parse JSON ${keys[i]}: ${objs[i]}`);
                 continue;
             }
@@ -2084,7 +2084,7 @@ class ObjectsInRedisClient {
             for (let k = 0; k < keys.length; k++) {
                 try {
                     objects[k] = JSON.parse(objects[k]);
-                } catch (e) {
+                } catch {
                     this.log.error(`${this.namespace} Cannot parse JSON ${keys[k]}: ${objects[k]}`);
                     continue;
                 }
@@ -2190,7 +2190,7 @@ class ObjectsInRedisClient {
             for (let k = 0; k < keys.length; k++) {
                 try {
                     objects[k] = JSON.parse(objects[k]);
-                } catch (e) {
+                } catch {
                     this.log.error(`${this.namespace} Cannot parse JSON ${keys[k]}: ${objects[k]}`);
                     continue;
                 }
@@ -2386,7 +2386,7 @@ class ObjectsInRedisClient {
                 for (let i = 0; i < keys.length; i++) {
                     try {
                         metas[i] = JSON.parse(metas[i]);
-                    } catch (e) {
+                    } catch {
                         this.log.error(`${this.namespace} Cannot parse JSON ${keys[i]}: ${metas[i]}`);
                         continue;
                     }
@@ -2478,7 +2478,7 @@ class ObjectsInRedisClient {
                 for (let i = 0; i < objs.length; i++) {
                     try {
                         objs[i] = JSON.parse(objs[i]);
-                    } catch (e) {
+                    } catch {
                         this.log.error(`${this.namespace} Cannot parse JSON ${_keys[i]}: ${objs[i]}`);
                         result.push({error: utils.ERRORS.ERROR_PERMISSION});
                         continue;
@@ -2493,7 +2493,7 @@ class ObjectsInRedisClient {
                 result = objs.map((obj, i) => {
                     try {
                         return JSON.parse(obj);
-                    } catch (e) {
+                    } catch {
                         this.log.error(`${this.namespace} Cannot parse JSON ${_keys[i]}: ${obj}`);
                         return null;
                     }
@@ -2937,7 +2937,7 @@ class ObjectsInRedisClient {
                 const currRows = objs.map(obj => {
                     try {
                         obj = JSON.parse(obj);
-                    } catch (e) {
+                    } catch {
                         this.log.error(`${this.namespace} Cannot parse JSON: ${obj}`);
                         return {id: 'parseError', value: null};
                     }
@@ -3008,7 +3008,7 @@ class ObjectsInRedisClient {
                 const currRows = objs.map(obj => {
                     try {
                         obj = JSON.parse(obj);
-                    } catch (e) {
+                    } catch {
                         this.log.error(`${this.namespace} Cannot parse JSON: ${obj}`);
                         return {id: 'parseError', value: null};
                     }
@@ -3050,7 +3050,7 @@ class ObjectsInRedisClient {
                 const currRows = objs.map(obj => {
                     try {
                         obj = JSON.parse(obj);
-                    } catch (e) {
+                    } catch {
                         this.log.error(`${this.namespace} Cannot parse JSON: ${obj}`);
                         return {id: 'parseError', value: null};
                     }
@@ -3092,7 +3092,7 @@ class ObjectsInRedisClient {
                 const currRows = objs.map(obj => {
                     try {
                         obj = JSON.parse(obj);
-                    } catch (e) {
+                    } catch {
                         this.log.error(`${this.namespace} Cannot parse JSON: ${obj}`);
                         return {id: 'parseError', value: null};
                     }
@@ -3133,7 +3133,7 @@ class ObjectsInRedisClient {
                 objs.forEach(obj => {
                     try {
                         obj = JSON.parse(obj);
-                    } catch (e) {
+                    } catch {
                         this.log.error(`${this.namespace} Cannot parse JSON: ${obj}`);
                         obj = null;
                     }
@@ -3207,7 +3207,7 @@ class ObjectsInRedisClient {
             for (let i = 0; i < keys.length; i++) {
                 try {
                     objs[i] = JSON.parse(objs[i]);
-                } catch (e) {
+                } catch {
                     this.log.error(`${this.namespace} Cannot parse JSON ${keys[i]}: ${objs[i]}`);
                     continue;
                 }
@@ -3283,7 +3283,7 @@ class ObjectsInRedisClient {
         if (obj) {
             try {
                 obj = JSON.parse(obj);
-            } catch (e) {
+            } catch {
                 this.log.error(`${this.namespace} Cannot parse JSON: ${obj}`);
                 return tools.maybeCallbackWithError(callback, new Error(`Cannot parse JSON: "_design/${design}" / "${obj}"`));
             }
@@ -3386,7 +3386,7 @@ class ObjectsInRedisClient {
             for (let r = 0; r < objs.length; r++) {
                 try {
                     objs[r] = JSON.parse(objs[r]);
-                } catch (e) {
+                } catch {
                     this.log.error(`${this.namespace} Cannot parse JSON ${_keys[r]}: ${objs[r]}`);
                     continue;
                 }
@@ -3450,7 +3450,7 @@ class ObjectsInRedisClient {
 
         try {
             oldObj = oldObj ? JSON.parse(oldObj) : null;
-        } catch (e) {
+        } catch {
             this.log.error(`${this.namespace} Cannot parse JSON ${id}: ${oldObj}`);
             oldObj = null;
             return typeof callback === 'function' && callback(`Cannot parse JSON ${id}: ${oldObj}`);
@@ -3607,7 +3607,7 @@ class ObjectsInRedisClient {
                     for (let i = 0; i < keys.length; i++) {
                         try {
                             objs[i] = JSON.parse(objs[i]);
-                        } catch (e) {
+                        } catch {
                             this.log.error(`${this.namespace} Cannot parse JSON ${keys[i]}: ${objs[i]}`);
                             continue;
                         }

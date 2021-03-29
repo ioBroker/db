@@ -137,7 +137,7 @@ class InMemoryFileDB {
                             this.log.error(`${this.namespace} Cannot restore backup file as new main ${datasetName}: ${e.message}`);
                         }
                     }
-                } catch (e) {
+                } catch {
                     // ignore, file does not exist
                 }
             } catch (err) {
@@ -318,7 +318,7 @@ class InMemoryFileDB {
             } else {
                 bakOk = false;
             }
-        } catch (e) {
+        } catch {
             bakOk = false;
             // ignore, file does not exist
         }

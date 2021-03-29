@@ -851,7 +851,7 @@ class ObjectsInMemoryFileDB extends InMemoryFileDB {
 
     // Destructor of the class. Called by shutting down.
     async destroy() {
-        super.destroy();
+        await super.destroy();
 
         this._saveFileSettings(true);
         if (this.stateTimer) {

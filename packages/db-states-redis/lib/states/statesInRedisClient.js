@@ -222,7 +222,7 @@ class StateRedisClient {
 
                             try {
                                 message = message ? JSON.parse(message, message.includes('"Buffer"') ? bufferJsonDecoder: undefined) : null;
-                            } catch (e) {
+                            } catch {
                                 this.log.warn(`${this.namespace} Cannot parse system pmessage "${message}"`);
                                 message = null;
                             }
@@ -337,7 +337,7 @@ class StateRedisClient {
 
                         try {
                             message = message ? JSON.parse(message, message.includes('"Buffer"') ? bufferJsonDecoder: undefined) : null;
-                        } catch (e) {
+                        } catch {
                             this.log.warn(`${this.namespace} Cannot parse user pmessage "${message}"`);
                             message = null;
                         }
@@ -488,7 +488,7 @@ class StateRedisClient {
         } else {
             try {
                 oldObj = JSON.parse(oldObj);
-            } catch (e) {
+            } catch {
                 this.log.warn(`${this.namespace} Cannot parse "${oldObj}"`);
                 oldObj = {val: null};
             }
@@ -630,7 +630,7 @@ class StateRedisClient {
         }
         try {
             obj = JSON.parse(obj);
-        } catch (e) {
+        } catch {
             this.log.warn(`${this.namespace} Cannot parse "${obj}"`);
             obj = null;
         }
@@ -686,7 +686,7 @@ class StateRedisClient {
         obj.forEach(state => {
             try {
                 result.push(state ? JSON.parse(state) : null);
-            } catch (e) {
+            } catch {
                 result.push(state);
             }
         });
@@ -747,7 +747,7 @@ class StateRedisClient {
             try {
                 await this.client.quit();
                 this.client = null;
-            } catch (e) {
+            } catch {
                 // ignore error
             }
 
@@ -1057,7 +1057,7 @@ class StateRedisClient {
         this.settings.connection.enhancedLogging && this.log.silly(`${this.namespace} redis get ${id} ${obj}`);
         try {
             obj = obj ? JSON.parse(obj) : null;
-        } catch (e) {
+        } catch {
             this.log.warn(`${this.namespace} Cannot parse "${obj}"`);
             obj = null;
         }

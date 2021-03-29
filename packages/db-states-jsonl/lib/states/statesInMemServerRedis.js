@@ -238,7 +238,7 @@ class StatesInMemoryServer extends StatesInMemoryJsonlDB {
                     let state;
                     try {
                         state = JSON.parse(data[1].toString('utf-8'));
-                    } catch (e) { // No JSON, so handle as binary data and set as Buffer
+                    } catch { // No JSON, so handle as binary data and set as Buffer
                         this._setBinaryState(id, data[1]);
                         return void handler.sendString(responseId, 'OK');
                     }
@@ -260,7 +260,7 @@ class StatesInMemoryServer extends StatesInMemoryJsonlDB {
                     let state;
                     try {
                         state = JSON.parse(data[2].toString('utf-8'));
-                    } catch (e) { // No JSON, so handle as binary data and set as Buffer
+                    } catch { // No JSON, so handle as binary data and set as Buffer
                         state = data[2];
                     }
                     const expire = parseInt(data[1].toString('utf-8'), 10);

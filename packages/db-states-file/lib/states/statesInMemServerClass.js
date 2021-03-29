@@ -63,7 +63,7 @@ class StatesInMemoryServerClass extends StatesInRedisClient {
         if (!this.clientConnected) {
             this.storedSubscribes.push({pattern, options, callback}); // we ignore the promise return because not used for this testing issue we work around here
         } else {
-            return super.subscribe(pattern, options, callback);
+            await super.subscribe(pattern, options, callback);
         }
     }
 }
