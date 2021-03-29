@@ -101,7 +101,7 @@ class ObjectsInMemoryJsonlDB extends ObjectsInMemoryFileDB {
 
     async destroy() {
         if (this._db) {
-            return this._db.close();
+            await this._db.close();
         }
     }
 

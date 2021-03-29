@@ -11,7 +11,7 @@ function getControllerDir() {
             if (fs.existsSync(possiblePath)) {
                 return path.dirname(possiblePath);
             }
-        } catch (_a) {
+        } catch {
             /* not found */
         }
     }
@@ -28,7 +28,7 @@ function getControllerDir() {
                 if (fs.existsSync(path.join(possiblePath, 'lib/tools.js'))) {
                     return possiblePath;
                 }
-            } catch (_a) {
+            } catch {
                 // not found, continue with next possiblity
             }
         }
