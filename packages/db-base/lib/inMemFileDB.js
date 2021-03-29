@@ -142,6 +142,7 @@ class InMemoryFileDB {
                 }
             } catch (err) {
                 this.log.error(`${this.namespace} Cannot load ${datasetName}.bak: ${err.message}. Continue with empty dataset!`);
+                this.log.error(`${this.namespace} If this is no Migration or initial start please restore the last backup from ${this.backupDir}`);
             }
         }
         return ret;
