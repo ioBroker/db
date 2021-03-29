@@ -118,10 +118,28 @@ class InMemoryFileDB {
         try {
             ret = await this.loadDatasetFile(datasetName);
         } catch (err) {
-            this.log.error(`${this.namespace} Cannot load ${datasetName}: ${err.message}. Try last Backup!`);
+            this.log.error(`${this.namespace} Cannot load ${datasetName}: ${err.message}. We try last Backup!`);
 
             try {
                 ret = await this.loadDatasetFile(datasetName + '.bak');
+
+                // it worked, lets overwrite old file and store the broken one for pot. forensic check
+                try {
+                    if (await fs.pathExists(datasetName)) {
+                        try {
+                            await fs.move(datasetName, `${datasetName}.broken`, {overwrite: true});
+                        } catch (e) {
+                            this.log.error(`${this.namespace} Cannot copy the broken file ${datasetName} to ${datasetName}.broken ${e.message}`);
+                        }
+                        try {
+                            await fs.writeFile(datasetName, JSON.stringify(ret));
+                        } catch (e) {
+                            this.log.error(`${this.namespace} Cannot restore backup file as new main ${datasetName}: ${e.message}`);
+                        }
+                    }
+                } catch (e) {
+                    // ignore, file does not exist
+                }
             } catch (err) {
                 this.log.error(`${this.namespace} Cannot load ${datasetName}.bak: ${err.message}. Continue with empty dataset!`);
             }
@@ -287,18 +305,35 @@ class InMemoryFileDB {
     async saveDataset() {
         const jsonString = JSON.stringify(this.dataset);
 
+        let bakOk = true;
         try {
             if (await fs.pathExists(this.datasetName)) {
-                await fs.move(this.datasetName, `${this.datasetName}.bak`, { overwrite: true });
+                try {
+                    await fs.move(this.datasetName, `${this.datasetName}.bak`, {overwrite: true});
+                } catch (e) {
+                    bakOk = false;
+                    this.log.error(`${this.namespace} Cannot backup file ${this.datasetName}.bak: ${e.message}`);
+                }
+            } else {
+                bakOk = false;
             }
         } catch (e) {
-            this.log.error(`${this.namespace} Cannot save backup file ${this.datasetName}.bak: ${e.message}`);
+            bakOk = false;
+            // ignore, file does not exist
         }
 
         try {
             await fs.writeFile(this.datasetName, jsonString);
         } catch (e) {
             this.log.error(`${this.namespace} Cannot save ${this.datasetName}: ${e.message}`);
+        }
+
+        if (!bakOk) { // it seems the bak File is not successfully there, write current content again
+            try {
+                await fs.writeFile(`${this.datasetName}.bak`, jsonString);
+            } catch (e) {
+                this.log.error(`${this.namespace} Cannot save ${this.datasetName}.bak: ${e.message}`);
+            }
         }
 
         return jsonString;
