@@ -2726,8 +2726,9 @@ class ObjectsInRedisClient {
             obj.acl.ownerGroup = options.group;
         }
 
-        const message = JSON.stringify(obj);
         try {
+            const message = JSON.stringify(obj);
+
             await this.client.set(this.objNamespace + id, message);
             //this.settings.connection.enhancedLogging && this.log.silly(this.namespace + ' redis publish ' + this.objNamespace + id + ' ' + message);
             // object updated -> if type changed to meta -> cache
