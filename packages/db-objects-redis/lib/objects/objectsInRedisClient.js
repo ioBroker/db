@@ -3148,7 +3148,11 @@ class ObjectsInRedisClient {
             result.rows = filterEntries(result.rows, filterRequired);
             return tools.maybeCallbackWithError(callback, null, result);
         } else {
-            this.log.debug(`${this.namespace} No suitable Lua script, fallback to keys!: ${func.map}`);
+            if (!wildCardLastPos) {
+                this.log.debug(`${this.namespace} Search can't be optimized because wildcard not at the end, fallback to keys!: ${func.map}`);
+            } else {
+                this.log.debug(`${this.namespace} No suitable Lua script, fallback to keys!: ${func.map}`);
+            }
 
             let searchKeys = this.objNamespace + '*';
             if (wildcardPos !== -1) { // Wildcard included
