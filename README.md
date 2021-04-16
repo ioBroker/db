@@ -6,8 +6,12 @@
 	### __WORK IN PROGRESS__
 -->
 
+### __WORK IN PROGRESS__
+* (Apollon77) optimize db initialization for fileDB and enhance error case handling
+* (Apollon77/foxriver76) several optimizations and fixes
+
 ### 1.2.0 (2021-03-23)
-* (bluefox) fix the redis function applyViewFunc if the name has the translations
+* (bluefox) fix the redis function applyViewFunc if the name is a localized object
 
 ### 1.1.5 (2021-02-08)
 * (AlCalzone) fix jsonl db to use correct settings and compact the db
