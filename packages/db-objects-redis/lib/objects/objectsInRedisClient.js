@@ -1692,8 +1692,8 @@ class ObjectsInRedisClient {
 
     chownFileAsync(id, name, options) {
         return /** @type {Promise<void>} */ (new Promise((resolve, reject) =>
-            this.chownFile(id, name, options, err =>
-                err ? reject(err) : resolve())));
+            this.chownFile(id, name, options, (err, processed) =>
+                err ? reject(err) : resolve(processed))));
     }
 
     async _chmodFileHelper(keys, metas, options, callback) {
@@ -1868,8 +1868,8 @@ class ObjectsInRedisClient {
 
     chmodFileAsync(id, name, options) {
         return /** @type {Promise<void>} */ (new Promise((resolve, reject) =>
-            this.chmodFile(id, name, options, err =>
-                err ? reject(err) : resolve())));
+            this.chmodFile(id, name, options, (err, processed) =>
+                err ? reject(err) : resolve(processed))));
     }
 
     enableFileCache(enabled, options, callback) {
