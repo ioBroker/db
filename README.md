@@ -7,6 +7,7 @@
 -->
 
 ### __WORK IN PROGRESS__
+* (Apollon77) Fix async responses from chmodFile and chownFile
 * (Apollon77) optimize db initialization for fileDB and enhance error case handling
 * (Apollon77/foxriver76) several optimizations and fixes
 
