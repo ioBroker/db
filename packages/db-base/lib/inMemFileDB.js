@@ -306,6 +306,13 @@ class InMemoryFileDB {
     async saveDataset() {
         const jsonString = JSON.stringify(this.dataset);
 
+        try {
+            await fs.writeFile(`${this.datasetName}.new`, jsonString);
+        } catch (e) {
+            this.log.error(`${this.namespace} Cannot save Dataset to ${this.datasetName}.new: ${e.message}`);
+            return jsonString;
+        }
+
         let bakOk = true;
         try {
             if (await fs.pathExists(this.datasetName)) {
@@ -324,9 +331,10 @@ class InMemoryFileDB {
         }
 
         try {
-            await fs.writeFile(this.datasetName, jsonString);
+            await fs.move(`${this.datasetName}.new`, this.datasetName, {overwrite: true});
         } catch (e) {
-            this.log.error(`${this.namespace} Cannot save ${this.datasetName}: ${e.message}`);
+            bakOk = false;
+            this.log.error(`${this.namespace} Cannot move ${this.datasetName}.new to ${this.datasetName}: ${e.message}`);
         }
 
         if (!bakOk) { // it seems the bak File is not successfully there, write current content again
