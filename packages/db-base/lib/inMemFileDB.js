@@ -333,8 +333,14 @@ class InMemoryFileDB {
         try {
             await fs.move(`${this.datasetName}.new`, this.datasetName, {overwrite: true});
         } catch (e) {
-            bakOk = false;
-            this.log.error(`${this.namespace} Cannot move ${this.datasetName}.new to ${this.datasetName}: ${e.message}`);
+            this.log.error(`${this.namespace} Cannot move ${this.datasetName}.new to ${this.datasetName}: ${e.message}. Try direct write as fallback`);
+            try {
+                await fs.writeFile(this.datasetName, jsonString);
+            } catch (e) {
+                this.log.error(`${this.namespace} Cannot directly write Dataset to ${this.datasetName}: ${e.message}`);
+                return jsonString;
+            }
+
         }
 
         if (!bakOk) { // it seems the bak File is not successfully there, write current content again
