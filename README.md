@@ -6,6 +6,9 @@
 	### __WORK IN PROGRESS__
 -->
 
+### __WORK IN PROGRESS__
+* (Apollon77) Switch saving dataset to be more atomic (write separate place, rename afterwards)
+
 ### 1.2.1 (2021-04-17)
 * (Apollon77) Fix async responses from chmodFile and chownFile
 * (Apollon77) optimize db initialization for fileDB and enhance error case handling
