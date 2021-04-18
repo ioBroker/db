@@ -6,7 +6,7 @@
 	### __WORK IN PROGRESS__
 -->
 
-### __WORK IN PROGRESS__
+### 1.2.2 (2021-04-18)
 * (Apollon77) Switch saving dataset to be more atomic (write separate place, rename afterwards)
 
 ### 1.2.1 (2021-04-17)
