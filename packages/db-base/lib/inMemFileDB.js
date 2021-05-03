@@ -292,13 +292,11 @@ class InMemoryFileDB {
             if (!this.settings.backup.disabled && jsonString) {
                 this.saveBackup(jsonString);
             }
-        } catch (e) {
-            this.log.error(`${this.namespace} Error on saving state: ${e.message}`);
-        }
-
-        if (this.stateTimer) {
-            clearTimeout(this.stateTimer);
-            this.stateTimer = null;
+        } finally {
+            if (this.stateTimer) {
+                clearTimeout(this.stateTimer);
+                this.stateTimer = null;
+            }
         }
     }
 
