@@ -6,6 +6,9 @@
 	### __WORK IN PROGRESS__
 -->
 
+### __WORK IN PROGRESS__
+* (Apollon77/foxriver76) Prevent parallel database save tries
+
 ### 1.2.2 (2021-04-18)
 * (Apollon77) Switch saving dataset to be more atomic (write separate place, rename afterwards)
 

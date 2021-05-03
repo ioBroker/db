@@ -286,15 +286,19 @@ class InMemoryFileDB {
      * Handle saving the dataset incl. backups
      */
     async saveState() {
+        try {
+            const jsonString = await this.saveDataset();
+
+            if (!this.settings.backup.disabled && jsonString) {
+                this.saveBackup(jsonString);
+            }
+        } catch (e) {
+            this.log.error(`${this.namespace} Error on saving state: ${e.message}`);
+        }
+
         if (this.stateTimer) {
             clearTimeout(this.stateTimer);
             this.stateTimer = null;
-        }
-
-        const jsonString = await this.saveDataset();
-
-        if (!this.settings.backup.disabled && jsonString) {
-            this.saveBackup(jsonString);
         }
     }
 
