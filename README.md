@@ -6,6 +6,9 @@
 	### __WORK IN PROGRESS__
 -->
 
+### __WORK IN PROGRESS__
+* (Apollon77) Make sure no parallel database save can happen when destroying
+
 ### 1.2.3 (2021-05-03)
 * (Apollon77/foxriver76) Prevent parallel database save tries
 

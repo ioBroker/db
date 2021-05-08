@@ -434,6 +434,7 @@ class InMemoryFileDB {
     // Destructor of the class. Called by shutting down.
     async destroy() {
         if (this.stateTimer) {
+            clearTimeout(this.stateTimer);
             await this.saveState();
         }
     }
