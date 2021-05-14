@@ -1705,6 +1705,9 @@ class ObjectsInRedisClient {
         }
 
         for (const i in keys) {
+            if (!Object.prototype.hasOwnProperty.call(keys, i)) {
+                continue;
+            }
             const id = keys[i];
             const meta = metas[i];
             meta.acl.permissions = options.mode;
@@ -3616,9 +3619,9 @@ class ObjectsInRedisClient {
                             this.log.error(`${this.namespace} Cannot parse JSON ${keys[i]}: ${objs[i]}`);
                             continue;
                         }
-                        if (objs[i].common &&
+                        if (objs[i] && objs[i].common &&
                                 objs[i].common.name === idOrName &&
-                                (!type || (objs[i].common && objs[i].common.type === type))) {
+                                (!type || objs[i].common.type === type)) {
                             return tools.maybeCallbackWithError(callback, null, objs[i]._id, idOrName);
                         }
                     }

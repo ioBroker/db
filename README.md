@@ -6,6 +6,9 @@
 	### __WORK IN PROGRESS__
 -->
 
+### __WORK IN PROGRESS__
+* (Apollon77) check that object exists before using it
+
 ### 1.2.4 (2021-05-09)
 * (Apollon77) Make sure no parallel database save can happen when destroying
 
