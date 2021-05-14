@@ -1696,6 +1696,15 @@ class ObjectsInRedisClient {
                 err ? reject(err) : resolve(processed))));
     }
 
+    /**
+     *
+     * @param {array} keys Key names to handle
+     * @param {array} metas Objects for the keys to handle
+     * @param {object} options options
+     * @param {function} callback callback function
+     * @returns {Promise<*>}
+     * @private
+     */
     async _chmodFileHelper(keys, metas, options, callback) {
         if (!keys || !keys.length) {
             return tools.maybeCallback(callback);
@@ -1705,9 +1714,6 @@ class ObjectsInRedisClient {
         }
 
         for (const i in keys) {
-            if (!Object.prototype.hasOwnProperty.call(keys, i)) {
-                continue;
-            }
             const id = keys[i];
             const meta = metas[i];
             meta.acl.permissions = options.mode;
