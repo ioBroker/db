@@ -6,8 +6,8 @@
 	### __WORK IN PROGRESS__
 -->
 
-### __WORK IN PROGRESS__
-*  (Apollon77) initialize new default ACLs in any case, only controller sets it for all objects
+### 1.2.6 (2021-05-22)
+* (Apollon77) initialize new default ACLs in any case, only controller sets it for all objects
 
 ### 1.2.5 (2021-05-14)
 * (Apollon77) check that object exists before using it
