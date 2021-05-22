@@ -242,14 +242,13 @@ class ObjectsInRedisClient {
                                     try {
                                         const obj = message ? JSON.parse(message) : null;
 
-                                        if (this.settings.controller &&
-                                            id === 'system.config' &&
+                                        if (id === 'system.config' &&
                                             obj &&
                                             obj.common &&
                                             obj.common.defaultNewAcl &&
                                             !isDeepStrictEqual(obj.common.defaultNewAcl, this.defaultNewAcl)) {
                                             this.defaultNewAcl = JSON.parse(JSON.stringify(obj.common.defaultNewAcl));
-                                            this.setDefaultAcl(this.defaultNewAcl);
+                                            this.settings.controller && this.setDefaultAcl(this.defaultNewAcl);
                                         }
 
                                         onChange(id, obj);
