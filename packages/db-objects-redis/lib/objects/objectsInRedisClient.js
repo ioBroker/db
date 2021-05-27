@@ -299,14 +299,13 @@ class ObjectsInRedisClient {
                         !ready && typeof this.settings.connected === 'function' && this.settings.connected();
                         ready = true;
                     }
-                    // subscribe on system.config only if js-controller
-                    if (this.settings.controller) {
-                        try {
-                            await this.subSystem.psubscribe(`${this.objNamespace}system.config`);
-                        } catch {
-                            // ignore
-                        }
+                    // subscribe on system.config anytime because also adapters need stuff like defaultNewAcl (especially admin)
+                    try {
+                        await this.subSystem.psubscribe(`${this.objNamespace}system.config`);
+                    } catch {
+                        // ignore
                     }
+
                     for (const sub of Object.keys(this.subSystem.ioBrokerSubscriptions)) {
                         try {
                             await this.subSystem.psubscribe(sub);
