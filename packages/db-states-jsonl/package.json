@@ -5,7 +5,7 @@
     "node": ">=10.0.0"
   },
   "dependencies": {
-    "@alcalzone/jsonl-db": "^1.2.4",
+    "@alcalzone/jsonl-db": "^1.2.5",
     "@iobroker/db-base": "file:../db-base",
     "@iobroker/db-states-file": "file:../db-states-file",
     "@iobroker/db-states-redis": "file:../db-states-redis"
