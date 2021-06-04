@@ -6,6 +6,11 @@
 	### __WORK IN PROGRESS__
 -->
 
+### __WORK IN PROGRESS__
+* (Apollon77) prevent crash in disconnect cases on startup
+* (foxriver76) allow defaultNewAcl updates on the fly
+* (AlCalzone) Update jsonl library
+
 ### 1.2.6 (2021-05-22)
 * (Apollon77) initialize new default ACLs in any case, only controller sets it for all objects
 
