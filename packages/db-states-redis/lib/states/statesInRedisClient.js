@@ -314,11 +314,13 @@ class StateRedisClient {
                         ready = true;
                     }
 
-                    for (const sub of Object.keys(this.subSystem.ioBrokerSubscriptions)) {
-                        try {
-                            await this.subSystem.psubscribe(sub);
-                        } catch {
-                            //ignore
+                    if (this.subSystem) {
+                        for (const sub of Object.keys(this.subSystem.ioBrokerSubscriptions)) {
+                            try {
+                                await this.subSystem.psubscribe(sub);
+                            } catch {
+                                //ignore
+                            }
                         }
                     }
                 });

@@ -301,16 +301,18 @@ class ObjectsInRedisClient {
                     }
                     // subscribe on system.config anytime because also adapters need stuff like defaultNewAcl (especially admin)
                     try {
-                        await this.subSystem.psubscribe(`${this.objNamespace}system.config`);
+                        this.subSystem && await this.subSystem.psubscribe(`${this.objNamespace}system.config`);
                     } catch {
                         // ignore
                     }
 
-                    for (const sub of Object.keys(this.subSystem.ioBrokerSubscriptions)) {
-                        try {
-                            await this.subSystem.psubscribe(sub);
-                        } catch {
-                            // ignore
+                    if (this.subSystem) {
+                        for (const sub of Object.keys(this.subSystem.ioBrokerSubscriptions)) {
+                            try {
+                                await this.subSystem.psubscribe(sub);
+                            } catch {
+                                // ignore
+                            }
                         }
                     }
                 });
