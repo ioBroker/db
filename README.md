@@ -6,7 +6,7 @@
 	### __WORK IN PROGRESS__
 -->
 
-### __WORK IN PROGRESS__
+### 1.2.7 (2021-06-07)
 * (Apollon77) prevent crash in disconnect cases on startup
 * (foxriver76) allow defaultNewAcl updates on the fly
 * (AlCalzone) Update jsonl library
