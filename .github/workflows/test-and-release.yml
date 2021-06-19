@@ -48,9 +48,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        node-version: [10.x, 12.x, 14.x]
+        node-version: [10.x, 12.x, 14.x, 16.x]
         os: [ubuntu-latest, windows-latest, macos-latest]
-        js-controller: [master] # git branches/commits/tags to test against
+        js-controller: [3.3.x] # git branches/commits/tags to test against
 
     steps:
     - name: Checkout code
