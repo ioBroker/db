@@ -2,7 +2,7 @@
   "name": "@iobroker/db-states-redis",
   "version": "1.2.7",
   "engines": {
-    "node": ">=10.0.0"
+    "node": ">=12.0.0"
   },
   "dependencies": {
     "@iobroker/db-base": "file:../db-base",

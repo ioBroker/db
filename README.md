@@ -6,6 +6,9 @@
 	### __WORK IN PROGRESS__
 -->
 
+### __WORK IN PROGRESS__
+* BREAKING CHANGE: DROP NODEJS 10.x - MAJOR VERSION!
+
 ### 1.2.7 (2021-06-07)
 * (Apollon77) prevent crash in disconnect cases on startup
 * (foxriver76) allow defaultNewAcl updates on the fly
