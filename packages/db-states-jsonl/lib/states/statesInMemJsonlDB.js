@@ -56,8 +56,7 @@ class StatesInMemoryJsonlDB extends StatesInMemoryFileDB {
         const jsonlOptions = {
             autoCompress: {
                 sizeFactor: 2,
-                sizeFactorMinimumSize: 1000,
-                onOpen: true
+                sizeFactorMinimumSize: 1000
             },
             ignoreReadErrors: true,
             throttleFS: {
