@@ -11,7 +11,7 @@
     "@iobroker/db-states-redis": "file:packages/db-states-redis"
   },
   "devDependencies": {
-    "@alcalzone/release-script": "^2.2.0",
+    "@alcalzone/release-script": "^2.2.1",
     "@types/fs-extra": "^9.0.12",
     "@types/node": "^16.4.10",
     "eslint": "^7.32.0",
