@@ -13,7 +13,7 @@
   "devDependencies": {
     "@alcalzone/release-script": "^2.2.1",
     "@types/fs-extra": "^9.0.12",
-    "@types/node": "^16.4.10",
+    "@types/node": "^16.4.13",
     "eslint": "^7.32.0",
     "lerna": "^4.0.0"
   },
